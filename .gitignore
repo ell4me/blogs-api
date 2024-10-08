@@ -1,0 +1,25 @@
+# ide
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+
+# dependencies
+node_modules
+
+# build
+dist
+
+# env
+.env
+.env.local
+
+# linting
+.eslintcache
+
+# Docker
+/docker-compose.yml
+
+# testing coverage reports
+/coverage/

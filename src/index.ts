@@ -1,12 +1,6 @@
-import express from 'express';
+import { app } from './app';
+import { SETTINGS } from './constants';
 
-const app = express()
-const port = 3000
-
-app.get('/', (req, res) => {
-    res.send('Hello World!')
-})
-
-app.listen(port, () => {
-    console.log(`Server is starting on http://localhost:${port}`)
-})
+app.listen(SETTINGS.PORT, () => {
+	console.log(`Server is starting on http://localhost:${SETTINGS.PORT}`);
+});

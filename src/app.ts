@@ -5,8 +5,8 @@ import { testingRouter } from './modules/testing/testing.router';
 
 const app = express();
 
-express.json();
-express.urlencoded({ extended: true });
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.use(ROUTERS_PATH.VIDEOS, videosRouter);
 app.use(ROUTERS_PATH.TESTING, testingRouter);

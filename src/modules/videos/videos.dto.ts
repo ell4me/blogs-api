@@ -1,6 +1,6 @@
-import { availableResolutions } from './constants';
+import { AVAILABLE_RESOLUTIONS } from './constants';
 
-type AvailableResolutions = (typeof availableResolutions)[number];
+type AvailableResolutions = (typeof AVAILABLE_RESOLUTIONS)[number];
 
 interface VideoViewDto {
 	id: number;
@@ -13,10 +13,12 @@ interface VideoViewDto {
 	availableResolutions: AvailableResolutions[];
 }
 
+interface VideoUpdateDto extends Omit<VideoViewDto, 'id' | 'createdAt'> {}
+
 interface VideoCreateDto {
 	title: string;
 	author: string;
 	availableResolutions: AvailableResolutions[];
 }
 
-export { VideoViewDto, VideoCreateDto };
+export { VideoViewDto, VideoCreateDto, VideoUpdateDto };

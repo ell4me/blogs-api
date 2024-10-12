@@ -24,14 +24,16 @@ class VideosService {
 	}
 
 	public createVideo({ title, author, availableResolutions }: VideoCreateDto): VideoViewDto {
-		const createdAtDate = new Date().toISOString();
+		const publicationDate = new Date();
+		publicationDate.setDate(publicationDate.getDate() + 1);
+
 		const createdVideo: VideoViewDto = {
 			id: new Date().getTime(),
 			title,
 			author,
 			availableResolutions,
-			createdAt: createdAtDate,
-			publicationDate: createdAtDate,
+			createdAt: new Date().toISOString(),
+			publicationDate: publicationDate.toISOString(),
 			minAgeRestriction: null,
 			canBeDownloaded: false,
 		};

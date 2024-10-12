@@ -1,6 +1,6 @@
 import { ErrorMessage, ValidationErrorViewDto } from '../../../types';
 import { VideoCreateDto } from '../videos.dto';
-import { AVAILABLE_RESOLUTIONS } from '../constants';
+import { AVAILABLE_RESOLUTIONS, VALIDATION_MESSAGES } from '../constants';
 
 export const validateFields = ({
 								   title,
@@ -20,12 +20,15 @@ export const validateFields = ({
 	}
 
 	if (!availableResolutions?.length) {
-		errors.errorsMessages.push({ field: 'availableResolutions', message: 'Field must be not empty' });
+		errors.errorsMessages.push({ field: 'availableResolutions', message: VALIDATION_MESSAGES.FIELD_EMPTY });
 	} else {
-		const isIncludeAvailableResolutions = AVAILABLE_RESOLUTIONS.filter(resolution => availableResolutions.includes(resolution)).length;
+		const availableResolutionsLength = AVAILABLE_RESOLUTIONS.filter(resolution => availableResolutions.includes(resolution)).length;
 
-		if(!isIncludeAvailableResolutions) {
-			errors.errorsMessages.push({ field: 'availableResolutions', message: 'Field must include at least one of this value: P144, P240, P360, P480, P720, P1080, P1440, P2160' });
+		if (availableResolutionsLength !== availableResolutions.length) {
+			errors.errorsMessages.push({
+				field: 'availableResolutions',
+				message: VALIDATION_MESSAGES.AVAILABLE_RESOLUTIONS,
+			});
 		}
 	}
 
@@ -34,17 +37,17 @@ export const validateFields = ({
 
 function validateStringField(field: string, fieldName: string, maxLength: number): ErrorMessage | void {
 	if (typeof field !== 'string') {
-		return { field: fieldName, message: 'Field must be a string' };
+		return { field: fieldName, message: VALIDATION_MESSAGES.FIELD_INVALID_TYPE('string') };
 	}
 
 	if (!field?.trim()) {
-		return { field: fieldName, message: 'Field must be not empty' };
+		return { field: fieldName, message: VALIDATION_MESSAGES.FIELD_EMPTY };
 	}
 
 	if (field.length > maxLength) {
 		return {
 			field: fieldName,
-			message: `Field must be to have length not more ${maxLength} symbols`,
+			message: VALIDATION_MESSAGES.MAX_LENGTH(maxLength),
 		};
 	}
 }

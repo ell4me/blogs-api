@@ -1,11 +1,11 @@
 import { Router } from 'express';
-import { videosService } from '../videos/videos.service';
+import { blogsRepository } from '../blogs/blogs.repository';
+import { postsRepository } from '../posts/posts.repository';
 
-const testingRouter = Router();
+export const testingRouter = Router();
 
 testingRouter.delete('/all-data', (req, res) => {
-	videosService.deleteAllVideos();
+	blogsRepository.deleteAllBlogs();
+	postsRepository.deleteAllPosts();
 	res.sendStatus(204);
 });
-
-export { testingRouter };

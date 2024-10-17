@@ -1,6 +1,6 @@
 import { body } from 'express-validator';
 import { VALIDATION_MESSAGES } from '../../constants';
-import { blogsRepository } from '../../modules/blogs/blogs.repository';
+import { blogsService } from '../../modules/blogs/blogs.service';
 
 export const blogIdMiddleware = body('blogId')
 	.isString()
@@ -8,5 +8,5 @@ export const blogIdMiddleware = body('blogId')
 	.trim()
 	.notEmpty()
 	.withMessage(VALIDATION_MESSAGES.FIELD_EMPTY)
-	.custom(blogId => blogsRepository.getBlogById(blogId))
+	.custom(blogId => blogsService.getBlogById(blogId))
 	.withMessage(VALIDATION_MESSAGES.BLOG_IS_NOT_EXIST);

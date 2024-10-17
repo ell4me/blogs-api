@@ -4,6 +4,7 @@ import { app } from '../src/app';
 import { ValidationErrorViewDto } from '../src/types';
 import { VALIDATION_MESSAGES } from '../src/constants';
 import { BlogViewDto, BlogCreateDto, BlogUpdateDto } from '../src/modules/blogs/blogs.dto';
+import { PostCreateDto } from '../src/modules/posts/posts.dto';
 
 describe(ROUTERS_PATH.BLOGS, () => {
 	let newBlog: BlogViewDto | null = null;
@@ -136,15 +137,14 @@ describe(ROUTERS_PATH.BLOGS, () => {
 		await request(app)
 			.put(`${ROUTERS_PATH.BLOGS}/${newBlog!.id}`)
 			.auth(SETTINGS.LOGIN, SETTINGS.PASSWORD)
-			.send({
-				...newBlog,
-				...updatedDataBlog,
-			})
+			.send(updatedDataBlog)
 			.expect(HTTP_STATUSES.NO_CONTENT_204);
+
+		newBlog = { ...newBlog!, ...updatedDataBlog }
 
 		await request(app)
 			.get(`${ROUTERS_PATH.BLOGS}/${newBlog!.id}`)
-			.expect({ ...newBlog, ...updatedDataBlog });
+			.expect(newBlog);
 	});
 
 	it('DELETE won`t be to delete with incorrect credentials', async () => {
@@ -154,14 +154,36 @@ describe(ROUTERS_PATH.BLOGS, () => {
 			.expect(HTTP_STATUSES.UNAUTHORIZED_401);
 	});
 
-	it('DELETE blog by id', async () => {
+	it('DELETE blog by id and check that posts will be deleted by concrete blog id', async () => {
+		const createPostDto: PostCreateDto = {
+			title: 'Some title',
+			content: 'Some content',
+			shortDescription: 'Some short description',
+			blogId: newBlog!.id,
+		};
+
+		const responsePost = await request(app)
+			.post(ROUTERS_PATH.POSTS)
+			.auth(SETTINGS.LOGIN, SETTINGS.PASSWORD)
+			.send(createPostDto)
+			.expect(HTTP_STATUSES.CREATED_201);
+
+		await request(app)
+			.get(ROUTERS_PATH.POSTS)
+			.expect([responsePost.body]);
+
 		await request(app)
 			.delete(`${ROUTERS_PATH.BLOGS}/${newBlog!.id}`)
 			.auth(SETTINGS.LOGIN, SETTINGS.PASSWORD)
 			.expect(HTTP_STATUSES.NO_CONTENT_204);
+
 		await request(app)
 			.get(`${ROUTERS_PATH.BLOGS}/${newBlog!.id}`)
 			.expect(HTTP_STATUSES.NOT_FOUND_404);
+
+		await request(app)
+			.get(ROUTERS_PATH.POSTS)
+			.expect([]);
 	});
 
 	it('DELETE blog by incorrect id', async () => {

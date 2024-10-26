@@ -11,14 +11,14 @@ class PostsService {
 		this.blogsRepository = blogsRepository;
 	}
 
-	getAllPosts(): PostViewDto[] | [] {
-		const posts = this.postsRepository.getAllPosts();
+	async getAllPosts(): Promise<PostViewDto[] | []> {
+		const posts = await this.postsRepository.getAllPosts();
 
 		if (!posts.length) {
 			return [];
 		}
 
-		const blogs = this.blogsRepository.getAllBlogs();
+		const blogs = await this.blogsRepository.getAllBlogs();
 
 		return posts.map(post => ({
 			...post,
@@ -26,44 +26,51 @@ class PostsService {
 		}));
 	}
 
-	getPostById(id: string): PostViewDto | void {
-		const post = this.postsRepository.getPostById(id);
+	async getPostById(id: string): Promise<PostViewDto | void> {
+		const post = await this.postsRepository.getPostById(id);
 
 		if (!post) {
 			return;
 		}
 
-		const blog = this.blogsRepository.getBlogById(post.blogId);
+		const blog = await this.blogsRepository.getBlogById(post.blogId);
 
-		return {...post, blogName: blog!.name}
+		return { ...post, blogName: blog!.name };
 	}
 
-	updatePostById(id: string, updatedPost: PostUpdateDto): boolean {
-		const post = this.postsRepository.getPostById(id);
+	async updatePostById(id: string, updatedPost: PostUpdateDto): Promise<boolean> {
+		const post = await this.postsRepository.getPostById(id);
 
-		if(!post) {
+		if (!post) {
 			return false;
 		}
 
 		return this.postsRepository.updatePostById(id, updatedPost);
 	}
 
-	createPost({ content, title, shortDescription, blogId }: PostCreateDto): PostViewDto {
+	async createPost({
+		content,
+		title,
+		shortDescription,
+		blogId,
+	}: PostCreateDto): Promise<PostViewDto> {
 		const createdPost: PostModel = {
 			id: new Date().getTime().toString(),
 			title,
 			content,
 			shortDescription,
 			blogId,
+			createdAt: new Date().toISOString(),
 		};
 
-		this.postsRepository.createPost(createdPost);
-		const blogName = this.blogsRepository.getBlogById(blogId)!.name;
+		await this.postsRepository.createPost(createdPost);
+		const blog = await this.blogsRepository.getBlogById(blogId);
+		const currentPost = await this.postsRepository.getPostById(createdPost.id);
 
-		return { ...createdPost, blogName };
+		return { ...currentPost!, blogName: blog!.name };
 	}
 
-	deletePostById(id: string): boolean {
+	deletePostById(id: string): Promise<boolean> {
 		return this.postsRepository.deletePostById(id);
 	}
 }

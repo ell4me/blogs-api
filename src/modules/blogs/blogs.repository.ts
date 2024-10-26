@@ -1,55 +1,41 @@
-import { BlogCreateDto, BlogUpdateDto, BlogViewDto } from './blogs.dto';
+import { BlogUpdateDto, BlogViewDto } from './blogs.dto';
+import { blogsCollection } from '../../helpers/runDb';
+import { DeleteResult, MongoError } from 'mongodb';
 
 export class BlogsRepository {
-	private blogs: BlogViewDto[] = [];
-
-	public getAllBlogs(): BlogViewDto[] {
-		return this.blogs;
+	public getAllBlogs(): Promise<BlogViewDto[]> {
+		return blogsCollection.find({}, { projection: { _id: false } }).toArray();
 	}
 
-	public getBlogById(id: string): BlogViewDto | void {
-		return this.blogs.find(blog => blog.id === id);
+	public getBlogById(id: string): Promise<BlogViewDto | null> {
+		return blogsCollection.findOne({ id }, { projection: { _id: false } });
 	}
 
-	public updateBlogById(id: string, newBlog: BlogUpdateDto): boolean {
-		this.blogs = this.blogs.map(blog => {
-			if (blog.id === id) {
-				return { ...blog, ...newBlog };
-			}
+	public async updateBlogById(id: string, newBlog: BlogUpdateDto): Promise<boolean> {
+		const { modifiedCount } = await blogsCollection.updateOne({ id }, { $set: newBlog });
 
-			return blog;
-		});
-
-		return true;
+		return modifiedCount === 1;
 	}
 
-	public createBlog({ name, websiteUrl, description }: BlogCreateDto): BlogViewDto {
+	public async createBlog(createdBlog: BlogViewDto): Promise<BlogViewDto> {
+		await blogsCollection.insertOne(createdBlog);
+		const currentBlog = await this.getBlogById(createdBlog.id);
 
-		const createdBlog: BlogViewDto = {
-			id: new Date().getTime().toString(),
-			name,
-			websiteUrl,
-			description,
-		};
-
-		this.blogs.push(createdBlog);
-
-		return createdBlog;
-	}
-
-	public deleteBlogById(id: string): boolean {
-		const currentBlogIndex = this.blogs.findIndex(video => video.id === id);
-		if (currentBlogIndex === -1) {
-			return false;
+		if (!currentBlog) {
+			throw new MongoError('The blog was not be created');
 		}
 
-		this.blogs.splice(currentBlogIndex, 1);
-
-		return true;
+		return currentBlog;
 	}
 
-	public deleteAllBlogs(): void {
-		this.blogs = [];
+	public async deleteBlogById(id: string): Promise<boolean> {
+		const { deletedCount } = await blogsCollection.deleteOne({ id });
+
+		return deletedCount === 1;
+	}
+
+	public deleteAllBlogs(): Promise<DeleteResult> {
+		return blogsCollection.deleteMany({});
 	}
 }
 

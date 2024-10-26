@@ -1,50 +1,47 @@
 import { PostUpdateDto, PostModel } from './posts.dto';
+import { postsCollection } from '../../helpers/runDb';
+import { DeleteResult, MongoError } from 'mongodb';
 
 export class PostsRepository {
-	private posts: PostModel[] = [];
-
-	public getAllPosts(): PostModel[] {
-		return this.posts;
+	public getAllPosts(): Promise<PostModel[]> {
+		return postsCollection.find({}, { projection: { _id: false } }).toArray();
 	}
 
-	public deleteAllPostsByBlogId(blogId: string): void {
-		this.posts = this.posts.filter(post => post.blogId !== blogId);
+	public async deleteAllPostsByBlogId(blogId: string): Promise<boolean> {
+		const result = await postsCollection.deleteMany({ blogId });
+
+		return !!result.deletedCount;
 	}
 
-	public getPostById(id: string): PostModel | void {
-		return this.posts.find(post => post.id === id);
+	public getPostById(id: string): Promise<PostModel | null> {
+		return postsCollection.findOne({ id }, { projection: { _id: false } });
 	}
 
-	public updatePostById(id: string, newPost: PostUpdateDto): boolean {
-		this.posts = this.posts.map(post => {
-			if (post.id === id) {
-				return { ...post, ...newPost };
-			}
+	public async updatePostById(id: string, newPost: PostUpdateDto): Promise<boolean> {
+		const { modifiedCount } = await postsCollection.updateOne({ id }, { $set: newPost });
 
-			return post;
-		});
-
-		return true;
+		return modifiedCount === 1;
 	}
 
-	public createPost(createdPost: PostModel): PostModel {
-		this.posts.push(createdPost);
-		return createdPost;
-	}
+	public async createPost(createdPost: PostModel): Promise<PostModel> {
+		await postsCollection.insertOne(createdPost);
+		const currentPost = await this.getPostById(createdPost.id);
 
-	public deletePostById(id: string): boolean {
-		const currentPostIndex = this.posts.findIndex(video => video.id === id);
-		if (currentPostIndex === -1) {
-			return false;
+		if (!currentPost) {
+			throw new MongoError('The blog was not be created');
 		}
 
-		this.posts.splice(currentPostIndex, 1);
-
-		return true;
+		return currentPost;
 	}
 
-	public deleteAllPosts(): void {
-		this.posts = [];
+	public async deletePostById(id: string): Promise<boolean> {
+		const { deletedCount } = await postsCollection.deleteOne({ id });
+
+		return deletedCount === 1;
+	}
+
+	public deleteAllPosts(): Promise<DeleteResult> {
+		return postsCollection.deleteMany({});
 	}
 }
 

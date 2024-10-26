@@ -19,53 +19,73 @@ const validationMiddlewares = [
 	fieldsCheckErrorsMiddleware,
 ];
 
-blogsRouter.get('/', (req, res) => {
-	const blogs = blogsService.getAllBlogs();
-	res.send(blogs);
+blogsRouter.get('/', async (req, res) => {
+	try {
+		const blogs = await blogsService.getAllBlogs();
+		res.send(blogs);
+	} catch (e) {
+		res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
+	}
 });
 
-blogsRouter.get('/:id', (req: ReqParams<{ id: string }>, res) => {
-	const blog = blogsService.getBlogById(req.params.id);
+blogsRouter.get('/:id', async (req: ReqParams<{ id: string }>, res) => {
+	try {
+		const blog = await blogsService.getBlogById(req.params.id);
 
-	if (!blog) {
-		res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
-		return;
+		if (!blog) {
+			res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
+			return;
+		}
+
+		res.send(blog);
+	} catch (e) {
+		res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
 	}
-
-	res.send(blog);
 });
 
 blogsRouter.post(
 	'/',
 	...validationMiddlewares,
-	({ body: newBlog }: ReqBody<BlogCreateDto>, res) => {
-		const blog = blogsService.createBlog(newBlog);
-		res.status(HTTP_STATUSES.CREATED_201).send(blog);
+	async ({ body: newBlog }: ReqBody<BlogCreateDto>, res) => {
+		try {
+			const blog = await blogsService.createBlog(newBlog);
+			res.status(HTTP_STATUSES.CREATED_201).send(blog);
+		} catch (e) {
+			res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
+		}
 	},
 );
 
 blogsRouter.put(
 	'/:id',
 	...validationMiddlewares,
-	(req: ReqBodyWithParams<{ id: string }, BlogUpdateDto>, res) => {
-		const isUpdated = blogsService.updateBlogById(req.params.id, req.body);
+	async (req: ReqBodyWithParams<{ id: string }, BlogUpdateDto>, res) => {
+		try {
+			const isUpdated = await blogsService.updateBlogById(req.params.id, req.body);
 
-		if (!isUpdated) {
+			if (!isUpdated) {
+				res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
+				return;
+			}
+
+			res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
+		} catch (e) {
+			res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
+		}
+	},
+);
+
+blogsRouter.delete('/:id', authMiddleware, async (req: ReqParams<{ id: string }>, res) => {
+	try {
+		const isDeleted = await blogsService.deleteBlogById(req.params.id);
+
+		if (!isDeleted) {
 			res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
 			return;
 		}
 
 		res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
-	},
-);
-
-blogsRouter.delete('/:id', authMiddleware, (req: ReqParams<{ id: string }>, res) => {
-	const isDeleted = blogsService.deleteBlogById(req.params.id);
-
-	if (!isDeleted) {
-		res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
-		return;
+	} catch (e) {
+		res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
 	}
-
-	res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
 });

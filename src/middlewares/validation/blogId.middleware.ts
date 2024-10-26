@@ -8,5 +8,11 @@ export const blogIdMiddleware = body('blogId')
 	.trim()
 	.notEmpty()
 	.withMessage(VALIDATION_MESSAGES.FIELD_EMPTY)
-	.custom(blogId => blogsService.getBlogById(blogId))
+	.custom(async blogId => {
+		const blog = await blogsService.getBlogById(blogId);
+
+		if(!blog) {
+			throw new Error('Blog doesn`t exist');
+		}
+	})
 	.withMessage(VALIDATION_MESSAGES.BLOG_IS_NOT_EXIST);

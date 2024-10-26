@@ -1,0 +1,42 @@
+services:
+    mongodb:
+        container_name: mongodb
+        image: mongo:6.0.2
+        restart: always
+        ports:
+            - '27017:27017'
+        environment:
+            - MONGO_INITDB_ROOT_USERNAME=${DB_USER:-root}
+            - MONGO_INITDB_ROOT_PASSWORD=${DB_PASS:-password}
+            - MONGO_INITDB_DATABASE=${DB_NAME:-blog_db}
+    mongoAdmin:
+        container_name: mongoAdmin
+        image: mongo-express
+        restart: always
+        ports:
+            - '8081:8081'
+        environment:
+            - ME_CONFIG_MONGODB_SERVER=mongodb
+            - ME_CONFIG_MONGODB_ADMINUSERNAME=${DB_USER:-root}
+            - ME_CONFIG_MONGODB_ADMINPASSWORD=${DB_PASS:-password}
+        depends_on:
+            - mongodb
+    blog:
+        container_name: blogs-api
+        volumes:
+            - '.:/app'
+            - '/app/node_modules'
+        build: .
+        restart: always
+        ports:
+            - '4000:4000'
+        environment:
+            - PORT=4000
+            - DB_USER=root
+            - DB_PASS=password
+            - DB_NAME=blog_db
+            - DB_HOST=mongodb://mongodb:27017
+            - LOGIN=admin
+            - PASSWORD=qwerty
+        depends_on:
+            - mongodb

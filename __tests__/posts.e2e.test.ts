@@ -5,15 +5,30 @@ import { ValidationErrorViewDto } from '../src/types';
 import { VALIDATION_MESSAGES } from '../src/constants';
 import { PostCreateDto, PostUpdateDto, PostViewDto } from '../src/modules/posts/posts.dto';
 import { BlogCreateDto, BlogUpdateDto, BlogViewDto } from '../src/modules/blogs/blogs.dto';
+import { MongoMemoryServer } from 'mongodb-memory-server';
+import { MongoClient } from 'mongodb';
+import { runDb } from '../src/helpers/runDb';
 
 describe(ROUTERS_PATH.POSTS, () => {
 	let newPost: PostViewDto | null = null;
 	let newBlog: BlogViewDto | null = null;
+	let server: MongoMemoryServer;
+	let clientDb: MongoClient;
 
 	beforeAll(async () => {
+		server = await MongoMemoryServer.create();
+		const uri = server.getUri();
+		clientDb = new MongoClient(uri);
+
+		await runDb(clientDb);
 		await request(app)
 			.delete(`${ROUTERS_PATH.TESTING}/all-data`)
 			.expect(HTTP_STATUSES.NO_CONTENT_204);
+	});
+
+	afterAll(async () => {
+		await server.stop();
+		await clientDb.close();
 	});
 
 	it('GET posts are equal an empty array', async () => {
@@ -169,9 +184,7 @@ describe(ROUTERS_PATH.POSTS, () => {
 
 		newPost = { ...newPost!, ...updatedDataPost };
 
-		await request(app)
-			.get(`${ROUTERS_PATH.POSTS}/${newPost!.id}`)
-			.expect(newPost);
+		await request(app).get(`${ROUTERS_PATH.POSTS}/${newPost!.id}`).expect(newPost);
 	});
 
 	it('If update blog name, post will return correct blog name', async () => {
@@ -187,10 +200,12 @@ describe(ROUTERS_PATH.POSTS, () => {
 			.send(updatedDataBlog)
 			.expect(HTTP_STATUSES.NO_CONTENT_204);
 
-		await request(app).get(`${ROUTERS_PATH.POSTS}/${newPost!.id}`).expect({
-			...newPost!,
-			blogName: updatedDataBlog.name,
-		});
+		await request(app)
+			.get(`${ROUTERS_PATH.POSTS}/${newPost!.id}`)
+			.expect({
+				...newPost!,
+				blogName: updatedDataBlog.name,
+			});
 	});
 
 	it('DELETE won`t be to delete with incorrect credentials', async () => {

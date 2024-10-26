@@ -1,18 +1,34 @@
-import { HTTP_STATUSES, ROUTERS_PATH, SETTINGS } from '../src/constants';
+import { MongoMemoryServer } from 'mongodb-memory-server';
 import request from 'supertest';
+
+import { HTTP_STATUSES, ROUTERS_PATH, SETTINGS } from '../src/constants';
 import { app } from '../src/app';
 import { ValidationErrorViewDto } from '../src/types';
 import { VALIDATION_MESSAGES } from '../src/constants';
 import { BlogViewDto, BlogCreateDto, BlogUpdateDto } from '../src/modules/blogs/blogs.dto';
 import { PostCreateDto } from '../src/modules/posts/posts.dto';
+import { runDb } from '../src/helpers/runDb';
+import { MongoClient } from 'mongodb';
 
 describe(ROUTERS_PATH.BLOGS, () => {
 	let newBlog: BlogViewDto | null = null;
+	let server: MongoMemoryServer;
+	let clientDb: MongoClient;
 
 	beforeAll(async () => {
+		server = await MongoMemoryServer.create();
+		const uri = server.getUri();
+		clientDb = new MongoClient(uri);
+
+		await runDb(clientDb);
 		await request(app)
 			.delete(`${ROUTERS_PATH.TESTING}/all-data`)
 			.expect(HTTP_STATUSES.NO_CONTENT_204);
+	});
+
+	afterAll(async () => {
+		await server.stop();
+		await clientDb.close();
 	});
 
 	it('GET blogs are equal an empty array', async () => {
@@ -140,11 +156,9 @@ describe(ROUTERS_PATH.BLOGS, () => {
 			.send(updatedDataBlog)
 			.expect(HTTP_STATUSES.NO_CONTENT_204);
 
-		newBlog = { ...newBlog!, ...updatedDataBlog }
+		newBlog = { ...newBlog!, ...updatedDataBlog };
 
-		await request(app)
-			.get(`${ROUTERS_PATH.BLOGS}/${newBlog!.id}`)
-			.expect(newBlog);
+		await request(app).get(`${ROUTERS_PATH.BLOGS}/${newBlog!.id}`).expect(newBlog);
 	});
 
 	it('DELETE won`t be to delete with incorrect credentials', async () => {
@@ -168,9 +182,7 @@ describe(ROUTERS_PATH.BLOGS, () => {
 			.send(createPostDto)
 			.expect(HTTP_STATUSES.CREATED_201);
 
-		await request(app)
-			.get(ROUTERS_PATH.POSTS)
-			.expect([responsePost.body]);
+		await request(app).get(ROUTERS_PATH.POSTS).expect([responsePost.body]);
 
 		await request(app)
 			.delete(`${ROUTERS_PATH.BLOGS}/${newBlog!.id}`)
@@ -181,9 +193,7 @@ describe(ROUTERS_PATH.BLOGS, () => {
 			.get(`${ROUTERS_PATH.BLOGS}/${newBlog!.id}`)
 			.expect(HTTP_STATUSES.NOT_FOUND_404);
 
-		await request(app)
-			.get(ROUTERS_PATH.POSTS)
-			.expect([]);
+		await request(app).get(ROUTERS_PATH.POSTS).expect([]);
 	});
 
 	it('DELETE blog by incorrect id', async () => {

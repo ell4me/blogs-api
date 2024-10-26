@@ -11,12 +11,12 @@ class BlogsService {
 		this.blogsRepository = blogsRepository;
 	}
 
-	getAllBlogs(): BlogViewDto[] {
+	getAllBlogs(): Promise<BlogViewDto[]> {
 		return this.blogsRepository.getAllBlogs();
 	}
 
-	getBlogById(id: string): BlogViewDto | void {
-		const blog = this.blogsRepository.getBlogById(id);
+	async getBlogById(id: string): Promise<BlogViewDto | void> {
+		const blog = await this.blogsRepository.getBlogById(id);
 
 		if (!blog) {
 			return;
@@ -25,7 +25,7 @@ class BlogsService {
 		return blog;
 	}
 
-	updateBlogById(id: string, updatedBlog: BlogUpdateDto): boolean {
+	async updateBlogById(id: string, updatedBlog: BlogUpdateDto): Promise<boolean> {
 		const post = this.blogsRepository.getBlogById(id);
 
 		if (!post) {
@@ -35,27 +35,27 @@ class BlogsService {
 		return this.blogsRepository.updateBlogById(id, updatedBlog);
 	}
 
-	createBlog({ name, websiteUrl, description }: BlogCreateDto): BlogViewDto {
+	async createBlog({ name, websiteUrl, description }: BlogCreateDto): Promise<BlogViewDto> {
 		const createdBlog: BlogViewDto = {
 			id: new Date().getTime().toString(),
 			name,
 			websiteUrl,
 			description,
+			isMembership: false,
+			createdAt: new Date().toISOString(),
 		};
 
 		return this.blogsRepository.createBlog(createdBlog);
 	}
 
-	deleteBlogById(id: string): boolean {
+	async deleteBlogById(id: string): Promise<boolean> {
 		const isDeleted = this.blogsRepository.deleteBlogById(id);
 
-		if(!isDeleted) {
+		if (!isDeleted) {
 			return isDeleted;
 		}
 
-		this.postsRepository.deleteAllPostsByBlogId(id);
-
-		return isDeleted;
+		return this.postsRepository.deleteAllPostsByBlogId(id);
 	}
 }
 

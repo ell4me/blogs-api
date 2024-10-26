@@ -18,8 +18,5 @@ dist
 # linting
 .eslintcache
 
-# Docker
-/docker-compose.yml
-
 # testing coverage reports
 /coverage/

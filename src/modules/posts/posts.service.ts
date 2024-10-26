@@ -39,12 +39,6 @@ class PostsService {
 	}
 
 	async updatePostById(id: string, updatedPost: PostUpdateDto): Promise<boolean> {
-		const post = await this.postsRepository.getPostById(id);
-
-		if (!post) {
-			return false;
-		}
-
 		return this.postsRepository.updatePostById(id, updatedPost);
 	}
 

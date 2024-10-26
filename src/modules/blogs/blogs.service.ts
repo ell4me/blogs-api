@@ -15,23 +15,11 @@ class BlogsService {
 		return this.blogsRepository.getAllBlogs();
 	}
 
-	async getBlogById(id: string): Promise<BlogViewDto | void> {
-		const blog = await this.blogsRepository.getBlogById(id);
-
-		if (!blog) {
-			return;
-		}
-
-		return blog;
+	async getBlogById(id: string): Promise<BlogViewDto | null> {
+		return this.blogsRepository.getBlogById(id);
 	}
 
 	async updateBlogById(id: string, updatedBlog: BlogUpdateDto): Promise<boolean> {
-		const post = this.blogsRepository.getBlogById(id);
-
-		if (!post) {
-			return false;
-		}
-
 		return this.blogsRepository.updateBlogById(id, updatedBlog);
 	}
 

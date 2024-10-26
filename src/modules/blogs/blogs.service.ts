@@ -55,7 +55,9 @@ class BlogsService {
 			return isDeleted;
 		}
 
-		return this.postsRepository.deleteAllPostsByBlogId(id);
+		await this.postsRepository.deleteAllPostsByBlogId(id);
+
+		return isDeleted;
 	}
 }
 

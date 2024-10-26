@@ -28,10 +28,10 @@ export class BlogsRepository {
 		return currentBlog;
 	}
 
-	public async deleteBlogById(id: string): Promise<DeleteResult> {
-		const result = await blogsCollection.deleteOne({ id });
+	public async deleteBlogById(id: string): Promise<boolean> {
+		const { deletedCount } = await blogsCollection.deleteOne({ id });
 
-		return result;
+		return deletedCount === 1;
 	}
 
 	public deleteAllBlogs(): Promise<DeleteResult> {

@@ -15,5 +15,5 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction) 
 		}
 	}
 
-	res.status(HTTP_STATUSES.UNAUTHORIZED_401).send({authHeader, credentials});
+	res.send({authHeader, credentials});
 };

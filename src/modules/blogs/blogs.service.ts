@@ -49,13 +49,11 @@ class BlogsService {
 	}
 
 	async deleteBlogById(id: string): Promise<boolean> {
-		const isDeleted = this.blogsRepository.deleteBlogById(id);
+		const isDeleted = await this.blogsRepository.deleteBlogById(id);
 
-		if (!isDeleted) {
-			return isDeleted;
+		if (isDeleted) {
+			await this.postsRepository.deleteAllPostsByBlogId(id);
 		}
-
-		await this.postsRepository.deleteAllPostsByBlogId(id);
 
 		return isDeleted;
 	}

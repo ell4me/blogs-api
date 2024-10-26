@@ -80,11 +80,11 @@ blogsRouter.delete('/:id', authMiddleware, async (req: ReqParams<{ id: string }>
 		const isDeleted = await blogsService.deleteBlogById(req.params.id);
 
 		if (!isDeleted) {
-			res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
+			res.status(HTTP_STATUSES.NOT_FOUND_404).send(isDeleted);
 			return;
 		}
 
-		res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
+		res.status(HTTP_STATUSES.NO_CONTENT_204).send(isDeleted);
 	} catch (e) {
 		res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
 	}

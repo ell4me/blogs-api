@@ -1,6 +1,7 @@
 import { blogsRepository, BlogsRepository } from './blogs.repository';
 import { postsRepository, PostsRepository } from '../posts/posts.repository';
 import { BlogCreateDto, BlogUpdateDto, BlogViewDto } from './blogs.dto';
+import { DeleteResult } from 'mongodb';
 
 class BlogsService {
 	private postsRepository: PostsRepository;
@@ -36,10 +37,10 @@ class BlogsService {
 		return this.blogsRepository.createBlog(createdBlog);
 	}
 
-	async deleteBlogById(id: string): Promise<boolean> {
+	async deleteBlogById(id: string): Promise<DeleteResult> {
 		const isDeleted = await this.blogsRepository.deleteBlogById(id);
 
-		if (isDeleted) {
+		if (isDeleted.deletedCount) {
 			await this.postsRepository.deleteAllPostsByBlogId(id);
 		}
 

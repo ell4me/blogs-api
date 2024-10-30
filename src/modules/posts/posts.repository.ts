@@ -1,10 +1,20 @@
-import { PostUpdateDto, PostModel } from './posts.dto';
+import { PostUpdateDto, PostViewDto } from './posts.dto';
 import { postsCollection } from '../../helpers/runDb';
-import { DeleteResult, MongoError } from 'mongodb';
+import { DeleteResult, Filter, MongoError } from 'mongodb';
+import { FilteredQueries } from '../../types';
 
 export class PostsRepository {
-	public getAllPosts(): Promise<PostModel[]> {
-		return postsCollection.find({}, { projection: { _id: false } }).toArray();
+	public getAllPosts({
+						   pageSize,
+						   pageNumber,
+						   sortBy,
+						   sortDirection,
+					   }: FilteredQueries, additionalFilter?: Filter<PostViewDto>): Promise<PostViewDto[]> {
+		return postsCollection.find(additionalFilter ? additionalFilter : {}, { projection: { _id: false } })
+			.skip((pageNumber - 1) * pageSize)
+			.sort({ [sortBy]: sortDirection })
+			.limit(pageSize)
+			.toArray();
 	}
 
 	public async deleteAllPostsByBlogId(blogId: string): Promise<boolean> {
@@ -13,7 +23,7 @@ export class PostsRepository {
 		return !!result.deletedCount;
 	}
 
-	public getPostById(id: string): Promise<PostModel | null> {
+	public getPostById(id: string): Promise<PostViewDto | null> {
 		return postsCollection.findOne({ id }, { projection: { _id: false } });
 	}
 
@@ -23,12 +33,12 @@ export class PostsRepository {
 		return modifiedCount === 1;
 	}
 
-	public async createPost(createdPost: PostModel): Promise<PostModel> {
+	public async createPost(createdPost: PostViewDto): Promise<PostViewDto> {
 		await postsCollection.insertOne(createdPost);
 		const currentPost = await this.getPostById(createdPost.id);
 
 		if (!currentPost) {
-			throw new MongoError('The blog was not be created');
+			throw new MongoError('The post was not be created');
 		}
 
 		return currentPost;
@@ -42,6 +52,10 @@ export class PostsRepository {
 
 	public deleteAllPosts(): Promise<DeleteResult> {
 		return postsCollection.deleteMany({});
+	}
+
+	public getCountPosts(filter?: Filter<PostViewDto>): Promise<number> {
+		return postsCollection.countDocuments(filter ? filter : {});
 	}
 }
 

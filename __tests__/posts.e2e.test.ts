@@ -1,13 +1,21 @@
 import { HTTP_STATUSES, ROUTERS_PATH, SETTINGS } from '../src/constants';
 import request from 'supertest';
 import { app } from '../src/app';
-import { ValidationErrorViewDto } from '../src/types';
+import { ItemsPaginationViewDto, ValidationErrorViewDto } from '../src/types';
 import { VALIDATION_MESSAGES } from '../src/constants';
-import { PostCreateDto, PostUpdateDto, PostViewDto } from '../src/modules/posts/posts.dto';
+import { PostCreateByBlogIdDto, PostUpdateDto, PostViewDto } from '../src/modules/posts/posts.dto';
 import { BlogCreateDto, BlogUpdateDto, BlogViewDto } from '../src/modules/blogs/blogs.dto';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { MongoClient } from 'mongodb';
 import { runDb } from '../src/helpers/runDb';
+
+const emptyResponse: ItemsPaginationViewDto = {
+	page: 1,
+	pagesCount: 0,
+	pageSize: 10,
+	totalCount: 0,
+	items: [],
+};
 
 describe(ROUTERS_PATH.POSTS, () => {
 	let newPost: PostViewDto | null = null;
@@ -32,7 +40,7 @@ describe(ROUTERS_PATH.POSTS, () => {
 	});
 
 	it('GET posts are equal an empty array', async () => {
-		await request(app).get(ROUTERS_PATH.POSTS).expect([]);
+		await request(app).get(ROUTERS_PATH.POSTS).expect(emptyResponse);
 	});
 
 	it('POST won`t be to create with incorrect credentials', async () => {
@@ -74,7 +82,7 @@ describe(ROUTERS_PATH.POSTS, () => {
 				],
 			} as ValidationErrorViewDto);
 
-		await request(app).get(ROUTERS_PATH.POSTS).expect([]);
+		await request(app).get(ROUTERS_PATH.POSTS).expect(emptyResponse);
 	});
 
 	it('POST will be create post', async () => {
@@ -92,7 +100,7 @@ describe(ROUTERS_PATH.POSTS, () => {
 
 		newBlog = responseBlog.body;
 
-		const createPostDto: PostCreateDto = {
+		const createPostDto: PostCreateByBlogIdDto = {
 			title: 'How live if you are dog?',
 			content: 'Some content',
 			shortDescription: 'Some short description',
@@ -109,7 +117,13 @@ describe(ROUTERS_PATH.POSTS, () => {
 
 		expect(newPost).toMatchObject(createPostDto);
 
-		await request(app).get(ROUTERS_PATH.POSTS).expect([newPost]);
+		await request(app).get(ROUTERS_PATH.POSTS).expect({
+			page: 1,
+			pagesCount: 1,
+			pageSize: 10,
+			totalCount: 1,
+			items: [newPost]
+		});
 	});
 
 	it('GET post with incorrect id', async () => {

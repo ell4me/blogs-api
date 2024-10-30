@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { blogsService } from './blogs.service';
-import { ReqBody, ReqBodyWithParams, ReqParams } from '../../types';
+import { FilteredQueries, ReqBody, ReqBodyWithParams, ReqParams, ReqQuery, ReqQueryWithParams } from '../../types';
 import { BlogCreateDto, BlogUpdateDto } from './blogs.dto';
 import { HTTP_STATUSES } from '../../constants';
 import {
@@ -9,6 +9,8 @@ import {
 	fieldsCheckErrorsMiddleware,
 } from '../../middlewares/validation';
 import { authMiddleware } from '../../middlewares/auth.middleware';
+import { queryParserMiddleware } from '../../middlewares/queryParser.middleware';
+import { PostCreateDto } from '../posts/posts.dto';
 
 export const blogsRouter = Router();
 const validationMiddlewares = [
@@ -19,9 +21,9 @@ const validationMiddlewares = [
 	fieldsCheckErrorsMiddleware,
 ];
 
-blogsRouter.get('/', async (req, res) => {
+blogsRouter.get('/', queryParserMiddleware, async (req: ReqQuery<FilteredQueries>, res) => {
 	try {
-		const blogs = await blogsService.getAllBlogs();
+		const blogs = await blogsService.getAllBlogs(req.query);
 		res.send(blogs);
 	} catch (e) {
 		res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
@@ -43,6 +45,21 @@ blogsRouter.get('/:id', async (req: ReqParams<{ id: string }>, res) => {
 	}
 });
 
+blogsRouter.get('/:id/posts', queryParserMiddleware, async (req: ReqQueryWithParams<{ id: string }, FilteredQueries>, res) => {
+	try {
+		const result = await blogsService.getPostsByBlogId(req.params.id, req.query);
+
+		if (!result) {
+			res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
+			return;
+		}
+
+		res.send(result);
+	} catch (e) {
+		res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
+	}
+});
+
 blogsRouter.post(
 	'/',
 	...validationMiddlewares,
@@ -50,6 +67,29 @@ blogsRouter.post(
 		try {
 			const blog = await blogsService.createBlog(newBlog);
 			res.status(HTTP_STATUSES.CREATED_201).send(blog);
+		} catch (e) {
+			res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
+		}
+	},
+);
+
+blogsRouter.post(
+	'/:id/posts',
+	authMiddleware,
+	maxLengthStringMiddleware('title', 30),
+	maxLengthStringMiddleware('shortDescription', 100),
+	maxLengthStringMiddleware('content', 1000),
+	fieldsCheckErrorsMiddleware,
+	async ({ body: newPost, params }: ReqBodyWithParams<{ id: string }, PostCreateDto>, res) => {
+		try {
+			const post = await blogsService.createPostByBlogId(params.id, newPost);
+
+			if (!post) {
+				res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
+				return;
+			}
+
+			res.status(HTTP_STATUSES.CREATED_201).send(post);
 		} catch (e) {
 			res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
 		}

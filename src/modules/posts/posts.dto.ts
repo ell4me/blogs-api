@@ -8,8 +8,7 @@ export interface PostViewDto {
 	createdAt: string;
 }
 
-export interface PostModel extends Omit<PostViewDto, 'blogName'> {}
-
-export interface PostCreateDto extends Omit<PostViewDto, 'id' | 'blogName' | 'createdAt'> {}
+export interface PostCreateByBlogIdDto extends Omit<PostViewDto, 'id' | 'blogName' | 'createdAt'> {}
+export interface PostCreateDto extends Omit<PostViewDto, 'id' | 'blogName' | 'createdAt' | 'blogId'> {}
 
 export interface PostUpdateDto extends Omit<PostViewDto, 'id' | 'blogName' | 'createdAt'> {}

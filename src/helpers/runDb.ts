@@ -1,10 +1,10 @@
 import { Collection, MongoClient } from 'mongodb';
 import { COLLECTION_NAMES, SETTINGS } from '../constants';
 import { BlogViewDto } from '../modules/blogs/blogs.dto';
-import { PostModel } from '../modules/posts/posts.dto';
+import { PostViewDto } from '../modules/posts/posts.dto';
 
 export let blogsCollection: Collection<BlogViewDto>;
-export let postsCollection: Collection<PostModel>;
+export let postsCollection: Collection<PostViewDto>;
 
 export const runDb = async (clientDb: MongoClient) => {
 	try {

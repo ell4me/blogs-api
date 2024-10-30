@@ -1,10 +1,27 @@
 import { BlogUpdateDto, BlogViewDto } from './blogs.dto';
 import { blogsCollection } from '../../helpers/runDb';
-import { DeleteResult, MongoError } from 'mongodb';
+import { DeleteResult, Filter, MongoError } from 'mongodb';
+import { FilteredQueries } from '../../types';
 
 export class BlogsRepository {
-	public getAllBlogs(): Promise<BlogViewDto[]> {
-		return blogsCollection.find({}, { projection: { _id: false } }).toArray();
+	public getAllBlogs({
+						   pageSize,
+						   pageNumber,
+						   sortBy,
+						   sortDirection,
+						   searchNameTerm,
+					   }: FilteredQueries): Promise<BlogViewDto[]> {
+		let filter: Filter<BlogViewDto> = {};
+
+		if (searchNameTerm) {
+			filter = { name: new RegExp(searchNameTerm, 'i') };
+		}
+
+		return blogsCollection.find(filter, { projection: { _id: false } })
+			.skip((pageNumber - 1) * pageSize)
+			.sort({ [sortBy]: sortDirection })
+			.limit(pageSize)
+			.toArray();
 	}
 
 	public getBlogById(id: string): Promise<BlogViewDto | null> {
@@ -36,6 +53,16 @@ export class BlogsRepository {
 
 	public deleteAllBlogs(): Promise<DeleteResult> {
 		return blogsCollection.deleteMany({});
+	}
+
+	public getCountBlogsByFilter(searchNameTerm: string | null): Promise<number> {
+		let filter: Filter<BlogViewDto> = {};
+
+		if (searchNameTerm) {
+			filter = { name: new RegExp(searchNameTerm, 'i') };
+		}
+
+		return blogsCollection.countDocuments(filter);
 	}
 }
 

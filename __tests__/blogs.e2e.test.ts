@@ -3,12 +3,20 @@ import request from 'supertest';
 
 import { HTTP_STATUSES, ROUTERS_PATH, SETTINGS } from '../src/constants';
 import { app } from '../src/app';
-import { ValidationErrorViewDto } from '../src/types';
+import { ItemsPaginationViewDto, ValidationErrorViewDto } from '../src/types';
 import { VALIDATION_MESSAGES } from '../src/constants';
 import { BlogViewDto, BlogCreateDto, BlogUpdateDto } from '../src/modules/blogs/blogs.dto';
-import { PostCreateDto } from '../src/modules/posts/posts.dto';
+import { PostCreateByBlogIdDto } from '../src/modules/posts/posts.dto';
 import { runDb } from '../src/helpers/runDb';
 import { MongoClient } from 'mongodb';
+
+const emptyResponse: ItemsPaginationViewDto = {
+	page: 1,
+	pagesCount: 0,
+	pageSize: 10,
+	totalCount: 0,
+	items: [],
+};
 
 describe(ROUTERS_PATH.BLOGS, () => {
 	let newBlog: BlogViewDto | null = null;
@@ -32,7 +40,7 @@ describe(ROUTERS_PATH.BLOGS, () => {
 	});
 
 	it('GET blogs are equal an empty array', async () => {
-		await request(app).get(ROUTERS_PATH.BLOGS).expect([]);
+		await request(app).get(ROUTERS_PATH.BLOGS).expect(emptyResponse);
 	});
 
 	it('POST won`t be to create with incorrect credentials', async () => {
@@ -69,7 +77,7 @@ describe(ROUTERS_PATH.BLOGS, () => {
 				],
 			} as ValidationErrorViewDto);
 
-		await request(app).get(ROUTERS_PATH.BLOGS).expect([]);
+		await request(app).get(ROUTERS_PATH.BLOGS).expect(emptyResponse);
 	});
 
 	it('POST will be create blog', async () => {
@@ -88,7 +96,13 @@ describe(ROUTERS_PATH.BLOGS, () => {
 
 		expect(newBlog).toMatchObject(createBlogDto);
 
-		await request(app).get(ROUTERS_PATH.BLOGS).expect([newBlog]);
+		await request(app).get(ROUTERS_PATH.BLOGS).expect({
+			page: 1,
+			pagesCount: 1,
+			pageSize: 10,
+			totalCount: 1,
+			items: [newBlog],
+		});
 	});
 
 	it('GET blog with incorrect id', async () => {
@@ -169,7 +183,7 @@ describe(ROUTERS_PATH.BLOGS, () => {
 	});
 
 	it('DELETE blog by id and check that posts will be deleted by concrete blog id', async () => {
-		const createPostDto: PostCreateDto = {
+		const createPostDto: PostCreateByBlogIdDto = {
 			title: 'Some title',
 			content: 'Some content',
 			shortDescription: 'Some short description',
@@ -182,7 +196,13 @@ describe(ROUTERS_PATH.BLOGS, () => {
 			.send(createPostDto)
 			.expect(HTTP_STATUSES.CREATED_201);
 
-		await request(app).get(ROUTERS_PATH.POSTS).expect([responsePost.body]);
+		await request(app).get(ROUTERS_PATH.POSTS).expect({
+			page: 1,
+			pagesCount: 1,
+			pageSize: 10,
+			totalCount: 1,
+			items: [responsePost.body],
+		});
 
 		await request(app)
 			.delete(`${ROUTERS_PATH.BLOGS}/${newBlog!.id}`)
@@ -193,7 +213,7 @@ describe(ROUTERS_PATH.BLOGS, () => {
 			.get(`${ROUTERS_PATH.BLOGS}/${newBlog!.id}`)
 			.expect(HTTP_STATUSES.NOT_FOUND_404);
 
-		await request(app).get(ROUTERS_PATH.POSTS).expect([]);
+		await request(app).get(ROUTERS_PATH.POSTS).expect(emptyResponse);
 	});
 
 	it('DELETE blog by incorrect id', async () => {

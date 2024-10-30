@@ -1,6 +1,9 @@
 import { blogsRepository, BlogsRepository } from './blogs.repository';
 import { postsRepository, PostsRepository } from '../posts/posts.repository';
 import { BlogCreateDto, BlogUpdateDto, BlogViewDto } from './blogs.dto';
+import { FilteredQueries, ItemsPaginationViewDto } from '../../types';
+import { PostCreateDto, PostViewDto } from '../posts/posts.dto';
+import { postsService } from '../posts/posts.service';
 
 class BlogsService {
 	private postsRepository: PostsRepository;
@@ -11,8 +14,17 @@ class BlogsService {
 		this.blogsRepository = blogsRepository;
 	}
 
-	getAllBlogs(): Promise<BlogViewDto[]> {
-		return this.blogsRepository.getAllBlogs();
+	async getAllBlogs(filter: FilteredQueries): Promise<ItemsPaginationViewDto<BlogViewDto>> {
+		const blogs = await this.blogsRepository.getAllBlogs(filter);
+		const blogsCountByFilter = await this.blogsRepository.getCountBlogsByFilter(filter.searchNameTerm);
+
+		return {
+			page: filter.pageNumber,
+			pagesCount: Math.ceil(blogsCountByFilter / filter.pageSize),
+			pageSize: filter.pageSize,
+			totalCount: blogsCountByFilter,
+			items: blogs,
+		};
 	}
 
 	async getBlogById(id: string): Promise<BlogViewDto | null> {
@@ -44,6 +56,29 @@ class BlogsService {
 		}
 
 		return isDeleted;
+	}
+
+	async getPostsByBlogId(id: string, filterPagination: FilteredQueries): Promise<ItemsPaginationViewDto<PostViewDto> | null> {
+		const blog = await this.blogsRepository.getBlogById(id);
+
+		if (!blog) {
+			return null;
+		}
+
+		const posts = await this.postsRepository.getAllPosts(filterPagination, { blogId: blog.id });
+		const postsCountByBlogId = await this.postsRepository.getCountPosts({blogId: blog.id});
+
+		return {
+			page: filterPagination.pageNumber,
+			pagesCount: Math.ceil(postsCountByBlogId / filterPagination.pageSize),
+			pageSize: filterPagination.pageSize,
+			totalCount: postsCountByBlogId,
+			items: posts,
+		};
+	}
+
+	async createPostByBlogId(id: string, newPost: PostCreateDto): Promise<PostViewDto | null> {
+		return postsService.createPost({...newPost, blogId: id})
 	}
 }
 

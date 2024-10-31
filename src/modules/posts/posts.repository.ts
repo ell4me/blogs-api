@@ -2,6 +2,7 @@ import { PostUpdateDto, PostViewDto } from './posts.dto';
 import { postsCollection } from '../../helpers/runDb';
 import { DeleteResult, Filter, MongoError } from 'mongodb';
 import { FilteredQueries } from '../../types';
+import { BlogUpdateDto } from '../blogs/blogs.dto';
 
 export class PostsRepository {
 	public getAllPosts({
@@ -56,6 +57,12 @@ export class PostsRepository {
 
 	public getCountPosts(filter?: Filter<PostViewDto>): Promise<number> {
 		return postsCollection.countDocuments(filter ? filter : {});
+	}
+
+	public async updatePostsByBlogId(id: string, { name }: Pick<BlogUpdateDto, 'name'>): Promise<boolean> {
+		const { modifiedCount } = await postsCollection.updateMany({ blogId: id }, { $set: { blogName: name } });
+
+		return !!modifiedCount;
 	}
 }
 

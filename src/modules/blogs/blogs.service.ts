@@ -32,7 +32,17 @@ class BlogsService {
 	}
 
 	async updateBlogById(id: string, updatedBlog: BlogUpdateDto): Promise<boolean> {
-		return this.blogsRepository.updateBlogById(id, updatedBlog);
+		const blog = await this.blogsRepository.updateBlogById(id, updatedBlog);
+
+		if (!blog) {
+			return !!blog;
+		}
+
+		if(blog.name !== updatedBlog.name) {
+			await this.postsRepository.updatePostsByBlogId(id, { name: updatedBlog.name });
+		}
+
+		return !!blog;
 	}
 
 	async createBlog({ name, websiteUrl, description }: BlogCreateDto): Promise<BlogViewDto> {
@@ -66,7 +76,7 @@ class BlogsService {
 		}
 
 		const posts = await this.postsRepository.getAllPosts(filterPagination, { blogId: blog.id });
-		const postsCountByBlogId = await this.postsRepository.getCountPosts({blogId: blog.id});
+		const postsCountByBlogId = await this.postsRepository.getCountPosts({ blogId: blog.id });
 
 		return {
 			page: filterPagination.pageNumber,
@@ -78,7 +88,7 @@ class BlogsService {
 	}
 
 	async createPostByBlogId(id: string, newPost: PostCreateDto): Promise<PostViewDto | null> {
-		return postsService.createPost({...newPost, blogId: id})
+		return postsService.createPost({ ...newPost, blogId: id });
 	}
 }
 

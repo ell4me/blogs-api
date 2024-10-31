@@ -28,10 +28,8 @@ export class BlogsRepository {
 		return blogsCollection.findOne({ id }, { projection: { _id: false } });
 	}
 
-	public async updateBlogById(id: string, newBlog: BlogUpdateDto): Promise<boolean> {
-		const { modifiedCount } = await blogsCollection.updateOne({ id }, { $set: newBlog });
-
-		return modifiedCount === 1;
+	public updateBlogById(id: string, newBlog: BlogUpdateDto): Promise<BlogViewDto | null> {
+		return blogsCollection.findOneAndUpdate({ id }, { $set: newBlog }, {returnDocument: 'before'});
 	}
 
 	public async createBlog(createdBlog: BlogViewDto): Promise<BlogViewDto> {

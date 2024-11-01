@@ -6,7 +6,7 @@ import { app } from '../src/app';
 import { ItemsPaginationViewDto, ValidationErrorViewDto } from '../src/types';
 import { VALIDATION_MESSAGES } from '../src/constants';
 import { BlogViewDto, BlogCreateDto, BlogUpdateDto } from '../src/modules/blogs/blogs.dto';
-import { PostCreateByBlogIdDto } from '../src/modules/posts/posts.dto';
+import { PostCreateByBlogIdDto, PostCreateDto } from '../src/modules/posts/posts.dto';
 import { runDb } from '../src/helpers/runDb';
 import { MongoClient } from 'mongodb';
 
@@ -39,8 +39,21 @@ describe(ROUTERS_PATH.BLOGS, () => {
 		await clientDb.close();
 	});
 
-	it('GET blogs are equal an empty array', async () => {
+	it('GET blogs are equal an empty response', async () => {
 		await request(app).get(ROUTERS_PATH.BLOGS).expect(emptyResponse);
+	});
+
+	it('GET blogs should pass pagination queries to response', async () => {
+		await request(app).get(`${ROUTERS_PATH.BLOGS}?pageSize=5&pageNumber=2&sortDirection=desc&sortBy=name`).expect({
+			...emptyResponse,
+			pageSize: 5,
+			page: 2,
+		});
+	});
+
+
+	it('GET posts with incorrect blog id', async () => {
+		await request(app).get(`${ROUTERS_PATH.BLOGS}/someId/posts`).expect(HTTP_STATUSES.NOT_FOUND_404);
 	});
 
 	it('POST won`t be to create with incorrect credentials', async () => {
@@ -103,6 +116,30 @@ describe(ROUTERS_PATH.BLOGS, () => {
 			totalCount: 1,
 			items: [newBlog],
 		});
+	});
+
+	it('POST create post by blog id', async () => {
+		const { body: post } = await request(app)
+			.post(`${ROUTERS_PATH.BLOGS}/${newBlog!.id}/posts`)
+			.auth(SETTINGS.LOGIN, SETTINGS.PASSWORD)
+			.send({
+				title: 'New post',
+				content: 'content',
+				shortDescription: 'description',
+			} as PostCreateDto).expect(HTTP_STATUSES.CREATED_201);
+
+		await request(app).get(`${ROUTERS_PATH.BLOGS}/${newBlog!.id}/posts?pageSize=2`).expect({
+			pageSize: 2,
+			page: 1,
+			pagesCount: 1,
+			totalCount: 1,
+			items: [post],
+		} as ItemsPaginationViewDto);
+
+		await request(app)
+			.delete(`${ROUTERS_PATH.POSTS}/${post!.id}`)
+			.auth(SETTINGS.LOGIN, SETTINGS.PASSWORD)
+			.expect(HTTP_STATUSES.NO_CONTENT_204);
 	});
 
 	it('GET blog with incorrect id', async () => {

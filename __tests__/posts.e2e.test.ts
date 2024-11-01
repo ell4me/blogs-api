@@ -39,8 +39,16 @@ describe(ROUTERS_PATH.POSTS, () => {
 		await clientDb.close();
 	});
 
-	it('GET posts are equal an empty array', async () => {
+	it('GET posts are equal an empty response', async () => {
 		await request(app).get(ROUTERS_PATH.POSTS).expect(emptyResponse);
+	});
+
+	it('GET posts should pass pagination queries to response', async () => {
+		await request(app).get(`${ROUTERS_PATH.POSTS}/?pageSize=2&pageNumber=2&sortDirection=desc&sortBy=name`).expect({
+			...emptyResponse,
+			pageSize: 2,
+			page: 2,
+		});
 	});
 
 	it('POST won`t be to create with incorrect credentials', async () => {

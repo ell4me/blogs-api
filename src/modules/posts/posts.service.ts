@@ -1,7 +1,6 @@
-import { PostCreateByBlogIdDto, PostUpdateDto, PostViewDto } from './posts.dto';
+import { PostCreateByBlogId, PostUpdateDto, PostViewDto } from './posts.dto';
 import { postsRepository, PostsRepository } from './posts.repository';
 import { blogsRepository, BlogsRepository } from '../blogs/blogs.repository';
-import { FilteredQueries, ItemsPaginationViewDto } from '../../types';
 
 class PostsService {
 	private postsRepository: PostsRepository;
@@ -10,23 +9,6 @@ class PostsService {
 	constructor(postsRepository: PostsRepository, blogsRepository: BlogsRepository) {
 		this.postsRepository = postsRepository;
 		this.blogsRepository = blogsRepository;
-	}
-
-	async getAllPosts(filter: FilteredQueries): Promise<ItemsPaginationViewDto<PostViewDto>> {
-		const posts = await this.postsRepository.getAllPosts(filter);
-		const postsCountByFilter = await this.postsRepository.getCountPosts();
-
-		return {
-			page: filter.pageNumber,
-			pagesCount: Math.ceil(postsCountByFilter / filter.pageSize),
-			pageSize: filter.pageSize,
-			totalCount: postsCountByFilter,
-			items: posts,
-		};
-	}
-
-	async getPostById(id: string): Promise<PostViewDto | null> {
-		return await this.postsRepository.getPostById(id);
 	}
 
 	async updatePostById(id: string, updatedPost: PostUpdateDto): Promise<boolean> {
@@ -38,26 +20,23 @@ class PostsService {
 						 title,
 						 shortDescription,
 						 blogId,
-					 }: PostCreateByBlogIdDto): Promise<PostViewDto | null> {
-		const blog = await this.blogsRepository.getBlogById(blogId);
-
-		if(!blog) {
-			return null;
-		}
+						 blogName,
+					 }: PostCreateByBlogId): Promise<{ id: string }> {
+		const id = new Date().getTime().toString();
 
 		const createdPost: PostViewDto = {
-			id: new Date().getTime().toString(),
+			id,
 			title,
 			content,
 			shortDescription,
 			blogId,
-			blogName: blog!.name,
+			blogName,
 			createdAt: new Date().toISOString(),
 		};
 
 		await this.postsRepository.createPost(createdPost);
 
-		return this.postsRepository.getPostById(createdPost.id);
+		return { id };
 	}
 
 	deletePostById(id: string): Promise<boolean> {

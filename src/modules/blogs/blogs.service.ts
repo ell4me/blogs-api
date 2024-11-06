@@ -1,9 +1,6 @@
 import { blogsRepository, BlogsRepository } from './blogs.repository';
 import { postsRepository, PostsRepository } from '../posts/posts.repository';
 import { BlogCreateDto, BlogUpdateDto, BlogViewDto } from './blogs.dto';
-import { FilteredQueries, ItemsPaginationViewDto } from '../../types';
-import { PostCreateDto, PostViewDto } from '../posts/posts.dto';
-import { postsService } from '../posts/posts.service';
 
 class BlogsService {
 	private postsRepository: PostsRepository;
@@ -14,23 +11,6 @@ class BlogsService {
 		this.blogsRepository = blogsRepository;
 	}
 
-	async getAllBlogs(filter: FilteredQueries): Promise<ItemsPaginationViewDto<BlogViewDto>> {
-		const blogs = await this.blogsRepository.getAllBlogs(filter);
-		const blogsCountByFilter = await this.blogsRepository.getCountBlogsByFilter(filter.searchNameTerm);
-
-		return {
-			page: filter.pageNumber,
-			pagesCount: Math.ceil(blogsCountByFilter / filter.pageSize),
-			pageSize: filter.pageSize,
-			totalCount: blogsCountByFilter,
-			items: blogs,
-		};
-	}
-
-	async getBlogById(id: string): Promise<BlogViewDto | null> {
-		return this.blogsRepository.getBlogById(id);
-	}
-
 	async updateBlogById(id: string, updatedBlog: BlogUpdateDto): Promise<boolean> {
 		const blog = await this.blogsRepository.updateBlogById(id, updatedBlog);
 
@@ -38,16 +18,18 @@ class BlogsService {
 			return !!blog;
 		}
 
-		if(blog.name !== updatedBlog.name) {
+		if (blog.name !== updatedBlog.name) {
 			await this.postsRepository.updatePostsByBlogId(id, { name: updatedBlog.name });
 		}
 
 		return !!blog;
 	}
 
-	async createBlog({ name, websiteUrl, description }: BlogCreateDto): Promise<BlogViewDto> {
+	async createBlog({ name, websiteUrl, description }: BlogCreateDto): Promise<{ id: string }> {
+		const id = new Date().getTime().toString();
+
 		const createdBlog: BlogViewDto = {
-			id: new Date().getTime().toString(),
+			id,
 			name,
 			websiteUrl,
 			description,
@@ -55,7 +37,9 @@ class BlogsService {
 			createdAt: new Date().toISOString(),
 		};
 
-		return this.blogsRepository.createBlog(createdBlog);
+		await this.blogsRepository.createBlog(createdBlog);
+
+		return { id };
 	}
 
 	async deleteBlogById(id: string): Promise<boolean> {
@@ -66,29 +50,6 @@ class BlogsService {
 		}
 
 		return isDeleted;
-	}
-
-	async getPostsByBlogId(id: string, filterPagination: FilteredQueries): Promise<ItemsPaginationViewDto<PostViewDto> | null> {
-		const blog = await this.blogsRepository.getBlogById(id);
-
-		if (!blog) {
-			return null;
-		}
-
-		const posts = await this.postsRepository.getAllPosts(filterPagination, { blogId: blog.id });
-		const postsCountByBlogId = await this.postsRepository.getCountPosts({ blogId: blog.id });
-
-		return {
-			page: filterPagination.pageNumber,
-			pagesCount: Math.ceil(postsCountByBlogId / filterPagination.pageSize),
-			pageSize: filterPagination.pageSize,
-			totalCount: postsCountByBlogId,
-			items: posts,
-		};
-	}
-
-	async createPostByBlogId(id: string, newPost: PostCreateDto): Promise<PostViewDto | null> {
-		return postsService.createPost({ ...newPost, blogId: id });
 	}
 }
 

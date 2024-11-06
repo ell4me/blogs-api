@@ -7,5 +7,14 @@ export interface BlogViewDto {
 	isMembership: boolean;
 }
 
-export interface BlogCreateDto extends Pick<BlogViewDto, 'name' | 'description' | 'websiteUrl'> {}
-export interface BlogUpdateDto extends Pick<BlogViewDto, 'name' | 'description' | 'websiteUrl'> {}
+export interface BlogCreateDto {
+	name: string;
+	description: string;
+	websiteUrl: string;
+}
+
+export interface BlogUpdateDto {
+	name: string;
+	description: string;
+	websiteUrl: string;
+}

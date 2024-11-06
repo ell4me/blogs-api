@@ -1,6 +1,6 @@
 import { body } from 'express-validator';
 import { VALIDATION_MESSAGES } from '../../constants';
-import { blogsService } from '../../modules/blogs/blogs.service';
+import { blogsQueryRepository } from '../../modules/blogs/blogs.query-repository';
 
 export const blogIdMiddleware = body('blogId')
 	.isString()
@@ -9,9 +9,9 @@ export const blogIdMiddleware = body('blogId')
 	.notEmpty()
 	.withMessage(VALIDATION_MESSAGES.FIELD_EMPTY)
 	.custom(async blogId => {
-		const blog = await blogsService.getBlogById(blogId);
+		const blog = await blogsQueryRepository.getBlogById(blogId);
 
-		if(!blog) {
+		if (!blog) {
 			throw new Error('Blog doesn`t exist');
 		}
 	})

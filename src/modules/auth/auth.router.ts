@@ -5,12 +5,13 @@ import { AuthLoginDto } from './auth.dto';
 
 import { ReqBody } from '../../types';
 import { HTTP_STATUSES } from '../../constants';
-import { stringMiddleware } from '../../middlewares/validation';
+import { fieldsCheckErrorsMiddleware, stringMiddleware } from '../../middlewares/validation';
 
 export const authRouter = Router();
 const validationMiddlewares = [
 	stringMiddleware({ field: 'loginOrEmail' }),
 	stringMiddleware({ field: 'password' }),
+	fieldsCheckErrorsMiddleware,
 ];
 
 authRouter.post('/login', ...validationMiddlewares, async (req: ReqBody<AuthLoginDto>, res) => {

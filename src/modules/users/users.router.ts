@@ -41,13 +41,13 @@ usersRouter.post('/', ...validationMiddlewares, async (req: ReqBody<UserCreateDt
 	try {
 		const result = await usersService.createUser(req.body);
 
-		if('errorsMessages' in result) {
+		if ('errorsMessages' in result) {
 			res.status(HTTP_STATUSES.BAD_REQUEST_400).send(result.errorsMessages);
 			return;
 		}
 
 		const user = await usersQueryRepository.getUserById(result.id);
-		res.send(user!);
+		res.status(HTTP_STATUSES.CREATED_201).send(user!);
 	} catch (e) {
 		res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
 	}

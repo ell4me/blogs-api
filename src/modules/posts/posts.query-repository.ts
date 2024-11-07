@@ -1,7 +1,7 @@
 import { PostViewDto } from './posts.dto';
 import { postsCollection } from '../../helpers/runDb';
 import { Filter } from 'mongodb';
-import { FilteredQueries, ItemsPaginationViewDto } from '../../types';
+import { FilteredBlogQueries, ItemsPaginationViewDto } from '../../types';
 
 export class PostsQueryRepository {
 	public async getAllPosts({
@@ -9,7 +9,7 @@ export class PostsQueryRepository {
 								 pageNumber,
 								 sortBy,
 								 sortDirection,
-							 }: FilteredQueries, additionalFilter?: Filter<PostViewDto>): Promise<ItemsPaginationViewDto<PostViewDto>> {
+							 }: FilteredBlogQueries, additionalFilter?: Filter<PostViewDto>): Promise<ItemsPaginationViewDto<PostViewDto>> {
 		const posts = await postsCollection.find(additionalFilter ? additionalFilter : {}, { projection: { _id: false } })
 			.skip((pageNumber - 1) * pageSize)
 			.sort({ [sortBy]: sortDirection })

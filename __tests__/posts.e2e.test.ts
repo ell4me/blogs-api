@@ -73,7 +73,7 @@ describe(ROUTERS_PATH.POSTS, () => {
 				errorsMessages: [
 					{
 						field: 'title',
-						message: VALIDATION_MESSAGES.MAX_LENGTH(30),
+						message: VALIDATION_MESSAGES.LENGTH(30),
 					},
 					{
 						field: 'shortDescription',

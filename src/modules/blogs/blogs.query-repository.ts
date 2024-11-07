@@ -1,7 +1,7 @@
 import { BlogViewDto } from './blogs.dto';
 import { blogsCollection } from '../../helpers/runDb';
 import { Filter } from 'mongodb';
-import { FilteredQueries, ItemsPaginationViewDto } from '../../types';
+import { FilteredBlogQueries, ItemsPaginationViewDto } from '../../types';
 
 export class BlogsQueryRepository {
 	public async getAllBlogs({
@@ -10,7 +10,7 @@ export class BlogsQueryRepository {
 						   sortBy,
 						   sortDirection,
 						   searchNameTerm,
-					   }: FilteredQueries): Promise<ItemsPaginationViewDto<BlogViewDto>> {
+					   }: FilteredBlogQueries): Promise<ItemsPaginationViewDto<BlogViewDto>> {
 		let filter: Filter<BlogViewDto> = {};
 
 		if (searchNameTerm) {

@@ -15,12 +15,15 @@ export const SETTINGS = {
 export const COLLECTION_NAMES = {
 	BLOGS: 'blogs',
 	POSTS: 'posts',
+	USERS: 'users',
 };
 
 export const ROUTERS_PATH = {
 	BLOGS: '/blogs',
 	POSTS: '/posts',
 	TESTING: '/testing',
+	USERS: '/users',
+	AUTH: '/auth',
 };
 
 export const HTTP_STATUSES = {
@@ -40,5 +43,15 @@ export const VALIDATION_MESSAGES = {
 	AVAILABLE_RESOLUTIONS:
 		'Field must include at least one of this value and nothing else: P144, P240, P360, P480, P720, P1080, P1440, P2160',
 	FIELD_INVALID_TYPE: (type: string) => `Field must be ${type}`,
-	MAX_LENGTH: (maxLength: number) => `Field must not be more than ${maxLength} symbols`,
+	LENGTH: (maxLength?: number, minLength?: number) => {
+		 if(maxLength && minLength) {
+			 return `Field must not be more than ${maxLength} symbols and less than ${minLength}`;
+		 }
+
+		 if(maxLength) {
+			 return `Field must not be more than ${maxLength} symbols`;
+		 }
+
+		 return `Field must not be less than ${minLength} symbols`
+	},
 };

@@ -1,15 +1,15 @@
 import { Router } from 'express';
 import { blogsService } from './blogs.service';
-import { FilteredQueries, ReqBody, ReqBodyWithParams, ReqParams, ReqQuery, ReqQueryWithParams } from '../../types';
+import { FilteredBlogQueries, ReqBody, ReqBodyWithParams, ReqParams, ReqQuery, ReqQueryWithParams } from '../../types';
 import { BlogCreateDto, BlogUpdateDto } from './blogs.dto';
 import { HTTP_STATUSES } from '../../constants';
 import {
-	maxLengthStringMiddleware,
+	stringMiddleware,
 	websiteUrlValidationMiddlewares,
 	fieldsCheckErrorsMiddleware,
 } from '../../middlewares/validation';
 import { authMiddleware } from '../../middlewares/auth.middleware';
-import { queryParserMiddleware } from '../../middlewares/queryParser.middleware';
+import { queryBlogParserMiddleware } from '../../middlewares/queryParser.middleware';
 import { PostCreateDto } from '../posts/posts.dto';
 import { blogsQueryRepository } from './blogs.query-repository';
 import { postsQueryRepository } from '../posts/posts.query-repository';
@@ -19,12 +19,12 @@ export const blogsRouter = Router();
 const validationMiddlewares = [
 	authMiddleware,
 	...websiteUrlValidationMiddlewares,
-	maxLengthStringMiddleware('name', 15),
-	maxLengthStringMiddleware('description', 500),
+	stringMiddleware({ field: 'name', maxLength: 15 }),
+	stringMiddleware({ field: 'description', maxLength: 500 }),
 	fieldsCheckErrorsMiddleware,
 ];
 
-blogsRouter.get('/', queryParserMiddleware, async (req: ReqQuery<FilteredQueries>, res) => {
+blogsRouter.get('/', queryBlogParserMiddleware, async (req: ReqQuery<FilteredBlogQueries>, res) => {
 	try {
 		const blogs = await blogsQueryRepository.getAllBlogs(req.query);
 		res.send(blogs);
@@ -48,7 +48,9 @@ blogsRouter.get('/:id', async (req: ReqParams<{ id: string }>, res) => {
 	}
 });
 
-blogsRouter.get('/:id/posts', queryParserMiddleware, async (req: ReqQueryWithParams<{ id: string }, FilteredQueries>, res) => {
+blogsRouter.get('/:id/posts', queryBlogParserMiddleware, async (req: ReqQueryWithParams<{
+	id: string
+}, FilteredBlogQueries>, res) => {
 	try {
 		const blog = await blogsQueryRepository.getBlogById(req.params.id);
 
@@ -83,9 +85,9 @@ blogsRouter.post(
 blogsRouter.post(
 	'/:id/posts',
 	authMiddleware,
-	maxLengthStringMiddleware('title', 30),
-	maxLengthStringMiddleware('shortDescription', 100),
-	maxLengthStringMiddleware('content', 1000),
+	stringMiddleware({ field: 'title', maxLength: 30 }),
+	stringMiddleware({ field: 'shortDescription', maxLength: 100 }),
+	stringMiddleware({ field: 'content', maxLength: 1000 }),
 	fieldsCheckErrorsMiddleware,
 	async ({ body: newPost, params }: ReqBodyWithParams<{ id: string }, PostCreateDto>, res) => {
 		try {

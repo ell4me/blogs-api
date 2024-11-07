@@ -1,29 +1,29 @@
 import { Router } from 'express';
-import { FilteredQueries, ReqBody, ReqBodyWithParams, ReqParams, ReqQuery } from '../../types';
+import { FilteredBlogQueries, ReqBody, ReqBodyWithParams, ReqParams, ReqQuery } from '../../types';
 import { PostCreateByBlogIdDto, PostUpdateDto } from './posts.dto';
 import { HTTP_STATUSES, VALIDATION_MESSAGES } from '../../constants';
 import {
-	maxLengthStringMiddleware,
+	stringMiddleware,
 	fieldsCheckErrorsMiddleware,
 	blogIdMiddleware,
 } from '../../middlewares/validation';
 import { authMiddleware } from '../../middlewares/auth.middleware';
 import { postsService } from './posts.service';
-import { queryParserMiddleware } from '../../middlewares/queryParser.middleware';
+import { queryBlogParserMiddleware } from '../../middlewares/queryParser.middleware';
 import { postsQueryRepository } from './posts.query-repository';
 import { blogsQueryRepository } from '../blogs/blogs.query-repository';
 
 export const postsRouter = Router();
 const validationMiddlewares = [
 	authMiddleware,
-	maxLengthStringMiddleware('title', 30),
-	maxLengthStringMiddleware('shortDescription', 100),
-	maxLengthStringMiddleware('content', 1000),
+	stringMiddleware({ field: 'title', maxLength: 30 }),
+	stringMiddleware({ field: 'shortDescription', maxLength: 100 }),
+	stringMiddleware({ field: 'content', maxLength: 1000 }),
 	blogIdMiddleware,
 	fieldsCheckErrorsMiddleware,
 ];
 
-postsRouter.get('/', queryParserMiddleware, async (req: ReqQuery<FilteredQueries>, res) => {
+postsRouter.get('/', queryBlogParserMiddleware, async (req: ReqQuery<FilteredBlogQueries>, res) => {
 	try {
 		const posts = await postsQueryRepository.getAllPosts(req.query);
 		res.send(posts);

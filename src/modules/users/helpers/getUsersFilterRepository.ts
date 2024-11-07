@@ -2,7 +2,11 @@ import { Filter } from 'mongodb';
 import { UserViewDto } from '../users.dto';
 
 export const getUsersFilterRepository = (searchLoginTerm: string | null, searchEmailTerm: string | null) => {
-	let filter: Filter<UserViewDto> = { $or: [] };
+	let filter: Filter<UserViewDto> = {};
+
+	if (searchLoginTerm || searchEmailTerm) {
+		filter = { $or: [] };
+	}
 
 	if (searchLoginTerm) {
 		filter.$or?.push({
@@ -13,7 +17,7 @@ export const getUsersFilterRepository = (searchLoginTerm: string | null, searchE
 		});
 	}
 
-	if(searchEmailTerm) {
+	if (searchEmailTerm) {
 		filter.$or?.push({
 			email: {
 				$regex: searchEmailTerm,

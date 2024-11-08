@@ -44,14 +44,16 @@ export const VALIDATION_MESSAGES = {
 		'Field must include at least one of this value and nothing else: P144, P240, P360, P480, P720, P1080, P1440, P2160',
 	FIELD_INVALID_TYPE: (type: string) => `Field must be ${type}`,
 	LENGTH: (maxLength?: number, minLength?: number) => {
-		 if(maxLength && minLength) {
-			 return `Field must not be more than ${maxLength} symbols and less than ${minLength}`;
-		 }
+		if (maxLength && minLength) {
+			return `Field must not be more than ${maxLength} symbols and less than ${minLength}`;
+		}
 
-		 if(maxLength) {
-			 return `Field must not be more than ${maxLength} symbols`;
-		 }
+		if (maxLength) {
+			return `Field must not be more than ${maxLength} symbols`;
+		}
 
-		 return `Field must not be less than ${minLength} symbols`
+		return `Field must not be less than ${minLength} symbols`;
 	},
+	FIELD_IS_EXIST: (field: string) => `User with current ${field} is already exist`,
+	FIELD_IS_NOT_MATCH: (field: string) => `${field} doesn't match to pattern`,
 };

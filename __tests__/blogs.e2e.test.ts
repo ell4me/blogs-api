@@ -118,6 +118,17 @@ describe(ROUTERS_PATH.BLOGS, () => {
 		});
 	});
 
+	it(`POST should return ${HTTP_STATUSES.NOT_FOUND_404} status if blog doesn't exist`, async () => {
+		await request(app)
+			.post(`${ROUTERS_PATH.BLOGS}/randomBlogId/posts`)
+			.auth(SETTINGS.LOGIN, SETTINGS.PASSWORD)
+			.send({
+				title: 'New post',
+				content: 'content',
+				shortDescription: 'description',
+			} as PostCreateDto).expect(HTTP_STATUSES.NOT_FOUND_404);
+	});
+
 	it('POST create post by blog id', async () => {
 		const { body: post } = await request(app)
 			.post(`${ROUTERS_PATH.BLOGS}/${newBlog!.id}/posts`)

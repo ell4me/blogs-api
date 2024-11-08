@@ -3,6 +3,7 @@ import { UserCreateDto, UserModel } from './users.dto';
 import { UsersQueryRepository, usersQueryRepository } from './users.query-repository';
 import { ValidationErrorViewDto } from '../../types';
 import { hash } from 'bcrypt';
+import { VALIDATION_MESSAGES } from '../../constants';
 
 class UsersService {
 	private usersRepository: UsersRepository;
@@ -16,12 +17,12 @@ class UsersService {
 	async createUser({ login, password, email }: UserCreateDto): Promise<{ id: string } | ValidationErrorViewDto> {
 		const user = await this.usersQueryRepository.getUserByEmailOrLogin(email, login);
 
-		if(user) {
+		if (user) {
 			if (email === user.email) {
-				return {errorsMessages: [{field: 'email', message: 'User with current email is already exist'}]}
+				return { errorsMessages: [{ field: 'email', message: VALIDATION_MESSAGES.FIELD_IS_EXIST('email') }] };
 			}
 
-			return {errorsMessages: [{field: 'login', message: 'User with current login is already exist'}]}
+			return { errorsMessages: [{ field: 'login', message: VALIDATION_MESSAGES.FIELD_IS_EXIST('login') }] };
 		}
 
 		const id = new Date().getTime().toString();
@@ -40,7 +41,7 @@ class UsersService {
 		return { id };
 	}
 
-	 deleteUserById(id: string): Promise<boolean> {
+	deleteUserById(id: string): Promise<boolean> {
 		return this.usersRepository.deleteUserById(id);
 	}
 }

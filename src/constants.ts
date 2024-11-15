@@ -10,6 +10,7 @@ export const SETTINGS = {
 	DB_PASS: process.env.DB_PASS || 'password',
 	LOGIN: process.env.LOGIN || 'admin',
 	PASSWORD: process.env.PASSWORD || 'qwerty',
+	JWT_SECRET: process.env.JWT_SECRET || 'cat',
 };
 
 export const COLLECTION_NAMES = {

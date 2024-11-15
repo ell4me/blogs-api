@@ -6,11 +6,14 @@ import { VALIDATION_MESSAGES } from '../src/constants';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { MongoClient } from 'mongodb';
 import { runDb } from '../src/helpers/runDb';
-import { AuthLoginDto } from '../src/modules/auth/auth.dto';
+import { AuthLoginDto, CurrentUserViewDto } from '../src/modules/auth/auth.dto';
+import { UserViewDto } from '../src/modules/users/users.dto';
 
 describe(ROUTERS_PATH.USERS, () => {
 	let server: MongoMemoryServer;
 	let clientDb: MongoClient;
+	let newUser: UserViewDto;
+	let accessToken: string;
 
 	beforeAll(async () => {
 		server = await MongoMemoryServer.create();
@@ -39,12 +42,12 @@ describe(ROUTERS_PATH.USERS, () => {
 				errorsMessages: [
 					{
 						field: 'loginOrEmail',
-						message: VALIDATION_MESSAGES.FIELD_EMPTY
+						message: VALIDATION_MESSAGES.FIELD_EMPTY,
 					},
 					{
 						field: 'password',
-						message: VALIDATION_MESSAGES.FIELD_EMPTY
-					}
+						message: VALIDATION_MESSAGES.FIELD_EMPTY,
+					},
 				],
 			} as ValidationErrorViewDto);
 	});
@@ -56,18 +59,37 @@ describe(ROUTERS_PATH.USERS, () => {
 			password: 'qwerty',
 		};
 
-		await request(app)
+		const responseUser = await request(app)
 			.post(ROUTERS_PATH.USERS)
 			.auth(SETTINGS.LOGIN, SETTINGS.PASSWORD)
 			.send(createUserDto)
 			.expect(HTTP_STATUSES.CREATED_201);
 
-		await request(app)
+		const responseLogin = await request(app)
 			.post(`${ROUTERS_PATH.AUTH}/login`)
 			.send({
 				loginOrEmail: createUserDto.login,
 				password: createUserDto.password,
-			} as AuthLoginDto)
-			.expect(HTTP_STATUSES.NO_CONTENT_204);
+			} as AuthLoginDto);
+
+		newUser = responseUser.body;
+		accessToken = responseLogin.body.accessToken;
+
+		expect(responseLogin.body).toMatchObject({ accessToken: expect.any(String) });
+	});
+
+	it('GET should`t get info about user', async () => {
+		await request(app)
+			.get(`${ROUTERS_PATH.AUTH}/me`)
+			.auth('randomToken', { type: 'bearer' })
+			.expect(HTTP_STATUSES.UNAUTHORIZED_401);
+	});
+
+
+	it('GET should get info about user', async () => {
+		await request(app)
+			.get(`${ROUTERS_PATH.AUTH}/me`)
+			.auth(accessToken, { type: 'bearer' })
+			.expect({ userId: newUser.id, login: newUser.login, email: newUser.email } as CurrentUserViewDto);
 	});
 });

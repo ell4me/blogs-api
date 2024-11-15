@@ -6,6 +6,8 @@ import { AuthLoginDto } from './auth.dto';
 import { ReqBody } from '../../types';
 import { HTTP_STATUSES } from '../../constants';
 import { fieldsCheckErrorsMiddleware, stringMiddleware } from '../../middlewares/validation';
+import { authQueryRepository } from './auth.query-repository';
+import { authBearerMiddleware } from '../../middlewares/auth-bearer.middleware';
 
 export const authRouter = Router();
 const validationMiddlewares = [
@@ -16,13 +18,23 @@ const validationMiddlewares = [
 
 authRouter.post('/login', ...validationMiddlewares, async (req: ReqBody<AuthLoginDto>, res) => {
 	try {
-		const isAuth = await authService.login(req.body);
-		if (!isAuth) {
+		const token = await authService.login(req.body);
+		if (!token) {
 			res.sendStatus(HTTP_STATUSES.UNAUTHORIZED_401);
 			return;
 		}
 
-		res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
+		res.send(token);
+	} catch (e) {
+		res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
+	}
+});
+
+authRouter.get('/me', authBearerMiddleware, fieldsCheckErrorsMiddleware, async (req, res) => {
+	try {
+		// @ts-ignore
+		const userInfo = await authQueryRepository.getCurrentUser(req.userId!);
+		res.send(userInfo);
 	} catch (e) {
 		res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
 	}

@@ -1,5 +1,5 @@
 import { commentsCollection } from '../../helpers/runDb';
-import { ObjectId } from 'mongodb';
+import { DeleteResult, ObjectId } from 'mongodb';
 import { CommentModel, CommentUpdateDto } from './comments.dto';
 
 export class CommentsRepository {
@@ -10,7 +10,7 @@ export class CommentsRepository {
 	}
 
 	public async updateCommentById(id: string, updatedComment: CommentUpdateDto): Promise<boolean> {
-		const { modifiedCount } = await commentsCollection.updateOne({ id }, updatedComment);
+		const { modifiedCount } = await commentsCollection.updateOne({ id }, {$set: updatedComment});
 
 		return modifiedCount === 1;
 	}
@@ -19,6 +19,10 @@ export class CommentsRepository {
 		const { deletedCount } = await commentsCollection.deleteOne({ id });
 
 		return deletedCount === 1;
+	}
+
+	public deleteAllComments(): Promise<DeleteResult> {
+		return commentsCollection.deleteMany({});
 	}
 }
 

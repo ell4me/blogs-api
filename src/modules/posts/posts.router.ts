@@ -150,7 +150,7 @@ postsRouter.post('/:postId/comments', ...commentsMiddlewares, async (req: ReqBod
 
 		const comment = await commentQueryRepository.getCommentById(id);
 
-		res.send(comment!);
+		res.status(HTTP_STATUSES.CREATED_201).send(comment!);
 	} catch (e) {
 		res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
 	}

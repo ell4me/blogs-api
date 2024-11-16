@@ -78,11 +78,11 @@ describe(ROUTERS_PATH.USERS, () => {
 				errorsMessages: [
 					{
 						field: 'login',
-						message: VALIDATION_MESSAGES.LENGTH(10, 3),
+						message: VALIDATION_MESSAGES.LENGTH({ maxLength: 10, minLength: 3 }),
 					},
 					{
 						field: 'password',
-						message: VALIDATION_MESSAGES.LENGTH(20, 6),
+						message: VALIDATION_MESSAGES.LENGTH({ maxLength: 20, minLength: 6 }),
 					},
 					{ field: 'email', message: VALIDATION_MESSAGES.FIELD_IS_NOT_MATCH('email') },
 				],
@@ -132,7 +132,7 @@ describe(ROUTERS_PATH.USERS, () => {
 		await request(app)
 			.get(`${ROUTERS_PATH.USERS}?searchLoginTerm=el&searchEmailTerm=23`)
 			.auth(SETTINGS.LOGIN, SETTINGS.PASSWORD)
-			.expect({...emptyResponse, pagesCount: 1, totalCount: 1, items: [newUser]});
+			.expect({ ...emptyResponse, pagesCount: 1, totalCount: 1, items: [newUser] });
 	});
 
 	it('GET should return empty users with searchLoginTerm and searchEmailTerm', async () => {

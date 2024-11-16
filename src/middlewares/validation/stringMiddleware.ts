@@ -17,9 +17,8 @@ export const stringMiddleware = ({ field, maxLength, minLength }: {
 		return validation.isLength({
 			max: maxLength,
 			min: minLength,
-		}).withMessage(VALIDATION_MESSAGES.LENGTH(maxLength, minLength));
+		}).withMessage(VALIDATION_MESSAGES.LENGTH({ maxLength, minLength }));
 	}
 
 	return validation;
 };
-

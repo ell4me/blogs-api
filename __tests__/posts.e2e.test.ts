@@ -73,7 +73,7 @@ describe(ROUTERS_PATH.POSTS, () => {
 				errorsMessages: [
 					{
 						field: 'title',
-						message: VALIDATION_MESSAGES.LENGTH(30),
+						message: VALIDATION_MESSAGES.LENGTH({ maxLength: 30 }),
 					},
 					{
 						field: 'shortDescription',
@@ -130,7 +130,7 @@ describe(ROUTERS_PATH.POSTS, () => {
 			pagesCount: 1,
 			pageSize: 10,
 			totalCount: 1,
-			items: [newPost]
+			items: [newPost],
 		});
 	});
 

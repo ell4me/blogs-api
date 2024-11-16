@@ -9,7 +9,6 @@ export const authBearerMiddleware = (req: Request, res: Response, next: NextFunc
 	if (token) {
 		try {
 			const jwtPayload = verify(token, SETTINGS.JWT_SECRET);
-			// @ts-ignore
 			req.userId = typeof jwtPayload === 'object' ? jwtPayload.userId : '';
 			next();
 			return;

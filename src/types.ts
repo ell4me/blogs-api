@@ -22,7 +22,7 @@ export interface FilterBlogQueries extends Partial<Record<'searchNameTerm' | 'so
 export interface FilterUserQueries extends Partial<Record<'searchLoginTerm' | 'searchEmailTerm' | 'sortBy' | 'sortDirection' | 'pageNumber' | 'pageSize', string>> {
 }
 
-interface PaginationQueries {
+export interface PaginationQueries {
 	sortBy: string;
 	sortDirection: SortDirection;
 	pageNumber: number;

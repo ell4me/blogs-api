@@ -32,7 +32,6 @@ authRouter.post('/login', ...validationMiddlewares, async (req: ReqBody<AuthLogi
 
 authRouter.get('/me', authBearerMiddleware, fieldsCheckErrorsMiddleware, async (req, res) => {
 	try {
-		// @ts-ignore
 		const userInfo = await authQueryRepository.getCurrentUser(req.userId!);
 		res.send(userInfo);
 	} catch (e) {

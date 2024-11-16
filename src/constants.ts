@@ -17,6 +17,7 @@ export const COLLECTION_NAMES = {
 	BLOGS: 'blogs',
 	POSTS: 'posts',
 	USERS: 'users',
+	COMMENTS: 'comments',
 };
 
 export const ROUTERS_PATH = {
@@ -25,6 +26,7 @@ export const ROUTERS_PATH = {
 	TESTING: '/testing',
 	USERS: '/users',
 	AUTH: '/auth',
+	COMMENTS: '/comments',
 };
 
 export const HTTP_STATUSES = {
@@ -32,6 +34,7 @@ export const HTTP_STATUSES = {
 	NO_CONTENT_204: 204,
 	BAD_REQUEST_400: 400,
 	UNAUTHORIZED_401: 401,
+	FORBIDDEN_403: 403,
 	NOT_FOUND_404: 404,
 	INTERNAL_SERVER_500: 500,
 };

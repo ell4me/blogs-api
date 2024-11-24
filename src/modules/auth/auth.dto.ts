@@ -8,3 +8,11 @@ export interface CurrentUserViewDto {
 	login: string;
 	userId: string;
 }
+
+export interface RegistrationConfirmationDto {
+	code: string;
+}
+
+export interface RegistrationEmailResendingDto {
+	email: string;
+}

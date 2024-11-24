@@ -3,26 +3,20 @@ import { UserCreateDto, UserModel } from './users.dto';
 import { UsersQueryRepository, usersQueryRepository } from './users.query-repository';
 import { ValidationErrorViewDto } from '../../types';
 import { hash } from 'bcrypt';
-import { VALIDATION_MESSAGES } from '../../constants';
+import { validateUserIsExist } from '../../helpers/validateUserIsExist';
 
 class UsersService {
 	private usersRepository: UsersRepository;
-	private usersQueryRepository: UsersQueryRepository;
 
 	constructor(usersRepository: UsersRepository, usersQueryRepository: UsersQueryRepository) {
 		this.usersRepository = usersRepository;
-		this.usersQueryRepository = usersQueryRepository;
 	}
 
 	async createUser({ login, password, email }: UserCreateDto): Promise<{ id: string } | ValidationErrorViewDto> {
-		const user = await this.usersQueryRepository.getUserByEmailOrLogin(email, login);
+		const user = await this.usersRepository.getUserByEmailOrLogin(email, login);
 
 		if (user) {
-			if (email === user.email) {
-				return { errorsMessages: [{ field: 'email', message: VALIDATION_MESSAGES.FIELD_IS_EXIST('email') }] };
-			}
-
-			return { errorsMessages: [{ field: 'login', message: VALIDATION_MESSAGES.FIELD_IS_EXIST('login') }] };
+			return validateUserIsExist(user, email);
 		}
 
 		const id = new Date().getTime().toString();
@@ -34,6 +28,11 @@ class UsersService {
 			email,
 			password: passwordHash,
 			createdAt: new Date().toISOString(),
+			emailConfirmation: {
+				isConfirmed: true,
+				code: '',
+				expiration: new Date().getTime(),
+			},
 		};
 
 		await this.usersRepository.createUser(createdUser);

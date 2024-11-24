@@ -11,6 +11,9 @@ export const SETTINGS = {
 	LOGIN: process.env.LOGIN || 'admin',
 	PASSWORD: process.env.PASSWORD || 'qwerty',
 	JWT_SECRET: process.env.JWT_SECRET || 'cat',
+	SMTP_USER: process.env.SMTP_USER,
+	SMTP_PASSWORD: process.env.SMTP_PASSWORD,
+	HOST: process.env.HOST,
 };
 
 export const COLLECTION_NAMES = {
@@ -60,4 +63,8 @@ export const VALIDATION_MESSAGES = {
 	},
 	FIELD_IS_EXIST: (field: string) => `User with current ${field} is already exist`,
 	FIELD_IS_NOT_MATCH: (field: string) => `${field} doesn't match to pattern`,
+	USER_IS_NOT_FOUND: 'User with that email is not found',
+	CONFIRMATION_CODE_IS_NOT_CORRECT: 'Confirmation code is not correct',
+	CONFIRMATION_CODE_EXPIRED: 'Confirmation code has already expired',
+	USER_ALREADY_CONFIRMED: 'User has already confirmed',
 };

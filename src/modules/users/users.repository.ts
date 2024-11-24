@@ -1,4 +1,4 @@
-import { UserModel } from './users.dto';
+import { EmailConfirmation, UserModel } from './users.dto';
 import { usersCollection } from '../../helpers/runDb';
 import { DeleteResult, ObjectId } from 'mongodb';
 
@@ -27,14 +27,8 @@ export class UsersRepository {
 		return usersCollection.findOne({ 'emailConfirmation.code': code });
 	}
 
-	public async updateUserIsConfirmed(id: string): Promise<boolean> {
-		const { modifiedCount } = await usersCollection.updateOne({ id }, { $set: { 'emailConfirmation.isConfirmed': true } });
-
-		return modifiedCount === 1;
-	}
-
-	public async updateUserConfirmationCode(id: string, code: string): Promise<boolean> {
-		const { modifiedCount } = await usersCollection.updateOne({ id }, { $set: { 'emailConfirmation.code': code } });
+	public async updateUserEmailConfirmation(id: string, emailConfirmation: EmailConfirmation): Promise<boolean> {
+		const { modifiedCount } = await usersCollection.updateOne({ id }, { $set: { emailConfirmation } });
 
 		return modifiedCount === 1;
 	}

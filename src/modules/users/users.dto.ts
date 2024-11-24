@@ -20,7 +20,7 @@ export interface UserCreateDto {
 	password: string;
 }
 
-interface EmailConfirmation {
+export interface EmailConfirmation {
 	code: string;
 	expiration: number;
 	isConfirmed: boolean;

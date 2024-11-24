@@ -65,20 +65,23 @@ authRouter.get('/me', authBearerMiddleware, fieldsCheckErrorsMiddleware, async (
 	}
 });
 
-authRouter.post('/registration-confirmation', async (req: ReqBody<RegistrationConfirmationDto>, res) => {
-	try {
-		const result = await authService.registrationConfirmation(req.body.code);
+authRouter.post('/registration-confirmation',
+	stringMiddleware({ field: 'code' }),
+	fieldsCheckErrorsMiddleware,
+	async (req: ReqBody<RegistrationConfirmationDto>, res) => {
+		try {
+			const result = await authService.registrationConfirmation(req.body.code);
 
-		if (result) {
-			res.status(HTTP_STATUSES.BAD_REQUEST_400).send(result);
-			return;
+			if (result) {
+				res.status(HTTP_STATUSES.BAD_REQUEST_400).send(result);
+				return;
+			}
+
+			res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
+		} catch (e) {
+			res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
 		}
-
-		res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
-	} catch (e) {
-		res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
-	}
-});
+	});
 
 authRouter.post('/registration-email-resending',
 	stringMiddleware({ field: 'email' }),

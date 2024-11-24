@@ -87,7 +87,7 @@ class AuthService {
 			return getErrorMessage(VALIDATION_MESSAGES.CONFIRMATION_CODE_EXPIRED);
 		}
 
-		await usersRepository.updateUserIsConfirmed(user.id);
+		await usersRepository.updateUserEmailConfirmation(user.id, { ...user.emailConfirmation, isConfirmed: true });
 	}
 
 	public async registrationEmailResending(email: string): Promise<ValidationErrorViewDto | void> {
@@ -103,7 +103,11 @@ class AuthService {
 
 		const confirmationCode = uuidv4();
 
-		await this.usersRepository.updateUserConfirmationCode(user.id, confirmationCode);
+		await this.usersRepository.updateUserEmailConfirmation(user.id, {
+			code: confirmationCode,
+			expiration: add(new Date(), { hours: 1 }).getTime(),
+			isConfirmed: false,
+		});
 
 		try {
 			await this.emailAdapter.sendEmail(user.email, confirmationCode);

@@ -52,8 +52,7 @@ authRouter.post('/registration', ...validationRegistrationMiddlewares, async (re
 
 		res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
 	} catch (e) {
-		// @ts-ignore
-		res.status(HTTP_STATUSES.INTERNAL_SERVER_500).send({message: e!.message, error: JSON.stringify(e)});
+		res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
 	}
 });
 

@@ -11,6 +11,7 @@ export const SETTINGS = {
 	LOGIN: process.env.LOGIN || 'admin',
 	PASSWORD: process.env.PASSWORD || 'qwerty',
 	JWT_SECRET: process.env.JWT_SECRET || 'cat',
+	JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET || 'dog',
 	SMTP_USER: process.env.SMTP_USER,
 	SMTP_PASSWORD: process.env.SMTP_PASSWORD,
 	HOST: process.env.HOST,

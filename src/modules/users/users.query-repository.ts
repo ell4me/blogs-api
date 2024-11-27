@@ -20,6 +20,7 @@ export class UsersQueryRepository {
 				_id: false,
 				password: false,
 				emailConfirmation: false,
+				refreshToken: false,
 			},
 		})
 			.skip((pageNumber - 1) * pageSize)
@@ -44,6 +45,7 @@ export class UsersQueryRepository {
 				_id: false,
 				password: false,
 				emailConfirmation: false,
+				refreshToken: false,
 			},
 		});
 	}
@@ -54,7 +56,7 @@ export class UsersQueryRepository {
 	}
 
 	public async getCurrentUser(id: string): Promise<CurrentUserViewDto> {
-		const user = await usersCollection.findOne({ id }, { projection: { _id: false } });
+		const user = await usersCollection.findOne({ id });
 
 		return {
 			email: user!.email,

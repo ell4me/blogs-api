@@ -35,7 +35,8 @@ authRouter.post('/login', ...validationLoginMiddlewares, async (req: ReqBody<Aut
 			return;
 		}
 
-		res.send(token);
+		res.cookie('refreshToken', token.refreshToken, { httpOnly: true, secure: true });
+		res.send({ accessToken: token.accessToken });
 	} catch (e) {
 		res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
 	}
@@ -101,3 +102,49 @@ authRouter.post('/registration-email-resending',
 			res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
 		}
 	});
+
+
+authRouter.post('/refresh-token', async (req, res) => {
+	try {
+		const refreshToken = req.cookies.refreshToken;
+
+		if (!refreshToken) {
+			res.sendStatus(HTTP_STATUSES.UNAUTHORIZED_401);
+			return;
+		}
+
+		const token = await authService.refreshToken(refreshToken);
+
+		if (!token) {
+			res.sendStatus(HTTP_STATUSES.UNAUTHORIZED_401);
+			return;
+		}
+
+		res.cookie('refreshToken', token.refreshToken, { httpOnly: true, secure: true });
+		res.send({ accessToken: token.accessToken });
+	} catch (e) {
+		res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
+	}
+});
+
+authRouter.post('/logout', async (req, res) => {
+	try {
+		const refreshToken = req.cookies.refreshToken;
+
+		if (!refreshToken) {
+			res.sendStatus(HTTP_STATUSES.UNAUTHORIZED_401);
+			return;
+		}
+
+		const isLogout = await authService.logout(refreshToken);
+
+		if (!isLogout) {
+			res.sendStatus(HTTP_STATUSES.UNAUTHORIZED_401);
+			return;
+		}
+
+		res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
+	} catch (e) {
+		res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
+	}
+});

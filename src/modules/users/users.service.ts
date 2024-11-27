@@ -13,7 +13,7 @@ class UsersService {
 	}
 
 	async createUser({ login, password, email }: UserCreateDto): Promise<{ id: string } | ValidationErrorViewDto> {
-		const user = await this.usersRepository.getUserByEmailOrLogin(email, login);
+		const user = await this.usersRepository.getUserByEmailOrLogin({ email, login });
 
 		if (user) {
 			return validateUserIsExist(user, email);

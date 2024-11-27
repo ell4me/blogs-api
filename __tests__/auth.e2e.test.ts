@@ -23,6 +23,8 @@ describe(ROUTERS_PATH.USERS, () => {
 	let newUser: UserViewDto;
 	let registeredUser: UserModel | null;
 	let accessToken: string;
+	let cookiesWithRefreshToken: string;
+	let updatedCookiesWithRefreshToken: string;
 
 	beforeAll(async () => {
 		server = await MongoMemoryServer.create();
@@ -75,10 +77,58 @@ describe(ROUTERS_PATH.USERS, () => {
 				password: createUserDto.password,
 			} as AuthLoginDto);
 
+		cookiesWithRefreshToken = responseLogin.headers['set-cookie'];
 		newUser = responseUser.body;
 		accessToken = responseLogin.body.accessToken;
 
 		expect(responseLogin.body).toMatchObject({ accessToken: expect.any(String) });
+	});
+
+	it('POST don`t refresh token if it won`t be in cookies', async () => {
+		await request(app)
+			.post(`${ROUTERS_PATH.AUTH}/refresh-token`)
+			.expect(HTTP_STATUSES.UNAUTHORIZED_401);
+	});
+
+	it('POST should refresh token', async () => {
+		const response = await request(app)
+			.post(`${ROUTERS_PATH.AUTH}/refresh-token`)
+			.set('Cookie', cookiesWithRefreshToken);
+
+		accessToken = response.body.accessToken;
+		updatedCookiesWithRefreshToken = response.headers['set-cookie'];
+
+		expect(response.body).toMatchObject({ accessToken: expect.any(String) });
+	});
+
+	it('POST should`t refresh token with revoked token', async () => {
+		await request(app)
+			.post(`${ROUTERS_PATH.AUTH}/refresh-token`)
+			.set('Cookie', cookiesWithRefreshToken)
+			.expect(HTTP_STATUSES.UNAUTHORIZED_401);
+	});
+
+	it('POST don`t logout if refreshToken won`t be in cookies', async () => {
+		await request(app)
+			.post(`${ROUTERS_PATH.AUTH}/logout`)
+			.expect(HTTP_STATUSES.UNAUTHORIZED_401);
+	});
+
+	it('POST should logout', async () => {
+		await request(app)
+			.post(`${ROUTERS_PATH.AUTH}/logout`)
+			.set('Cookie', updatedCookiesWithRefreshToken)
+			.expect(HTTP_STATUSES.NO_CONTENT_204);
+
+		await request(app)
+			.post(`${ROUTERS_PATH.AUTH}/logout`)
+			.set('Cookie', updatedCookiesWithRefreshToken)
+			.expect(HTTP_STATUSES.UNAUTHORIZED_401);
+
+		await request(app)
+			.post(`${ROUTERS_PATH.AUTH}/refresh-token`)
+			.set('Cookie', updatedCookiesWithRefreshToken)
+			.expect(HTTP_STATUSES.UNAUTHORIZED_401);
 	});
 
 	it('GET should`t get info about user', async () => {
@@ -87,7 +137,6 @@ describe(ROUTERS_PATH.USERS, () => {
 			.auth('randomToken', { type: 'bearer' })
 			.expect(HTTP_STATUSES.UNAUTHORIZED_401);
 	});
-
 
 	it('GET should get info about user', async () => {
 		await request(app)
@@ -171,7 +220,7 @@ describe(ROUTERS_PATH.USERS, () => {
 			email: registrationUserDto.email,
 		});
 
-		registeredUser = await usersRepository.getUserByEmailOrLogin('test@gmail.com');
+		registeredUser = await usersRepository.getUserByEmailOrLogin({ email: 'test@gmail.com' });
 	});
 
 	it('POST shouldn`t confirm email when code is empty', async () => {

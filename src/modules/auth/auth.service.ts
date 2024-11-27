@@ -1,16 +1,16 @@
 import { compare, hash } from 'bcrypt';
-import { sign } from 'jsonwebtoken';
+import { verify } from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
 import { add } from 'date-fns/add';
 
 import { AuthLoginDto } from './auth.dto';
 import { SETTINGS, VALIDATION_MESSAGES } from '../../constants';
-import { UserCreateDto, UserModel } from '../users/users.dto';
+import { Tokens, UserCreateDto, UserModel } from '../users/users.dto';
 import { validateUserIsExist } from '../../helpers/validateUserIsExist';
 import { ValidationErrorViewDto } from '../../types';
 import { UsersRepository, usersRepository } from '../users/users.repository';
 import { EmailAdapter, emailAdapter } from '../../adapters/emailAdapter';
-
+import { getTokens } from '../users/helpers/getTokens';
 
 class AuthService {
 	private usersRepository: UsersRepository;
@@ -21,24 +21,31 @@ class AuthService {
 		this.emailAdapter = emailAdapter;
 	}
 
-	public async login({ loginOrEmail, password }: AuthLoginDto): Promise<boolean | { accessToken: string }> {
-		const user = await this.usersRepository.getUserByEmailOrLogin(loginOrEmail, loginOrEmail);
+	public async login({ loginOrEmail, password }: AuthLoginDto): Promise<Tokens | void> {
+		const user = await this.usersRepository.getUserByEmailOrLogin({ email: loginOrEmail, login: loginOrEmail });
 
 		if (!user) {
-			return false;
+			return;
 		}
 
 		const isCorrectPassword = await compare(password, user.password);
 
 		if (!isCorrectPassword) {
-			return false;
+			return;
 		}
 
-		return { accessToken: sign({ userId: user.id }, SETTINGS.JWT_SECRET) };
+		const { accessToken, refreshToken } = getTokens(user);
+
+		await this.usersRepository.updateRefreshToken(user.id, refreshToken);
+
+		return {
+			accessToken,
+			refreshToken,
+		};
 	}
 
 	public async registration({ email, password, login }: UserCreateDto): Promise<ValidationErrorViewDto | void> {
-		const user = await this.usersRepository.getUserByEmailOrLogin(email, login);
+		const user = await this.usersRepository.getUserByEmailOrLogin({ email, login });
 
 		if (user) {
 			return validateUserIsExist(user, email);
@@ -91,7 +98,7 @@ class AuthService {
 	}
 
 	public async registrationEmailResending(email: string): Promise<ValidationErrorViewDto | void> {
-		const user = await this.usersRepository.getUserByEmailOrLogin(email);
+		const user = await this.usersRepository.getUserByEmailOrLogin({ email });
 
 		if (!user) {
 			return { errorsMessages: [{ field: 'email', message: VALIDATION_MESSAGES.USER_IS_NOT_FOUND }] };
@@ -113,6 +120,62 @@ class AuthService {
 			await this.emailAdapter.sendEmail(user.email, confirmationCode);
 		} catch (e) {
 			throw new Error('Send email error');
+		}
+	}
+
+	public async refreshToken(refreshToken: string): Promise<Tokens | void> {
+		try {
+			const jwtPayload = verify(refreshToken, SETTINGS.JWT_REFRESH_SECRET);
+
+			if (typeof jwtPayload !== 'object') {
+				return;
+			}
+
+			if (jwtPayload.expiration < new Date().getTime()) {
+				console.log('Expiration is gone');
+				return;
+			}
+
+			const user = await usersRepository.getUserByEmailOrLogin({ login: jwtPayload.login });
+
+			if (!user || !user.refreshToken || refreshToken !== user.refreshToken) {
+				return;
+			}
+
+			const { accessToken, refreshToken: newRefreshToken } = getTokens(user);
+
+			await this.usersRepository.updateRefreshToken(user.id, newRefreshToken);
+
+			return {
+				refreshToken: newRefreshToken,
+				accessToken,
+			};
+		} catch (e) {
+			return;
+		}
+	}
+
+	public async logout(refreshToken: string): Promise<boolean> {
+		try {
+			const jwtPayload = verify(refreshToken, SETTINGS.JWT_REFRESH_SECRET);
+
+			if (typeof jwtPayload !== 'object') {
+				return false;
+			}
+
+			if (jwtPayload.expiration < new Date().getTime()) {
+				return false;
+			}
+
+			const user = await usersRepository.getUserByEmailOrLogin({ login: jwtPayload.login });
+
+			if (!user || !user.refreshToken || refreshToken !== user.refreshToken) {
+				return false;
+			}
+
+			return this.usersRepository.updateRefreshToken(user.id, '');
+		} catch (e) {
+			return false;
 		}
 	}
 }

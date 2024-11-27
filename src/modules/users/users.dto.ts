@@ -5,6 +5,7 @@ export interface UserModel {
 	password: string;
 	createdAt: string;
 	emailConfirmation: EmailConfirmation;
+	refreshToken?: string;
 }
 
 export interface UserViewDto {
@@ -24,4 +25,9 @@ export interface EmailConfirmation {
 	code: string;
 	expiration: number;
 	isConfirmed: boolean;
+}
+
+export interface Tokens {
+	accessToken: string,
+	refreshToken: string
 }

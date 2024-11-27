@@ -9,7 +9,12 @@ export const authBearerMiddleware = (req: Request, res: Response, next: NextFunc
 	if (token) {
 		try {
 			const jwtPayload = verify(token, SETTINGS.JWT_SECRET);
-			req.userId = typeof jwtPayload === 'object' ? jwtPayload.userId : '';
+			if(typeof jwtPayload !== 'object' || jwtPayload.expiration < new Date().getTime()) {
+				res.sendStatus(HTTP_STATUSES.UNAUTHORIZED_401);
+				return;
+			}
+
+			req.userId = jwtPayload.userId;
 			next();
 			return;
 		} catch (e) {

@@ -22,6 +22,7 @@ export const COLLECTION_NAMES = {
 	POSTS: 'posts',
 	USERS: 'users',
 	COMMENTS: 'comments',
+	RATE_LIMIT: 'rateLimit',
 };
 
 export const ROUTERS_PATH = {
@@ -40,6 +41,7 @@ export const HTTP_STATUSES = {
 	UNAUTHORIZED_401: 401,
 	FORBIDDEN_403: 403,
 	NOT_FOUND_404: 404,
+	TOO_MANY_REQUESTS_429: 429,
 	INTERNAL_SERVER_500: 500,
 };
 

@@ -12,6 +12,7 @@ export const app = express();
 
 app.use(express.json());
 app.use(cookieParser())
+app.set('trust proxy', true);
 
 app.use(ROUTERS_PATH.BLOGS, blogsRouter);
 app.use(ROUTERS_PATH.POSTS, postsRouter);

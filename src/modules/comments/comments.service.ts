@@ -9,7 +9,7 @@ class CommentsService {
 		this.commentsRepository = commentsRepository;
 	}
 
-	public async createComment({ content }: CommentCreateDto, postId: string, user: UserViewDto): Promise<{ id: string }> {
+	async createComment({ content }: CommentCreateDto, postId: string, user: UserViewDto): Promise<{ id: string }> {
 		const id = new Date().getTime().toString();
 
 		const newComment: CommentModel = {
@@ -30,11 +30,11 @@ class CommentsService {
 
 	}
 
-	public async updateCommentById(commentId: string, content: CommentUpdateDto): Promise<boolean> {
+	async updateCommentById(commentId: string, content: CommentUpdateDto): Promise<boolean> {
 		return this.commentsRepository.updateCommentById(commentId, content);
 	}
 
-	public async deleteCommentById(commentId: string): Promise<boolean> {
+	async deleteCommentById(commentId: string): Promise<boolean> {
 		return this.commentsRepository.deleteCommentById(commentId);
 	}
 }

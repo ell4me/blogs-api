@@ -37,7 +37,7 @@ commentsRouter.put('/:commentId', ...validationMiddlewares, async (req: ReqBodyW
 			return;
 		}
 
-		if (comment?.commentatorInfo.userId !== req.userId) {
+		if (comment?.commentatorInfo.userId !== req.user.id) {
 			res.sendStatus(HTTP_STATUSES.FORBIDDEN_403);
 			return;
 		}
@@ -57,7 +57,7 @@ commentsRouter.delete('/:commentId', authBearerMiddleware, fieldsCheckErrorsMidd
 			return;
 		}
 
-		if (comment?.commentatorInfo.userId !== req.userId) {
+		if (comment?.commentatorInfo.userId !== req.user.id) {
 			res.sendStatus(HTTP_STATUSES.FORBIDDEN_403);
 			return;
 		}

@@ -10,15 +10,20 @@ import { authBearerMiddleware } from '../../middlewares/auth-bearer.middleware';
 import { UserCreateDto } from '../users/users.dto';
 import { patternMiddleware, PATTERNS } from '../../middlewares/validation/pattern.middleware';
 import { usersQueryRepository } from '../users/users.query-repository';
+import { getRateLimitMiddleware } from '../../middlewares/rateLimit.middleware';
+import { refreshTokenMiddleware } from '../../middlewares/refreshToken.middleware';
 
 export const authRouter = Router();
+const rateLimitMiddleware = getRateLimitMiddleware({ limit: 5, ttlInSeconds: 10 });
 const validationLoginMiddlewares = [
+	rateLimitMiddleware,
 	stringMiddleware({ field: 'loginOrEmail' }),
 	stringMiddleware({ field: 'password' }),
 	fieldsCheckErrorsMiddleware,
 ];
 
 const validationRegistrationMiddlewares = [
+	rateLimitMiddleware,
 	stringMiddleware({ field: 'login', maxLength: 10, minLength: 3 }),
 	patternMiddleware('login', PATTERNS.LOGIN),
 	stringMiddleware({ field: 'password', maxLength: 20, minLength: 6 }),
@@ -29,7 +34,7 @@ const validationRegistrationMiddlewares = [
 
 authRouter.post('/login', ...validationLoginMiddlewares, async (req: ReqBody<AuthLoginDto>, res) => {
 	try {
-		const token = await authService.login(req.body);
+		const token = await authService.login(req.body, req.ip!, req.headers['user-agent']);
 		if (!token) {
 			res.sendStatus(HTTP_STATUSES.UNAUTHORIZED_401);
 			return;
@@ -59,7 +64,7 @@ authRouter.post('/registration', ...validationRegistrationMiddlewares, async (re
 
 authRouter.get('/me', authBearerMiddleware, fieldsCheckErrorsMiddleware, async (req, res) => {
 	try {
-		const userInfo = await usersQueryRepository.getCurrentUser(req.userId!);
+		const userInfo = await usersQueryRepository.getCurrentUser(req.user.id!);
 		res.send(userInfo);
 	} catch (e) {
 		res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
@@ -67,6 +72,7 @@ authRouter.get('/me', authBearerMiddleware, fieldsCheckErrorsMiddleware, async (
 });
 
 authRouter.post('/registration-confirmation',
+	rateLimitMiddleware,
 	stringMiddleware({ field: 'code' }),
 	fieldsCheckErrorsMiddleware,
 	async (req: ReqBody<RegistrationConfirmationDto>, res) => {
@@ -85,6 +91,7 @@ authRouter.post('/registration-confirmation',
 	});
 
 authRouter.post('/registration-email-resending',
+	rateLimitMiddleware,
 	stringMiddleware({ field: 'email' }),
 	patternMiddleware('email', PATTERNS.EMAIL),
 	fieldsCheckErrorsMiddleware,
@@ -104,16 +111,13 @@ authRouter.post('/registration-email-resending',
 	});
 
 
-authRouter.post('/refresh-token', async (req, res) => {
+authRouter.post('/refresh-token', refreshTokenMiddleware, async (req, res) => {
 	try {
-		const refreshToken = req.cookies.refreshToken;
-
-		if (!refreshToken) {
-			res.sendStatus(HTTP_STATUSES.UNAUTHORIZED_401);
-			return;
-		}
-
-		const token = await authService.refreshToken(refreshToken);
+		const token = await authService.refreshToken(req.user.deviceId!, {
+			userId: req.user.id!,
+			ip: req.ip!,
+			deviceName: req.headers['user-agent']!,
+		});
 
 		if (!token) {
 			res.sendStatus(HTTP_STATUSES.UNAUTHORIZED_401);
@@ -127,16 +131,9 @@ authRouter.post('/refresh-token', async (req, res) => {
 	}
 });
 
-authRouter.post('/logout', async (req, res) => {
+authRouter.post('/logout', refreshTokenMiddleware, async (req, res) => {
 	try {
-		const refreshToken = req.cookies.refreshToken;
-
-		if (!refreshToken) {
-			res.sendStatus(HTTP_STATUSES.UNAUTHORIZED_401);
-			return;
-		}
-
-		const isLogout = await authService.logout(refreshToken);
+		const isLogout = await authService.logout(req.user.deviceId!);
 
 		if (!isLogout) {
 			res.sendStatus(HTTP_STATUSES.UNAUTHORIZED_401);

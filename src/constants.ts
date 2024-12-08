@@ -17,12 +17,19 @@ export const SETTINGS = {
 	HOST: process.env.HOST,
 };
 
+// In seconds
+export const EXPIRATION_TOKEN = {
+	ACCESS: 10,
+	REFRESH: 20,
+}
+
 export const COLLECTION_NAMES = {
 	BLOGS: 'blogs',
 	POSTS: 'posts',
 	USERS: 'users',
 	COMMENTS: 'comments',
 	RATE_LIMIT: 'rateLimit',
+	SECURITY_DEVICES: 'securityDevices',
 };
 
 export const ROUTERS_PATH = {
@@ -32,6 +39,7 @@ export const ROUTERS_PATH = {
 	USERS: '/users',
 	AUTH: '/auth',
 	COMMENTS: '/comments',
+	SECURITY_DEVICES: '/security/devices',
 };
 
 export const HTTP_STATUSES = {

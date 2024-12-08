@@ -15,7 +15,7 @@ export class EmailAdapter {
 		});
 	}
 
-	public sendEmail(emailTo: string, emailConfirmationCode: string) {
+	sendEmail(emailTo: string, emailConfirmationCode: string) {
 		const mailOptions: Mail.Options = {
 			from: {
 				name: 'Blogs-api',

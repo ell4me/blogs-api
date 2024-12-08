@@ -5,7 +5,7 @@ import { UserViewDto } from './users.dto';
 import { CurrentUserViewDto } from '../auth/auth.dto';
 
 export class UsersQueryRepository {
-	public async getAllUsers({
+	async getAllUsers({
 								 pageSize,
 								 pageNumber,
 								 sortBy,
@@ -39,7 +39,7 @@ export class UsersQueryRepository {
 		};
 	}
 
-	public getUserById(id: string): Promise<UserViewDto | null> {
+	getUserById(id: string): Promise<UserViewDto | null> {
 		return usersCollection.findOne({ id }, {
 			projection: {
 				_id: false,
@@ -50,12 +50,12 @@ export class UsersQueryRepository {
 		});
 	}
 
-	public getCountUsersByFilter(searchLoginTerm: string | null, searchEmailTerm: string | null): Promise<number> {
+	getCountUsersByFilter(searchLoginTerm: string | null, searchEmailTerm: string | null): Promise<number> {
 		const filter = getUsersFilterRepository(searchLoginTerm, searchEmailTerm);
 		return usersCollection.countDocuments(filter);
 	}
 
-	public async getCurrentUser(id: string): Promise<CurrentUserViewDto> {
+	async getCurrentUser(id: string): Promise<CurrentUserViewDto> {
 		const user = await usersCollection.findOne({ id });
 
 		return {

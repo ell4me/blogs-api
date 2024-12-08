@@ -4,7 +4,7 @@ import { Filter } from 'mongodb';
 import { FilteredBlogQueries, ItemsPaginationViewDto } from '../../types';
 
 export class BlogsQueryRepository {
-	public async getAllBlogs({
+	async getAllBlogs({
 						   pageSize,
 						   pageNumber,
 						   sortBy,
@@ -34,11 +34,11 @@ export class BlogsQueryRepository {
 		};
 	}
 
-	public getBlogById(id: string): Promise<BlogViewDto | null> {
+	getBlogById(id: string): Promise<BlogViewDto | null> {
 		return blogsCollection.findOne({ id }, { projection: { _id: false } });
 	}
 
-	public getCountBlogsByFilter(searchNameTerm: string | null): Promise<number> {
+	getCountBlogsByFilter(searchNameTerm: string | null): Promise<number> {
 		let filter: Filter<BlogViewDto> = {};
 
 		if (searchNameTerm) {

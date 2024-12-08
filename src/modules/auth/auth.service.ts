@@ -1,28 +1,33 @@
 import { compare, hash } from 'bcrypt';
-import { verify } from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
 import { add } from 'date-fns/add';
 
 import { AuthLoginDto } from './auth.dto';
-import { SETTINGS, VALIDATION_MESSAGES } from '../../constants';
+import { VALIDATION_MESSAGES } from '../../constants';
 import { Tokens, UserCreateDto, UserModel } from '../users/users.dto';
 import { validateUserIsExist } from '../../helpers/validateUserIsExist';
 import { ValidationErrorViewDto } from '../../types';
-import { UsersRepository, usersRepository } from '../users/users.repository';
 import { EmailAdapter, emailAdapter } from '../../adapters/emailAdapter';
-import { getTokens } from '../users/helpers/getTokens';
+import { SecurityDevicesService, securityDevicesService } from '../securityDevices/securityDevices.service';
+import { SecurityDevicesUpdate } from '../securityDevices/securityDevices.dto';
+import { UsersService, usersService } from '../users/users.service';
 
 class AuthService {
-	private usersRepository: UsersRepository;
+	private usersService: UsersService;
 	private emailAdapter: EmailAdapter;
+	private securityDevicesService: SecurityDevicesService;
 
-	constructor(usersRepository: UsersRepository, emailAdapter: EmailAdapter) {
-		this.usersRepository = usersRepository;
+	constructor(usersService: UsersService, emailAdapter: EmailAdapter, securityDevicesService: SecurityDevicesService) {
+		this.usersService = usersService;
 		this.emailAdapter = emailAdapter;
+		this.securityDevicesService = securityDevicesService;
 	}
 
-	public async login({ loginOrEmail, password }: AuthLoginDto): Promise<Tokens | void> {
-		const user = await this.usersRepository.getUserByEmailOrLogin({ email: loginOrEmail, login: loginOrEmail });
+	async login({
+					loginOrEmail,
+					password,
+				}: AuthLoginDto, ip: string, deviceName?: string): Promise<Tokens | void> {
+		const user = await this.usersService.getUserByEmailOrLogin({ email: loginOrEmail, login: loginOrEmail });
 
 		if (!user) {
 			return;
@@ -34,18 +39,11 @@ class AuthService {
 			return;
 		}
 
-		const { accessToken, refreshToken } = getTokens(user);
-
-		await this.usersRepository.updateRefreshToken(user.id, refreshToken);
-
-		return {
-			accessToken,
-			refreshToken,
-		};
+		return securityDevicesService.createDeviceSession({ userId: user.id, ip, deviceName: deviceName || 'Unknown' });
 	}
 
-	public async registration({ email, password, login }: UserCreateDto): Promise<ValidationErrorViewDto | void> {
-		const user = await this.usersRepository.getUserByEmailOrLogin({ email, login });
+	async registration({ email, password, login }: UserCreateDto): Promise<ValidationErrorViewDto | void> {
+		const user = await this.usersService.getUserByEmailOrLogin({ email, login });
 
 		if (user) {
 			return validateUserIsExist(user, email);
@@ -67,18 +65,18 @@ class AuthService {
 			},
 		};
 
-		await this.usersRepository.createUser(createdUser);
+		await this.usersService.createUserRegistration(createdUser);
 
 		try {
 			await this.emailAdapter.sendEmail(createdUser.email, createdUser.emailConfirmation.code);
 		} catch (e) {
-			await this.usersRepository.deleteUserById(createdUser.id);
+			await this.usersService.deleteUserById(createdUser.id);
 			throw new Error('Send email error');
 		}
 	}
 
-	public async registrationConfirmation(confirmationCode: string): Promise<ValidationErrorViewDto | void> {
-		const user = await this.usersRepository.getUserByConfirmationCode(confirmationCode);
+	async registrationConfirmation(confirmationCode: string): Promise<ValidationErrorViewDto | void> {
+		const user = await this.usersService.getUserByConfirmationCode(confirmationCode);
 
 		const getErrorMessage = (message: string) => ({ errorsMessages: [{ field: 'code', message }] });
 
@@ -94,11 +92,11 @@ class AuthService {
 			return getErrorMessage(VALIDATION_MESSAGES.CONFIRMATION_CODE_EXPIRED);
 		}
 
-		await usersRepository.updateUserEmailConfirmation(user.id, { ...user.emailConfirmation, isConfirmed: true });
+		await usersService.updateUserEmailConfirmation(user.id, { ...user.emailConfirmation, isConfirmed: true });
 	}
 
-	public async registrationEmailResending(email: string): Promise<ValidationErrorViewDto | void> {
-		const user = await this.usersRepository.getUserByEmailOrLogin({ email });
+	async registrationEmailResending(email: string): Promise<ValidationErrorViewDto | void> {
+		const user = await this.usersService.getUserByEmailOrLogin({ email });
 
 		if (!user) {
 			return { errorsMessages: [{ field: 'email', message: VALIDATION_MESSAGES.USER_IS_NOT_FOUND }] };
@@ -110,7 +108,7 @@ class AuthService {
 
 		const confirmationCode = uuidv4();
 
-		await this.usersRepository.updateUserEmailConfirmation(user.id, {
+		await this.usersService.updateUserEmailConfirmation(user.id, {
 			code: confirmationCode,
 			expiration: add(new Date(), { hours: 1 }).getTime(),
 			isConfirmed: false,
@@ -123,61 +121,13 @@ class AuthService {
 		}
 	}
 
-	public async refreshToken(refreshToken: string): Promise<Tokens | void> {
-		try {
-			const jwtPayload = verify(refreshToken, SETTINGS.JWT_REFRESH_SECRET);
-
-			if (typeof jwtPayload !== 'object') {
-				return;
-			}
-
-			if (jwtPayload.expiration < new Date().getTime()) {
-				console.log('Expiration is gone');
-				return;
-			}
-
-			const user = await usersRepository.getUserByEmailOrLogin({ login: jwtPayload.login });
-
-			if (!user || !user.refreshToken || refreshToken !== user.refreshToken) {
-				return;
-			}
-
-			const { accessToken, refreshToken: newRefreshToken } = getTokens(user);
-
-			await this.usersRepository.updateRefreshToken(user.id, newRefreshToken);
-
-			return {
-				refreshToken: newRefreshToken,
-				accessToken,
-			};
-		} catch (e) {
-			return;
-		}
+	async refreshToken(deviceId: string, securityDevicesUpdate: SecurityDevicesUpdate): Promise<Tokens | void> {
+		return this.securityDevicesService.updateCurrentDeviceSession(deviceId, securityDevicesUpdate);
 	}
 
-	public async logout(refreshToken: string): Promise<boolean> {
-		try {
-			const jwtPayload = verify(refreshToken, SETTINGS.JWT_REFRESH_SECRET);
-
-			if (typeof jwtPayload !== 'object') {
-				return false;
-			}
-
-			if (jwtPayload.expiration < new Date().getTime()) {
-				return false;
-			}
-
-			const user = await usersRepository.getUserByEmailOrLogin({ login: jwtPayload.login });
-
-			if (!user || !user.refreshToken || refreshToken !== user.refreshToken) {
-				return false;
-			}
-
-			return this.usersRepository.updateRefreshToken(user.id, '');
-		} catch (e) {
-			return false;
-		}
+	async logout(deviceId: string): Promise<boolean> {
+		return this.securityDevicesService.deleteSessionByDeviceId(deviceId);
 	}
 }
 
-export const authService = new AuthService(usersRepository, emailAdapter);
+export const authService = new AuthService(usersService, emailAdapter, securityDevicesService);

@@ -1,15 +1,19 @@
 import { UsersRepository, usersRepository } from './users.repository';
-import { UserCreateDto, UserModel } from './users.dto';
-import { UsersQueryRepository, usersQueryRepository } from './users.query-repository';
+import { EmailConfirmation, UserCreateDto, UserModel } from './users.dto';
 import { ValidationErrorViewDto } from '../../types';
 import { hash } from 'bcrypt';
 import { validateUserIsExist } from '../../helpers/validateUserIsExist';
+import { ObjectId } from 'mongodb';
 
-class UsersService {
+export class UsersService {
 	private usersRepository: UsersRepository;
 
-	constructor(usersRepository: UsersRepository, usersQueryRepository: UsersQueryRepository) {
+	constructor(usersRepository: UsersRepository) {
 		this.usersRepository = usersRepository;
+	}
+
+	createUserRegistration(createdUser: UserModel): Promise<ObjectId> {
+		return this.usersRepository.createUser(createdUser);
 	}
 
 	async createUser({ login, password, email }: UserCreateDto): Promise<{ id: string } | ValidationErrorViewDto> {
@@ -43,6 +47,21 @@ class UsersService {
 	deleteUserById(id: string): Promise<boolean> {
 		return this.usersRepository.deleteUserById(id);
 	}
+
+	updateUserEmailConfirmation(id: string, emailConfirmation: EmailConfirmation): Promise<boolean> {
+		return this.usersRepository.updateUserEmailConfirmation(id, emailConfirmation);
+	}
+
+	getUserByEmailOrLogin(emailOrLogin: Partial<{
+		email: string,
+		login: string
+	}>): Promise<UserModel | null> {
+		return this.usersRepository.getUserByEmailOrLogin(emailOrLogin);
+	}
+
+	getUserByConfirmationCode(code: string): Promise<UserModel | null> {
+		return usersRepository.getUserByConfirmationCode(code);
+	}
 }
 
-export const usersService = new UsersService(usersRepository, usersQueryRepository);
+export const usersService = new UsersService(usersRepository);

@@ -145,7 +145,7 @@ postsRouter.post('/:postId/comments', ...commentsMiddlewares, async (req: ReqBod
 			return;
 		}
 
-		const user = await usersQueryRepository.getUserById(req.userId!);
+		const user = await usersQueryRepository.getUserById(req.user.id!);
 		const { id } = await commentsService.createComment(req.body, req.params.postId, user!);
 
 		const comment = await commentQueryRepository.getCommentById(id);

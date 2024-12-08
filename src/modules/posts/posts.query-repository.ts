@@ -4,7 +4,7 @@ import { Filter } from 'mongodb';
 import { FilteredBlogQueries, ItemsPaginationViewDto } from '../../types';
 
 export class PostsQueryRepository {
-	public async getAllPosts({
+	async getAllPosts({
 								 pageSize,
 								 pageNumber,
 								 sortBy,
@@ -26,11 +26,11 @@ export class PostsQueryRepository {
 		};
 	}
 
-	public getPostById(id: string): Promise<PostViewDto | null> {
+	getPostById(id: string): Promise<PostViewDto | null> {
 		return postsCollection.findOne({ id }, { projection: { _id: false } });
 	}
 
-	public getCountPosts(filter?: Filter<PostViewDto>): Promise<number> {
+	getCountPosts(filter?: Filter<PostViewDto>): Promise<number> {
 		return postsCollection.countDocuments(filter ? filter : {});
 	}
 }

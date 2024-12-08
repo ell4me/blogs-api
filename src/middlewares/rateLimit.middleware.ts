@@ -3,7 +3,7 @@ import { HTTP_STATUSES } from '../constants';
 import { LimitData, RateLimitModel } from '../modules/rateLimit/rateLimit.model';
 import { rateLimitService } from '../modules/rateLimit/rateLimit.service';
 
-export const rateLimitMiddleware =
+export const getRateLimitMiddleware =
 	(limitData: LimitData) => async (req: Request, res: Response, next: NextFunction) => {
 		try {
 			const { ip, baseUrl: url } = req;

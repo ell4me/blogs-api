@@ -1,15 +1,16 @@
-import { Tokens, UserModel } from '../users.dto';
+import { Tokens } from '../users.dto';
 import { sign } from 'jsonwebtoken';
+import { EXPIRATION_TOKEN, SETTINGS } from '../../../constants';
 import { addSeconds } from 'date-fns/addSeconds';
-import { SETTINGS } from '../../../constants';
 
-export const getTokens = (user: UserModel): Tokens => ({
+export const getTokens = (userId: string, deviceId: string, expirationRefreshToken: number): Tokens => ({
 	refreshToken: sign({
-		login: user.login,
-		expiration: addSeconds(new Date(), 20).getTime(),
+		userId,
+		deviceId,
+		expiration: expirationRefreshToken,
 	}, SETTINGS.JWT_REFRESH_SECRET),
 	accessToken: sign({
-		userId: user.id,
-		expiration: addSeconds(new Date(), 10).getTime(),
+		userId,
+		expiration: addSeconds(new Date(), EXPIRATION_TOKEN.ACCESS).getTime(),
 	}, SETTINGS.JWT_SECRET),
 });

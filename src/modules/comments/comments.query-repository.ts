@@ -3,7 +3,7 @@ import { CommentViewDto } from './comments.dto';
 import { ItemsPaginationViewDto, PaginationQueries } from '../../types';
 
 export class CommentsQueryRepository {
-	public async getCommentsByPostId(postId: string, {
+	async getCommentsByPostId(postId: string, {
 		sortBy,
 		sortDirection,
 		pageSize,
@@ -25,11 +25,11 @@ export class CommentsQueryRepository {
 		};
 	}
 
-	public getCommentById(id: string): Promise<CommentViewDto | null> {
+	getCommentById(id: string): Promise<CommentViewDto | null> {
 		return commentsCollection.findOne({ id }, { projection: { _id: false, postId: false } });
 	}
 
-	public getCountComments(postId: string): Promise<number> {
+	getCountComments(postId: string): Promise<number> {
 		return commentsCollection.countDocuments({ postId });
 	}
 }

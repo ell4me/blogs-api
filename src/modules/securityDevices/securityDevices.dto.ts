@@ -6,7 +6,7 @@ export interface SecurityDevicesViewDto {
 }
 
 export interface SecurityDevicesModel {
-	iat: string;
+	iat: number;
 	expiration: number;
 	deviceId: string;
 	deviceName: string;
@@ -15,7 +15,7 @@ export interface SecurityDevicesModel {
 }
 
 export interface UpdateDeviceSession {
-	iat: string;
+	iat: number;
 	expiration: number;
 	deviceName: string;
 	ip: string;

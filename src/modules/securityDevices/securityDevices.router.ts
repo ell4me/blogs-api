@@ -32,17 +32,19 @@ securityDevicesRouter.delete('/:deviceId', refreshTokenMiddleware, async (req: R
 	deviceId: string
 }>, res) => {
 	try {
-		if (req.params.deviceId !== req.user.deviceId) {
+		const currentDeviceSession = await securityDevicesQueryRepository.getDeviceSession(req.params.deviceId!)
+
+		if (!currentDeviceSession) {
+			res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
+			return;
+		}
+
+		if(currentDeviceSession.userId !== req.user.id!) {
 			res.sendStatus(HTTP_STATUSES.FORBIDDEN_403);
 			return;
 		}
 
-		const isDeleted = await securityDevicesService.deleteSessionByDeviceId(req.params.deviceId);
-
-		if (!isDeleted) {
-			res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
-			return;
-		}
+		await securityDevicesService.deleteSessionByDeviceId(req.params.deviceId);
 
 		res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
 	} catch (e) {

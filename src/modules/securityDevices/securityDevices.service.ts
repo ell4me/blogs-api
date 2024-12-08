@@ -24,7 +24,7 @@ export class SecurityDevicesService {
 		const expiration = addSeconds(currentDate, EXPIRATION_TOKEN.REFRESH).getTime();
 
 		const deviceSession: SecurityDevicesModel = {
-			iat: currentDate.toISOString(),
+			iat: currentDate.getTime(),
 			expiration,
 			deviceId,
 			userId,
@@ -34,7 +34,7 @@ export class SecurityDevicesService {
 
 		await this.securityDevicesRepository.createDeviceSession(deviceSession);
 
-		return getTokens(userId, deviceId, expiration);
+		return getTokens(userId, deviceId);
 	}
 
 	async updateCurrentDeviceSession(deviceId: string, {
@@ -46,7 +46,7 @@ export class SecurityDevicesService {
 		const expiration = addSeconds(currentDate, EXPIRATION_TOKEN.REFRESH).getTime();
 
 		const updatedSession: UpdateDeviceSession = {
-			iat: currentDate.toISOString(),
+			iat: currentDate.getTime(),
 			expiration,
 			deviceName: deviceName || 'Unknown',
 			ip,
@@ -58,7 +58,7 @@ export class SecurityDevicesService {
 			return;
 		}
 
-		return getTokens(userId, deviceId, expiration);
+		return getTokens(userId, deviceId);
 	}
 
 	async deleteSessionByDeviceId(deviceId: string): Promise<boolean> {

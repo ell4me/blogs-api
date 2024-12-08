@@ -1,4 +1,4 @@
-import { SecurityDevicesViewDto } from './securityDevices.dto';
+import { SecurityDevicesModel, SecurityDevicesViewDto } from './securityDevices.dto';
 import { securityDevicesCollection } from '../../helpers/runDb';
 
 export class SecurityDevicesQueryRepository {
@@ -10,12 +10,16 @@ export class SecurityDevicesQueryRepository {
 
 		return sessions.map(({ deviceId, iat, deviceName, ip }) => ({
 			deviceId,
-			lastActiveDate: iat,
+			lastActiveDate: new Date(iat).toISOString(),
 			title: deviceName,
 			ip,
 		}));
 	}
 
+
+	async getDeviceSession(deviceId: string): Promise<SecurityDevicesModel | null> {
+		return securityDevicesCollection.findOne({ deviceId });
+	}
 }
 
 const securityDevicesQueryRepository = new SecurityDevicesQueryRepository();

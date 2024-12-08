@@ -3,11 +3,10 @@ import { sign } from 'jsonwebtoken';
 import { EXPIRATION_TOKEN, SETTINGS } from '../../../constants';
 import { addSeconds } from 'date-fns/addSeconds';
 
-export const getTokens = (userId: string, deviceId: string, expirationRefreshToken: number): Tokens => ({
+export const getTokens = (userId: string, deviceId: string): Tokens => ({
 	refreshToken: sign({
 		userId,
 		deviceId,
-		expiration: expirationRefreshToken,
 	}, SETTINGS.JWT_REFRESH_SECRET),
 	accessToken: sign({
 		userId,

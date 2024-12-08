@@ -68,7 +68,7 @@ class AuthService {
 		await this.usersService.createUserRegistration(createdUser);
 
 		try {
-			await this.emailAdapter.sendEmail(createdUser.email, createdUser.emailConfirmation.code);
+			// await this.emailAdapter.sendEmail(createdUser.email, createdUser.emailConfirmation.code);
 		} catch (e) {
 			await this.usersService.deleteUserById(createdUser.id);
 			throw new Error('Send email error');
@@ -115,7 +115,7 @@ class AuthService {
 		});
 
 		try {
-			await this.emailAdapter.sendEmail(user.email, confirmationCode);
+			// await this.emailAdapter.sendEmail(user.email, confirmationCode);
 		} catch (e) {
 			throw new Error('Send email error');
 		}

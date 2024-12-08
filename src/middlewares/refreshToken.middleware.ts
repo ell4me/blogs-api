@@ -15,9 +15,9 @@ export const refreshTokenMiddleware = async (req: Request, res: Response, next: 
 				return;
 			}
 
-			const currentDeviceSession = await securityDevicesQueryRepository.getDeviceSession(jwtPayload.deviceId)
+			const currentDeviceSession = await securityDevicesQueryRepository.getDeviceSession(jwtPayload.deviceId);
 
-			if(!currentDeviceSession || currentDeviceSession.expiration < new Date().getTime()) {
+			if (!currentDeviceSession || jwtPayload.iat !== currentDeviceSession.iat || currentDeviceSession.expiration < new Date().getTime()) {
 				res.sendStatus(HTTP_STATUSES.UNAUTHORIZED_401);
 				return;
 			}

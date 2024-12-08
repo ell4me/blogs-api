@@ -34,7 +34,7 @@ export class SecurityDevicesService {
 
 		await this.securityDevicesRepository.createDeviceSession(deviceSession);
 
-		return getTokens(userId, deviceId);
+		return getTokens(userId, deviceId, currentDate.getTime());
 	}
 
 	async updateCurrentDeviceSession(deviceId: string, {
@@ -58,7 +58,7 @@ export class SecurityDevicesService {
 			return;
 		}
 
-		return getTokens(userId, deviceId);
+		return getTokens(userId, deviceId, currentDate.getTime());
 	}
 
 	async deleteSessionByDeviceId(deviceId: string): Promise<boolean> {

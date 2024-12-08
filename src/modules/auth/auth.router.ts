@@ -14,7 +14,7 @@ import { getRateLimitMiddleware } from '../../middlewares/rateLimit.middleware';
 import { refreshTokenMiddleware } from '../../middlewares/refreshToken.middleware';
 
 export const authRouter = Router();
-const rateLimitMiddleware = getRateLimitMiddleware({ limit: 6, ttlInSeconds: 10 });
+const rateLimitMiddleware = getRateLimitMiddleware({ limit: 5, ttlInSeconds: 10 });
 const validationLoginMiddlewares = [
 	rateLimitMiddleware,
 	stringMiddleware({ field: 'loginOrEmail' }),

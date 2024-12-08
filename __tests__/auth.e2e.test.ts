@@ -17,7 +17,7 @@ const createUserDto = {
 	password: 'qwerty',
 };
 
-describe(ROUTERS_PATH.USERS, () => {
+describe(ROUTERS_PATH.AUTH, () => {
 	let server: MongoMemoryServer;
 	let clientDb: MongoClient;
 	let newUser: UserViewDto;
@@ -371,4 +371,31 @@ describe(ROUTERS_PATH.USERS, () => {
 			})
 			.expect(HTTP_STATUSES.NO_CONTENT_204);
 	});
+
+	describe('Rate limit', () => {
+		beforeAll(async () => {
+			await request(app)
+				.delete(`${ROUTERS_PATH.TESTING}/all-data`)
+				.expect(HTTP_STATUSES.NO_CONTENT_204);
+		})
+
+		it('POST should return 429 after 5 attempts', async () => {
+			const payload: AuthLoginDto = {
+				loginOrEmail: '',
+				password: '',
+			};
+
+			for(let i = 0; i < 5; i++) {
+				await request(app)
+					.post(`${ROUTERS_PATH.AUTH}/login`)
+					.send(payload)
+					.expect(HTTP_STATUSES.BAD_REQUEST_400);
+			}
+
+			await request(app)
+				.post(`${ROUTERS_PATH.AUTH}/login`)
+				.send(payload)
+				.expect(HTTP_STATUSES.TOO_MANY_REQUESTS_429);
+		});
+	})
 });

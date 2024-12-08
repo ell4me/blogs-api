@@ -6,11 +6,11 @@ import { rateLimitService } from '../modules/rateLimit/rateLimit.service';
 export const getRateLimitMiddleware =
 	(limitData: LimitData) => async (req: Request, res: Response, next: NextFunction) => {
 		try {
-			const { ip, baseUrl: url } = req;
+			const { ip, path, baseUrl } = req;
 			const date = new Date().getTime();
 
 			const rateLimit: RateLimitModel = {
-				url,
+				url: baseUrl + path,
 				date,
 				ip: ip!,
 			};

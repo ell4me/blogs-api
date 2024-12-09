@@ -6,7 +6,12 @@ import { VALIDATION_MESSAGES } from '../src/constants';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { MongoClient } from 'mongodb';
 import { runDb } from '../src/helpers/runDb';
-import { AuthLoginDto, CurrentUserViewDto } from '../src/modules/auth/auth.dto';
+import {
+	AuthLoginDto,
+	CurrentUserViewDto,
+	RegistrationConfirmationDto,
+	RegistrationEmailResendingDto,
+} from '../src/modules/auth/auth.dto';
 import { UserCreateDto, UserModel, UserViewDto } from '../src/modules/users/users.dto';
 import { usersRepository } from '../src/modules/users/users.repository';
 import { add } from 'date-fns/add';
@@ -408,6 +413,42 @@ describe(ROUTERS_PATH.AUTH, () => {
 			for(let i = 0; i < 5; i++) {
 				await request(app)
 					.post(`${ROUTERS_PATH.AUTH}/registration`)
+					.send(payload)
+					.expect(HTTP_STATUSES.BAD_REQUEST_400);
+			}
+
+			await request(app)
+				.post(`${ROUTERS_PATH.AUTH}/registration`)
+				.send(payload)
+				.expect(HTTP_STATUSES.TOO_MANY_REQUESTS_429);
+		});
+
+		it('POST registration-confirmation should return 429 after 5 attempts', async () => {
+			const payload: RegistrationConfirmationDto = {
+				code: '',
+			};
+
+			for(let i = 0; i < 5; i++) {
+				await request(app)
+					.post(`${ROUTERS_PATH.AUTH}/registration-confirmation`)
+					.send(payload)
+					.expect(HTTP_STATUSES.BAD_REQUEST_400);
+			}
+
+			await request(app)
+				.post(`${ROUTERS_PATH.AUTH}/registration`)
+				.send(payload)
+				.expect(HTTP_STATUSES.TOO_MANY_REQUESTS_429);
+		});
+
+		it('POST registration-email-resending should return 429 after 5 attempts', async () => {
+			const payload: RegistrationEmailResendingDto = {
+				email: '',
+			};
+
+			for(let i = 0; i < 5; i++) {
+				await request(app)
+					.post(`${ROUTERS_PATH.AUTH}/registration-email-resending`)
 					.send(payload)
 					.expect(HTTP_STATUSES.BAD_REQUEST_400);
 			}

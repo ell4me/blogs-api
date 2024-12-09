@@ -8,7 +8,10 @@ import { Tokens, UserCreateDto, UserModel } from '../users/users.dto';
 import { validateUserIsExist } from '../../helpers/validateUserIsExist';
 import { ValidationErrorViewDto } from '../../types';
 import { EmailAdapter, emailAdapter } from '../../adapters/emailAdapter';
-import { SecurityDevicesService, securityDevicesService } from '../securityDevices/securityDevices.service';
+import {
+	SecurityDevicesService,
+	securityDevicesService,
+} from '../securityDevices/securityDevices.service';
 import { SecurityDevicesUpdate } from '../securityDevices/securityDevices.dto';
 import { UsersService, usersService } from '../users/users.service';
 
@@ -17,17 +20,25 @@ class AuthService {
 	private emailAdapter: EmailAdapter;
 	private securityDevicesService: SecurityDevicesService;
 
-	constructor(usersService: UsersService, emailAdapter: EmailAdapter, securityDevicesService: SecurityDevicesService) {
+	constructor(
+		usersService: UsersService,
+		emailAdapter: EmailAdapter,
+		securityDevicesService: SecurityDevicesService,
+	) {
 		this.usersService = usersService;
 		this.emailAdapter = emailAdapter;
 		this.securityDevicesService = securityDevicesService;
 	}
 
-	async login({
-					loginOrEmail,
-					password,
-				}: AuthLoginDto, ip: string, deviceName?: string): Promise<Tokens | void> {
-		const user = await this.usersService.getUserByEmailOrLogin({ email: loginOrEmail, login: loginOrEmail });
+	async login(
+		{ loginOrEmail, password }: AuthLoginDto,
+		ip: string,
+		deviceName?: string,
+	): Promise<Tokens | void> {
+		const user = await this.usersService.getUserByEmailOrLogin({
+			email: loginOrEmail,
+			login: loginOrEmail,
+		});
 
 		if (!user) {
 			return;
@@ -39,10 +50,18 @@ class AuthService {
 			return;
 		}
 
-		return securityDevicesService.createDeviceSession({ userId: user.id, ip, deviceName: deviceName || 'Unknown' });
+		return securityDevicesService.createDeviceSession({
+			userId: user.id,
+			ip,
+			deviceName: deviceName || 'Unknown',
+		});
 	}
 
-	async registration({ email, password, login }: UserCreateDto): Promise<ValidationErrorViewDto | void> {
+	async registration({
+		email,
+		password,
+		login,
+	}: UserCreateDto): Promise<ValidationErrorViewDto | void> {
 		const user = await this.usersService.getUserByEmailOrLogin({ email, login });
 
 		if (user) {
@@ -67,18 +86,19 @@ class AuthService {
 
 		await this.usersService.createUserRegistration(createdUser);
 
-		try {
-			// await this.emailAdapter.sendEmail(createdUser.email, createdUser.emailConfirmation.code);
-		} catch (e) {
-			await this.usersService.deleteUserById(createdUser.id);
-			throw new Error('Send email error');
-		}
+		this.emailAdapter
+			.sendEmail(createdUser.email, createdUser.emailConfirmation.code)
+			.catch(() => this.registrationEmailResending(email));
 	}
 
-	async registrationConfirmation(confirmationCode: string): Promise<ValidationErrorViewDto | void> {
+	async registrationConfirmation(
+		confirmationCode: string,
+	): Promise<ValidationErrorViewDto | void> {
 		const user = await this.usersService.getUserByConfirmationCode(confirmationCode);
 
-		const getErrorMessage = (message: string) => ({ errorsMessages: [{ field: 'code', message }] });
+		const getErrorMessage = (message: string) => ({
+			errorsMessages: [{ field: 'code', message }],
+		});
 
 		if (!user) {
 			return getErrorMessage(VALIDATION_MESSAGES.CONFIRMATION_CODE_IS_NOT_CORRECT);
@@ -92,18 +112,29 @@ class AuthService {
 			return getErrorMessage(VALIDATION_MESSAGES.CONFIRMATION_CODE_EXPIRED);
 		}
 
-		await usersService.updateUserEmailConfirmation(user.id, { ...user.emailConfirmation, isConfirmed: true });
+		await usersService.updateUserEmailConfirmation(user.id, {
+			...user.emailConfirmation,
+			isConfirmed: true,
+		});
 	}
 
 	async registrationEmailResending(email: string): Promise<ValidationErrorViewDto | void> {
 		const user = await this.usersService.getUserByEmailOrLogin({ email });
 
 		if (!user) {
-			return { errorsMessages: [{ field: 'email', message: VALIDATION_MESSAGES.USER_IS_NOT_FOUND }] };
+			return {
+				errorsMessages: [
+					{ field: 'email', message: VALIDATION_MESSAGES.USER_IS_NOT_FOUND },
+				],
+			};
 		}
 
 		if (user.emailConfirmation.isConfirmed) {
-			return { errorsMessages: [{ field: 'email', message: VALIDATION_MESSAGES.USER_ALREADY_CONFIRMED }] };
+			return {
+				errorsMessages: [
+					{ field: 'email', message: VALIDATION_MESSAGES.USER_ALREADY_CONFIRMED },
+				],
+			};
 		}
 
 		const confirmationCode = uuidv4();
@@ -114,15 +145,17 @@ class AuthService {
 			isConfirmed: false,
 		});
 
-		try {
-			// await this.emailAdapter.sendEmail(user.email, confirmationCode);
-		} catch (e) {
-			throw new Error('Send email error');
-		}
+		this.emailAdapter.sendEmail(user.email, confirmationCode).catch(() => console.error('Send email failed'));
 	}
 
-	async refreshToken(deviceId: string, securityDevicesUpdate: SecurityDevicesUpdate): Promise<Tokens | void> {
-		return this.securityDevicesService.updateCurrentDeviceSession(deviceId, securityDevicesUpdate);
+	async refreshToken(
+		deviceId: string,
+		securityDevicesUpdate: SecurityDevicesUpdate,
+	): Promise<Tokens | void> {
+		return this.securityDevicesService.updateCurrentDeviceSession(
+			deviceId,
+			securityDevicesUpdate,
+		);
 	}
 
 	async logout(deviceId: string): Promise<boolean> {

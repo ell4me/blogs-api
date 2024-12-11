@@ -1,6 +1,7 @@
 import { CommentsRepository, commentsRepository } from './comments.repository';
-import { CommentCreateDto, CommentModel, CommentUpdateDto } from './comments.dto';
+import { CommentCreateDto, CommentUpdateDto } from './comments.dto';
 import { UserViewDto } from '../users/users.dto';
+import { CommentCreate } from './comments.types';
 
 class CommentsService {
 	private commentsRepository: CommentsRepository;
@@ -16,7 +17,7 @@ class CommentsService {
 	): Promise<{ id: string }> {
 		const id = new Date().getTime().toString();
 
-		const newComment: CommentModel = {
+		const newComment: CommentCreate = {
 			id,
 			content,
 			postId,
@@ -24,7 +25,6 @@ class CommentsService {
 				userId: user.id,
 				userLogin: user.login,
 			},
-			createdAt: new Date().toISOString(),
 		};
 
 		await this.commentsRepository.createComment(newComment);

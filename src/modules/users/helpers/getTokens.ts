@@ -1,7 +1,7 @@
-import { Tokens } from '../users.dto';
 import { sign } from 'jsonwebtoken';
 import { EXPIRATION_TOKEN, SETTINGS } from '../../../constants';
 import { addSeconds } from 'date-fns/addSeconds';
+import { Tokens } from '../users.types';
 
 export const getTokens = (userId: string, deviceId: string, iat: number): Tokens => ({
 	refreshToken: sign(

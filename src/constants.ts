@@ -6,7 +6,6 @@ export const SETTINGS = {
 	PORT: process.env.PORT || 80,
 	DB_HOST: process.env.DB_HOST || 'mongodb://mongodb:27017',
 	DB_NAME: process.env.DB_NAME || 'blog_db',
-	DB_NAME_TEST: 'test',
 	DB_USER: process.env.DB_USER || 'root',
 	DB_PASS: process.env.DB_PASS || 'password',
 	LOGIN: process.env.LOGIN || 'admin',
@@ -24,13 +23,13 @@ export const EXPIRATION_TOKEN = {
 	REFRESH: 20,
 };
 
-export const COLLECTION_NAMES = {
-	BLOGS: 'blogs',
-	POSTS: 'posts',
-	USERS: 'users',
-	COMMENTS: 'comments',
-	RATE_LIMIT: 'rateLimit',
-	SECURITY_DEVICES: 'securityDevices',
+export const MODELS_NAMES = {
+	BLOGS: 'Blogs',
+	POSTS: 'Posts',
+	USERS: 'Users',
+	COMMENTS: 'Comments',
+	RATE_LIMIT: 'RateLimit',
+	SECURITY_DEVICES: 'SecurityDevices',
 };
 
 export const ROUTERS_PATH = {

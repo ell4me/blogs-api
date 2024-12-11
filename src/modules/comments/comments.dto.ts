@@ -1,21 +1,10 @@
-export interface CommentatorInfo {
-	userId: string;
-	userLogin: string;
-}
+import { CommentatorInfo } from './comments.types';
 
 export interface CommentViewDto {
 	id: string;
 	content: string;
 	commentatorInfo: CommentatorInfo;
-	createdAt: string;
-}
-
-export interface CommentModel {
-	id: string;
-	postId: string;
-	content: string;
-	commentatorInfo: CommentatorInfo;
-	createdAt: string;
+	createdAt: Date;
 }
 
 export interface CommentCreateDto {

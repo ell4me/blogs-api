@@ -1,15 +1,16 @@
 import { SecurityDevicesRepository, securityDevicesRepository } from './securityDevices.repository';
-import {
-	SecurityDevicesCreate,
-	SecurityDevicesModel,
-	SecurityDevicesUpdate,
-	UpdateDeviceSession,
-} from './securityDevices.dto';
+
 import { v4 as uuidv4 } from 'uuid';
 import { getTokens } from '../users/helpers/getTokens';
-import { Tokens } from '../users/users.dto';
 import { EXPIRATION_TOKEN } from '../../constants';
 import { addSeconds } from 'date-fns/addSeconds';
+import {
+	SecurityDevicesCreate,
+	SecurityDevicesUpdate,
+	UpdateDeviceSession,
+} from './securityDevices.types';
+import { SecurityDevicesDocument } from './securityDevices.model';
+import { Tokens } from '../users/users.types';
 
 export class SecurityDevicesService {
 	private securityDevicesRepository: SecurityDevicesRepository;
@@ -23,7 +24,7 @@ export class SecurityDevicesService {
 		const currentDate = new Date();
 		const expiration = addSeconds(currentDate, EXPIRATION_TOKEN.REFRESH).getTime();
 
-		const deviceSession: SecurityDevicesModel = {
+		const deviceSession: SecurityDevicesDocument = {
 			iat: currentDate.getTime(),
 			expiration,
 			deviceId,

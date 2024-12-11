@@ -1,24 +1,23 @@
-import { RateLimitModel } from './rateLimit.model';
-import { rateLimitCollection } from '../../helpers/runDb';
+import { RateLimitDocument, RateLimitModel } from './rateLimit.model';
 import { DeleteResult, ObjectId } from 'mongodb';
 
 export class RateLimitRepository {
-	getRateLimitsCount({ ip, date, url }: RateLimitModel): Promise<number> {
-		return rateLimitCollection.countDocuments({ ip, url, date: { $gte: date } });
+	getRateLimitsCount({ ip, date, url }: RateLimitDocument): Promise<number> {
+		return RateLimitModel.countDocuments({ ip, url }).where('date').gte(date).exec();
 	}
 
-	async updateRateLimit(rateLimit: RateLimitModel): Promise<ObjectId> {
-		const { insertedId } = await rateLimitCollection.insertOne(rateLimit);
+	async updateRateLimit(rateLimit: RateLimitDocument): Promise<ObjectId> {
+		const { _id } = await RateLimitModel.create(rateLimit);
 
-		return insertedId;
+		return _id;
 	}
 
-	async deleteOldRecordsByRateLimit({ ip, url, date }: RateLimitModel): Promise<DeleteResult> {
-		return rateLimitCollection.deleteMany({ ip, url, date: { $lt: date } });
+	async deleteOldRecordsByRateLimit({ ip, url, date }: RateLimitDocument): Promise<DeleteResult> {
+		return RateLimitModel.deleteMany({ ip, url }).where('date').lt(date).exec();
 	}
 
 	async deleteAllRateLimits(): Promise<DeleteResult> {
-		return rateLimitCollection.deleteMany({});
+		return RateLimitModel.deleteMany().exec();
 	}
 }
 

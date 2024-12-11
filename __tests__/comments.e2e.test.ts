@@ -4,13 +4,11 @@ import { app } from '../src/app';
 import { ItemsPaginationViewDto, ValidationErrorViewDto } from '../src/types';
 import { VALIDATION_MESSAGES } from '../src/constants';
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import { MongoClient } from 'mongodb';
-import { runDb } from '../src/helpers/runDb';
 import { AuthLoginDto } from '../src/modules/auth/auth.dto';
-import { UserViewDto } from '../src/modules/users/users.dto';
-import { CommentModel } from '../src/modules/comments/comments.dto';
 import { BlogCreateDto } from '../src/modules/blogs/blogs.dto';
 import { PostCreateByBlogIdDto, PostViewDto } from '../src/modules/posts/posts.dto';
+import { CommentCreate } from '../src/modules/comments/comments.types';
+import mongoose from 'mongoose';
 
 const emptyResponse: ItemsPaginationViewDto = {
 	page: 1,
@@ -22,23 +20,15 @@ const emptyResponse: ItemsPaginationViewDto = {
 
 describe(ROUTERS_PATH.COMMENTS, () => {
 	let server: MongoMemoryServer;
-	let clientDb: MongoClient;
-
 	let accessToken: string;
 	let accessAnotherToken: string;
-	let currentUser: UserViewDto;
 	let post: PostViewDto;
-	let comment: CommentModel;
+	let comment: CommentCreate;
 
 	beforeAll(async () => {
 		server = await MongoMemoryServer.create();
 		const uri = server.getUri();
-		clientDb = new MongoClient(uri);
-
-		await runDb(clientDb);
-		await request(app)
-			.delete(`${ROUTERS_PATH.TESTING}/all-data`)
-			.expect(HTTP_STATUSES.NO_CONTENT_204);
+		await mongoose.connect(uri);
 
 		const createUserDto = {
 			login: 'ell4me',
@@ -58,7 +48,7 @@ describe(ROUTERS_PATH.COMMENTS, () => {
 			description: 'Some desc',
 		};
 
-		const responseUser = await request(app)
+		await request(app)
 			.post(ROUTERS_PATH.USERS)
 			.auth(SETTINGS.LOGIN, SETTINGS.PASSWORD)
 			.send(createUserDto)
@@ -104,14 +94,14 @@ describe(ROUTERS_PATH.COMMENTS, () => {
 			.expect(HTTP_STATUSES.CREATED_201);
 
 		post = responsePost.body;
-		currentUser = responseUser.body;
 		accessToken = responseLogin.body.accessToken;
 		accessAnotherToken = responseAnotherLogin.body.accessToken;
 	});
 
 	afterAll(async () => {
+		await mongoose.connection.dropDatabase();
+		await mongoose.connection.close();
 		await server.stop();
-		await clientDb.close();
 	});
 
 	it('GET comments not found by wrond post id', async () => {

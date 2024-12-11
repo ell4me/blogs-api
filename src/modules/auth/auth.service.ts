@@ -4,7 +4,7 @@ import { add } from 'date-fns/add';
 
 import { AuthLoginDto } from './auth.dto';
 import { VALIDATION_MESSAGES } from '../../constants';
-import { Tokens, UserCreateDto, UserModel } from '../users/users.dto';
+import { UserCreateDto } from '../users/users.dto';
 import { validateUserIsExist } from '../../helpers/validateUserIsExist';
 import { ValidationErrorViewDto } from '../../types';
 import { EmailAdapter, emailAdapter } from '../../adapters/emailAdapter';
@@ -12,8 +12,9 @@ import {
 	SecurityDevicesService,
 	securityDevicesService,
 } from '../securityDevices/securityDevices.service';
-import { SecurityDevicesUpdate } from '../securityDevices/securityDevices.dto';
 import { UsersService, usersService } from '../users/users.service';
+import { SecurityDevicesUpdate } from '../securityDevices/securityDevices.types';
+import { Tokens, UserCreate } from '../users/users.types';
 
 class AuthService {
 	private usersService: UsersService;
@@ -71,12 +72,11 @@ class AuthService {
 		const id = new Date().getTime().toString();
 		const passwordHash = await hash(password, 10);
 
-		const createdUser: UserModel = {
+		const createdUser: UserCreate = {
 			id,
 			login,
 			email,
 			password: passwordHash,
-			createdAt: new Date().toISOString(),
 			emailConfirmation: {
 				code: uuidv4(),
 				expiration: add(new Date(), { hours: 1 }).getTime(),

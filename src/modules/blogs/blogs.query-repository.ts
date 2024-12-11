@@ -1,7 +1,6 @@
 import { BlogViewDto } from './blogs.dto';
-import { blogsCollection } from '../../helpers/runDb';
-import { Filter } from 'mongodb';
 import { FilteredBlogQueries, ItemsPaginationViewDto } from '../../types';
+import { BlogsModel } from './blogs.model';
 
 export class BlogsQueryRepository {
 	async getAllBlogs({
@@ -11,18 +10,17 @@ export class BlogsQueryRepository {
 		sortDirection,
 		searchNameTerm,
 	}: FilteredBlogQueries): Promise<ItemsPaginationViewDto<BlogViewDto>> {
-		let filter: Filter<BlogViewDto> = {};
+		const blogsQuery = BlogsModel.find();
 
 		if (searchNameTerm) {
-			filter = { name: new RegExp(searchNameTerm, 'i') };
+			blogsQuery.where('name').regex(new RegExp(searchNameTerm, 'i'));
 		}
 
-		const blogs = await blogsCollection
-			.find(filter, { projection: { _id: false } })
+		const blogs = await blogsQuery
 			.skip((pageNumber - 1) * pageSize)
 			.sort({ [sortBy]: sortDirection })
 			.limit(pageSize)
-			.toArray();
+			.select('-_id -__v -updatedAt');
 
 		const totalCount = await this.getCountBlogsByFilter(searchNameTerm);
 
@@ -36,17 +34,17 @@ export class BlogsQueryRepository {
 	}
 
 	getBlogById(id: string): Promise<BlogViewDto | null> {
-		return blogsCollection.findOne({ id }, { projection: { _id: false } });
+		return BlogsModel.findOne({ id }).select('-_id -__v -updatedAt').exec();
 	}
 
 	getCountBlogsByFilter(searchNameTerm: string | null): Promise<number> {
-		let filter: Filter<BlogViewDto> = {};
+		const blogsCountQuery = BlogsModel.countDocuments();
 
 		if (searchNameTerm) {
-			filter = { name: new RegExp(searchNameTerm, 'i') };
+			blogsCountQuery.where('name').regex(new RegExp(searchNameTerm, 'i'));
 		}
 
-		return blogsCollection.countDocuments(filter);
+		return blogsCountQuery.exec();
 	}
 }
 

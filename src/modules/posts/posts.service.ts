@@ -1,14 +1,10 @@
-import { PostCreateByBlogId, PostUpdateDto, PostViewDto } from './posts.dto';
+import { PostCreateByBlogId, PostUpdateDto } from './posts.dto';
 import { postsRepository, PostsRepository } from './posts.repository';
-import { blogsRepository, BlogsRepository } from '../blogs/blogs.repository';
+import { PostCreate } from './posts.types';
 
 class PostsService {
-	private postsRepository: PostsRepository;
-	private blogsRepository: BlogsRepository;
-
-	constructor(postsRepository: PostsRepository, blogsRepository: BlogsRepository) {
+	constructor(private readonly postsRepository: PostsRepository) {
 		this.postsRepository = postsRepository;
-		this.blogsRepository = blogsRepository;
 	}
 
 	async updatePostById(id: string, updatedPost: PostUpdateDto): Promise<boolean> {
@@ -24,14 +20,13 @@ class PostsService {
 	}: PostCreateByBlogId): Promise<{ id: string }> {
 		const id = new Date().getTime().toString();
 
-		const createdPost: PostViewDto = {
+		const createdPost: PostCreate = {
 			id,
 			title,
 			content,
 			shortDescription,
 			blogId,
 			blogName,
-			createdAt: new Date().toISOString(),
 		};
 
 		await this.postsRepository.createPost(createdPost);
@@ -44,4 +39,4 @@ class PostsService {
 	}
 }
 
-export const postsService = new PostsService(postsRepository, blogsRepository);
+export const postsService = new PostsService(postsRepository);

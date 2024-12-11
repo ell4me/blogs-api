@@ -1,44 +1,42 @@
-import { PostUpdateDto, PostViewDto } from './posts.dto';
-import { postsCollection } from '../../helpers/runDb';
+import { PostUpdateDto } from './posts.dto';
 import { DeleteResult, ObjectId } from 'mongodb';
 import { BlogUpdateDto } from '../blogs/blogs.dto';
+import { PostsModel } from './posts.model';
+import { PostCreate } from './posts.types';
 
 export class PostsRepository {
 	async deleteAllPostsByBlogId(blogId: string): Promise<boolean> {
-		const result = await postsCollection.deleteMany({ blogId });
+		const result = await PostsModel.deleteMany({ blogId });
 
-		return !!result.deletedCount;
+		return !!result;
 	}
 
 	async updatePostById(id: string, newPost: PostUpdateDto): Promise<boolean> {
-		const { modifiedCount } = await postsCollection.updateOne({ id }, { $set: newPost });
+		const result = await PostsModel.findOneAndUpdate({ id }, newPost);
 
-		return modifiedCount === 1;
+		return !!result;
 	}
 
-	async createPost(createdPost: PostViewDto): Promise<ObjectId> {
-		const { insertedId } = await postsCollection.insertOne(createdPost);
+	async createPost(createdPost: PostCreate): Promise<ObjectId> {
+		const { _id } = await PostsModel.create(createdPost);
 
-		return insertedId;
+		return _id;
 	}
 
 	async deletePostById(id: string): Promise<boolean> {
-		const { deletedCount } = await postsCollection.deleteOne({ id });
+		const result = await PostsModel.findOneAndDelete({ id });
 
-		return deletedCount === 1;
+		return !!result;
 	}
 
 	deleteAllPosts(): Promise<DeleteResult> {
-		return postsCollection.deleteMany({});
+		return PostsModel.deleteMany().exec();
 	}
 
 	async updatePostsByBlogId(id: string, { name }: Pick<BlogUpdateDto, 'name'>): Promise<boolean> {
-		const { modifiedCount } = await postsCollection.updateMany(
-			{ blogId: id },
-			{ $set: { blogName: name } },
-		);
+		const result = await PostsModel.findOneAndUpdate({ blogId: id }, { blogName: name });
 
-		return !!modifiedCount;
+		return !!result;
 	}
 }
 

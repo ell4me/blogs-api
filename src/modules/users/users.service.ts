@@ -1,9 +1,11 @@
 import { UsersRepository, usersRepository } from './users.repository';
-import { EmailConfirmation, UserCreateDto, UserModel } from './users.dto';
 import { ValidationErrorViewDto } from '../../types';
 import { hash } from 'bcrypt';
 import { validateUserIsExist } from '../../helpers/validateUserIsExist';
 import { ObjectId } from 'mongodb';
+import { EmailConfirmation, UserCreate } from './users.types';
+import { UserCreateDto } from './users.dto';
+import { UserDocument } from './users.model';
 
 export class UsersService {
 	private usersRepository: UsersRepository;
@@ -12,7 +14,7 @@ export class UsersService {
 		this.usersRepository = usersRepository;
 	}
 
-	createUserRegistration(createdUser: UserModel): Promise<ObjectId> {
+	createUserRegistration(createdUser: UserCreate): Promise<ObjectId> {
 		return this.usersRepository.createUser(createdUser);
 	}
 
@@ -30,12 +32,11 @@ export class UsersService {
 		const id = new Date().getTime().toString();
 		const passwordHash = await hash(password, 10);
 
-		const createdUser: UserModel = {
+		const createdUser: UserCreate = {
 			id,
 			login,
 			email,
 			password: passwordHash,
-			createdAt: new Date().toISOString(),
 			emailConfirmation: {
 				isConfirmed: true,
 				code: '',
@@ -64,11 +65,11 @@ export class UsersService {
 			email: string;
 			login: string;
 		}>,
-	): Promise<UserModel | null> {
+	): Promise<UserDocument | null> {
 		return this.usersRepository.getUserByEmailOrLogin(emailOrLogin);
 	}
 
-	getUserByConfirmationCode(code: string): Promise<UserModel | null> {
+	getUserByConfirmationCode(code: string): Promise<UserDocument | null> {
 		return usersRepository.getUserByConfirmationCode(code);
 	}
 }

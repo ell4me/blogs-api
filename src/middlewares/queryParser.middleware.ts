@@ -9,7 +9,7 @@ import {
 
 export const queryBlogParserMiddleware = (
 	req: ReqQuery<FilterBlogQueries | FilteredBlogQueries>,
-	res: Response,
+	_res: Response,
 	next: NextFunction,
 ) => {
 	const { searchNameTerm, sortBy, sortDirection, pageSize, pageNumber } =
@@ -29,7 +29,7 @@ export const queryBlogParserMiddleware = (
 
 export const queryUserParserMiddleware = (
 	req: ReqQuery<FilterUserQueries | FilteredUserQueries>,
-	res: Response,
+	_res: Response,
 	next: NextFunction,
 ) => {
 	const { searchLoginTerm, searchEmailTerm, sortBy, sortDirection, pageSize, pageNumber } =

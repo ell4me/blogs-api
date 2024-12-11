@@ -1,30 +1,27 @@
 import { BlogUpdateDto, BlogViewDto } from './blogs.dto';
-import { blogsCollection } from '../../helpers/runDb';
 import { DeleteResult, ObjectId } from 'mongodb';
+import { BlogsModel } from './blogs.model';
+import { BlogCreate } from './blogs.types';
 
 export class BlogsRepository {
 	updateBlogById(id: string, newBlog: BlogUpdateDto): Promise<BlogViewDto | null> {
-		return blogsCollection.findOneAndUpdate(
-			{ id },
-			{ $set: newBlog },
-			{ returnDocument: 'before' },
-		);
+		return BlogsModel.findOneAndUpdate({ id }, newBlog, { returnDocument: 'before' }).exec();
 	}
 
-	async createBlog(createdBlog: BlogViewDto): Promise<ObjectId> {
-		const { insertedId } = await blogsCollection.insertOne(createdBlog);
+	async createBlog(createdBlog: BlogCreate): Promise<ObjectId> {
+		const { _id } = await BlogsModel.create(createdBlog);
 
-		return insertedId;
+		return _id;
 	}
 
 	async deleteBlogById(id: string): Promise<boolean> {
-		const { deletedCount } = await blogsCollection.deleteOne({ id });
+		const result = await BlogsModel.findOneAndDelete({ id });
 
-		return deletedCount === 1;
+		return !!result;
 	}
 
 	deleteAllBlogs(): Promise<DeleteResult> {
-		return blogsCollection.deleteMany({});
+		return BlogsModel.deleteMany().exec();
 	}
 }
 

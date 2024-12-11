@@ -1,5 +1,6 @@
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import request from 'supertest';
+import mongoose from 'mongoose';
 
 import { HTTP_STATUSES, ROUTERS_PATH, SETTINGS } from '../src/constants';
 import { app } from '../src/app';
@@ -7,8 +8,6 @@ import { ItemsPaginationViewDto, ValidationErrorViewDto } from '../src/types';
 import { VALIDATION_MESSAGES } from '../src/constants';
 import { BlogViewDto, BlogCreateDto, BlogUpdateDto } from '../src/modules/blogs/blogs.dto';
 import { PostCreateByBlogIdDto, PostCreateDto } from '../src/modules/posts/posts.dto';
-import { runDb } from '../src/helpers/runDb';
-import { MongoClient } from 'mongodb';
 
 const emptyResponse: ItemsPaginationViewDto = {
 	page: 1,
@@ -19,24 +18,19 @@ const emptyResponse: ItemsPaginationViewDto = {
 };
 
 describe(ROUTERS_PATH.BLOGS, () => {
-	let newBlog: BlogViewDto | null = null;
 	let server: MongoMemoryServer;
-	let clientDb: MongoClient;
+	let newBlog: BlogViewDto | null = null;
 
 	beforeAll(async () => {
 		server = await MongoMemoryServer.create();
 		const uri = server.getUri();
-		clientDb = new MongoClient(uri);
-
-		await runDb(clientDb);
-		await request(app)
-			.delete(`${ROUTERS_PATH.TESTING}/all-data`)
-			.expect(HTTP_STATUSES.NO_CONTENT_204);
+		await mongoose.connect(uri);
 	});
 
 	afterAll(async () => {
+		await mongoose.connection.dropDatabase();
+		await mongoose.connection.close();
 		await server.stop();
-		await clientDb.close();
 	});
 
 	it('GET blogs are equal an empty response', async () => {

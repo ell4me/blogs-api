@@ -6,8 +6,7 @@ import { VALIDATION_MESSAGES } from '../src/constants';
 import { PostCreateByBlogIdDto, PostUpdateDto, PostViewDto } from '../src/modules/posts/posts.dto';
 import { BlogCreateDto, BlogUpdateDto, BlogViewDto } from '../src/modules/blogs/blogs.dto';
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import { MongoClient } from 'mongodb';
-import { runDb } from '../src/helpers/runDb';
+import mongoose from 'mongoose';
 
 const emptyResponse: ItemsPaginationViewDto = {
 	page: 1,
@@ -21,22 +20,17 @@ describe(ROUTERS_PATH.POSTS, () => {
 	let newPost: PostViewDto | null = null;
 	let newBlog: BlogViewDto | null = null;
 	let server: MongoMemoryServer;
-	let clientDb: MongoClient;
 
 	beforeAll(async () => {
 		server = await MongoMemoryServer.create();
 		const uri = server.getUri();
-		clientDb = new MongoClient(uri);
-
-		await runDb(clientDb);
-		await request(app)
-			.delete(`${ROUTERS_PATH.TESTING}/all-data`)
-			.expect(HTTP_STATUSES.NO_CONTENT_204);
+		await mongoose.connect(uri);
 	});
 
 	afterAll(async () => {
+		await mongoose.connection.dropDatabase();
+		await mongoose.connection.close();
 		await server.stop();
-		await clientDb.close();
 	});
 
 	it('GET posts are equal an empty response', async () => {

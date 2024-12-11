@@ -1,41 +1,39 @@
-import { SecurityDevicesModel, UpdateDeviceSession } from './securityDevices.dto';
-import { securityDevicesCollection } from '../../helpers/runDb';
 import { DeleteResult, ObjectId } from 'mongodb';
 
-export class SecurityDevicesRepository {
-	async createDeviceSession(session: SecurityDevicesModel): Promise<ObjectId> {
-		const { insertedId } = await securityDevicesCollection.insertOne(session);
+import { SecurityDevicesDocument, SecurityDevicesModel } from './securityDevices.model';
+import { UpdateDeviceSession } from './securityDevices.types';
 
-		return insertedId;
+export class SecurityDevicesRepository {
+	async createDeviceSession(session: SecurityDevicesDocument): Promise<ObjectId> {
+		const { _id } = await SecurityDevicesModel.create(session);
+
+		return _id;
 	}
 
 	async updateCurrentDeviceSession(
 		deviceId: string,
 		updatedSession: UpdateDeviceSession,
 	): Promise<boolean> {
-		const { modifiedCount } = await securityDevicesCollection.updateOne(
-			{ deviceId },
-			{ $set: updatedSession },
-		);
+		const result = await SecurityDevicesModel.findOneAndUpdate({ deviceId }, updatedSession);
 
-		return modifiedCount === 1;
+		return !!result;
 	}
 
 	async deleteAllDeviceSessionsExceptCurrent(
 		userId: string,
 		deviceId: string,
 	): Promise<DeleteResult> {
-		return securityDevicesCollection.deleteMany({ userId, deviceId: { $nin: [deviceId] } });
+		return SecurityDevicesModel.deleteMany({ userId }).where('deviceId').nin([deviceId]).exec();
 	}
 
 	async deleteSessionByDeviceId(deviceId: string): Promise<boolean> {
-		const { deletedCount } = await securityDevicesCollection.deleteOne({ deviceId });
+		const result = await SecurityDevicesModel.findOneAndDelete({ deviceId }).exec();
 
-		return deletedCount === 1;
+		return !!result;
 	}
 
 	deleteAllSessions(): Promise<DeleteResult> {
-		return securityDevicesCollection.deleteMany({});
+		return SecurityDevicesModel.deleteMany().exec();
 	}
 }
 

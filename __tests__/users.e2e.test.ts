@@ -4,9 +4,8 @@ import { app } from '../src/app';
 import { ItemsPaginationViewDto, ValidationErrorViewDto } from '../src/types';
 import { VALIDATION_MESSAGES } from '../src/constants';
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import { MongoClient } from 'mongodb';
-import { runDb } from '../src/helpers/runDb';
 import { UserViewDto } from '../src/modules/users/users.dto';
+import mongoose from 'mongoose';
 
 const emptyResponse: ItemsPaginationViewDto = {
 	page: 1,
@@ -19,22 +18,17 @@ const emptyResponse: ItemsPaginationViewDto = {
 describe(ROUTERS_PATH.USERS, () => {
 	let newUser: UserViewDto | null = null;
 	let server: MongoMemoryServer;
-	let clientDb: MongoClient;
 
 	beforeAll(async () => {
 		server = await MongoMemoryServer.create();
 		const uri = server.getUri();
-		clientDb = new MongoClient(uri);
-
-		await runDb(clientDb);
-		await request(app)
-			.delete(`${ROUTERS_PATH.TESTING}/all-data`)
-			.expect(HTTP_STATUSES.NO_CONTENT_204);
+		await mongoose.connect(uri);
 	});
 
 	afterAll(async () => {
+		await mongoose.connection.dropDatabase();
+		await mongoose.connection.close();
 		await server.stop();
-		await clientDb.close();
 	});
 
 	it('GET users are equal an empty response', async () => {

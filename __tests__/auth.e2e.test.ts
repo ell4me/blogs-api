@@ -4,17 +4,17 @@ import { app } from '../src/app';
 import { ValidationErrorViewDto } from '../src/types';
 import { VALIDATION_MESSAGES } from '../src/constants';
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import { MongoClient } from 'mongodb';
-import { runDb } from '../src/helpers/runDb';
 import {
 	AuthLoginDto,
 	CurrentUserViewDto,
 	RegistrationConfirmationDto,
 	RegistrationEmailResendingDto,
 } from '../src/modules/auth/auth.dto';
-import { UserCreateDto, UserModel, UserViewDto } from '../src/modules/users/users.dto';
+import { UserCreateDto, UserViewDto } from '../src/modules/users/users.dto';
 import { usersRepository } from '../src/modules/users/users.repository';
 import { add } from 'date-fns/add';
+import mongoose from 'mongoose';
+import { UserDocument } from '../src/modules/users/users.model';
 
 const createUserDto = {
 	login: 'ell4me',
@@ -24,9 +24,8 @@ const createUserDto = {
 
 describe(ROUTERS_PATH.AUTH, () => {
 	let server: MongoMemoryServer;
-	let clientDb: MongoClient;
 	let newUser: UserViewDto;
-	let registeredUser: UserModel | null;
+	let registeredUser: UserDocument | null;
 	let accessToken: string;
 	let cookiesWithRefreshToken: string;
 	let updatedCookiesWithRefreshToken: string;
@@ -34,17 +33,13 @@ describe(ROUTERS_PATH.AUTH, () => {
 	beforeAll(async () => {
 		server = await MongoMemoryServer.create();
 		const uri = server.getUri();
-		clientDb = new MongoClient(uri);
-
-		await runDb(clientDb);
-		await request(app)
-			.delete(`${ROUTERS_PATH.TESTING}/all-data`)
-			.expect(HTTP_STATUSES.NO_CONTENT_204);
+		await mongoose.connect(uri);
 	});
 
 	afterAll(async () => {
+		await mongoose.connection.dropDatabase();
+		await mongoose.connection.close();
 		await server.stop();
-		await clientDb.close();
 	});
 
 	it('POST should return errorsMessages with incorrect data', async () => {

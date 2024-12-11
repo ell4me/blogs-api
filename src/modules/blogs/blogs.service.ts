@@ -1,6 +1,7 @@
 import { blogsRepository, BlogsRepository } from './blogs.repository';
 import { postsRepository, PostsRepository } from '../posts/posts.repository';
-import { BlogCreateDto, BlogUpdateDto, BlogViewDto } from './blogs.dto';
+import { BlogCreateDto, BlogUpdateDto } from './blogs.dto';
+import { BlogCreate } from './blogs.types';
 
 class BlogsService {
 	private postsRepository: PostsRepository;
@@ -28,13 +29,12 @@ class BlogsService {
 	async createBlog({ name, websiteUrl, description }: BlogCreateDto): Promise<{ id: string }> {
 		const id = new Date().getTime().toString();
 
-		const createdBlog: BlogViewDto = {
+		const createdBlog: BlogCreate = {
 			id,
 			name,
 			websiteUrl,
 			description,
 			isMembership: false,
-			createdAt: new Date().toISOString(),
 		};
 
 		await this.blogsRepository.createBlog(createdBlog);

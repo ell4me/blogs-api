@@ -1,7 +1,8 @@
 import { NextFunction, Response, Request } from 'express';
 import { HTTP_STATUSES } from '../constants';
-import { LimitData, RateLimitModel } from '../modules/rateLimit/rateLimit.model';
+import { RateLimitDocument } from '../modules/rateLimit/rateLimit.model';
 import { rateLimitService } from '../modules/rateLimit/rateLimit.service';
+import { LimitData } from '../modules/rateLimit/rateLimit.types';
 
 export const getRateLimitMiddleware =
 	(limitData: LimitData) => async (req: Request, res: Response, next: NextFunction) => {
@@ -9,7 +10,7 @@ export const getRateLimitMiddleware =
 			const { ip, path, baseUrl } = req;
 			const date = new Date().getTime();
 
-			const rateLimit: RateLimitModel = {
+			const rateLimit: RateLimitDocument = {
 				url: baseUrl + path,
 				date,
 				ip: ip!,

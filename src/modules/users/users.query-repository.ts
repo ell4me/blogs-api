@@ -1,8 +1,8 @@
-import { usersCollection } from '../../helpers/runDb';
 import { FilteredUserQueries, ItemsPaginationViewDto } from '../../types';
 import { getUsersFilterRepository } from './helpers/getUsersFilterRepository';
 import { UserViewDto } from './users.dto';
 import { CurrentUserViewDto } from '../auth/auth.dto';
+import { UsersModel } from './users.model';
 
 export class UsersQueryRepository {
 	async getAllUsers({
@@ -13,21 +13,14 @@ export class UsersQueryRepository {
 		searchLoginTerm,
 		searchEmailTerm,
 	}: FilteredUserQueries): Promise<ItemsPaginationViewDto<UserViewDto>> {
-		const filter = getUsersFilterRepository(searchLoginTerm, searchEmailTerm);
+		const filterOr = getUsersFilterRepository(searchLoginTerm, searchEmailTerm);
 
-		const users = await usersCollection
-			.find(filter, {
-				projection: {
-					_id: false,
-					password: false,
-					emailConfirmation: false,
-					refreshToken: false,
-				},
-			})
+		const users = await UsersModel.find()
+			.or(filterOr)
 			.skip((pageNumber - 1) * pageSize)
 			.sort({ [sortBy]: sortDirection })
 			.limit(pageSize)
-			.toArray();
+			.select('-_id -__v -updatedAt -password -emailConfirmation');
 
 		const totalCount = await this.getCountUsersByFilter(searchLoginTerm, searchEmailTerm);
 
@@ -41,29 +34,21 @@ export class UsersQueryRepository {
 	}
 
 	getUserById(id: string): Promise<UserViewDto | null> {
-		return usersCollection.findOne(
-			{ id },
-			{
-				projection: {
-					_id: false,
-					password: false,
-					emailConfirmation: false,
-					refreshToken: false,
-				},
-			},
-		);
+		return UsersModel.findOne({ id })
+			.select('-_id -__v -updatedAt -password -emailConfirmation')
+			.exec();
 	}
 
 	getCountUsersByFilter(
 		searchLoginTerm: string | null,
 		searchEmailTerm: string | null,
 	): Promise<number> {
-		const filter = getUsersFilterRepository(searchLoginTerm, searchEmailTerm);
-		return usersCollection.countDocuments(filter);
+		const filterOr = getUsersFilterRepository(searchLoginTerm, searchEmailTerm);
+		return UsersModel.countDocuments().or(filterOr).exec();
 	}
 
 	async getCurrentUser(id: string): Promise<CurrentUserViewDto> {
-		const user = await usersCollection.findOne({ id });
+		const user = await UsersModel.findOne({ id });
 
 		return {
 			email: user!.email,

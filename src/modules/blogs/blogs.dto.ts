@@ -3,7 +3,7 @@ export interface BlogViewDto {
 	name: string;
 	description: string;
 	websiteUrl: string;
-	createdAt: string;
+	createdAt: Date;
 	isMembership: boolean;
 }
 

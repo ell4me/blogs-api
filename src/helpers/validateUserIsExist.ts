@@ -1,7 +1,7 @@
-import { UserModel } from '../modules/users/users.dto';
 import { VALIDATION_MESSAGES } from '../constants';
+import { UserDocument } from '../modules/users/users.model';
 
-export const validateUserIsExist = (user: UserModel, currentEmail: string) => {
+export const validateUserIsExist = (user: UserDocument, currentEmail: string) => {
 	if (currentEmail === user.email) {
 		return {
 			errorsMessages: [

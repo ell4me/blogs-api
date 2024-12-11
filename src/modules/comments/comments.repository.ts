@@ -1,31 +1,29 @@
-import { commentsCollection } from '../../helpers/runDb';
 import { DeleteResult, ObjectId } from 'mongodb';
-import { CommentModel, CommentUpdateDto } from './comments.dto';
+import { CommentUpdateDto } from './comments.dto';
+import { CommentCreate } from './comments.types';
+import { CommentsModel } from './comments.model';
 
 export class CommentsRepository {
-	async createComment(comment: CommentModel): Promise<ObjectId> {
-		const { insertedId } = await commentsCollection.insertOne(comment);
+	async createComment(comment: CommentCreate): Promise<ObjectId> {
+		const { _id } = await CommentsModel.create(comment);
 
-		return insertedId;
+		return _id;
 	}
 
 	async updateCommentById(id: string, updatedComment: CommentUpdateDto): Promise<boolean> {
-		const { modifiedCount } = await commentsCollection.updateOne(
-			{ id },
-			{ $set: updatedComment },
-		);
+		const result = await CommentsModel.findOneAndUpdate({ id }, updatedComment);
 
-		return modifiedCount === 1;
+		return !!result;
 	}
 
 	async deleteCommentById(id: string): Promise<boolean> {
-		const { deletedCount } = await commentsCollection.deleteOne({ id });
+		const result = await CommentsModel.deleteOne({ id });
 
-		return deletedCount === 1;
+		return !!result;
 	}
 
 	deleteAllComments(): Promise<DeleteResult> {
-		return commentsCollection.deleteMany({});
+		return CommentsModel.deleteMany().exec();
 	}
 }
 

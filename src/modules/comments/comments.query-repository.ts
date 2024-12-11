@@ -1,18 +1,18 @@
-import { commentsCollection } from '../../helpers/runDb';
 import { CommentViewDto } from './comments.dto';
 import { ItemsPaginationViewDto, PaginationQueries } from '../../types';
+import { CommentsModel } from './comments.model';
 
 export class CommentsQueryRepository {
 	async getCommentsByPostId(
 		postId: string,
 		{ sortBy, sortDirection, pageSize, pageNumber }: PaginationQueries,
 	): Promise<ItemsPaginationViewDto<CommentViewDto>> {
-		const comments = await commentsCollection
-			.find({ postId }, { projection: { _id: false, postId: false } })
+		const comments = await CommentsModel.find({ postId })
 			.skip((pageNumber - 1) * pageSize)
 			.sort({ [sortBy]: sortDirection })
 			.limit(pageSize)
-			.toArray();
+			.select('-__v -_id -updatedAt');
+
 		const commentsCountByFilter = await this.getCountComments(postId);
 
 		return {
@@ -25,11 +25,11 @@ export class CommentsQueryRepository {
 	}
 
 	getCommentById(id: string): Promise<CommentViewDto | null> {
-		return commentsCollection.findOne({ id }, { projection: { _id: false, postId: false } });
+		return CommentsModel.findOne({ id }).select('-__v -_id -updatedAt').exec();
 	}
 
 	getCountComments(postId: string): Promise<number> {
-		return commentsCollection.countDocuments({ postId });
+		return CommentsModel.countDocuments({ postId }).exec();
 	}
 }
 

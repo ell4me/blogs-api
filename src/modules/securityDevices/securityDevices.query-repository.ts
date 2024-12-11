@@ -1,14 +1,11 @@
-import { SecurityDevicesModel, SecurityDevicesViewDto } from './securityDevices.dto';
-import { securityDevicesCollection } from '../../helpers/runDb';
+import { SecurityDevicesViewDto } from './securityDevices.dto';
+import { SecurityDevicesDocument, SecurityDevicesModel } from './securityDevices.model';
 
 export class SecurityDevicesQueryRepository {
 	async getActiveDeviceSessions(userId: string): Promise<SecurityDevicesViewDto[]> {
-		const sessions = await securityDevicesCollection
-			.find({
-				userId,
-				expiration: { $gt: new Date().getTime() },
-			})
-			.toArray();
+		const sessions = await SecurityDevicesModel.find({ userId })
+			.where('expiration')
+			.gt(new Date().getTime());
 
 		return sessions.map(({ deviceId, iat, deviceName, ip }) => ({
 			deviceId,
@@ -18,8 +15,8 @@ export class SecurityDevicesQueryRepository {
 		}));
 	}
 
-	async getDeviceSession(deviceId: string): Promise<SecurityDevicesModel | null> {
-		return securityDevicesCollection.findOne({ deviceId });
+	async getDeviceSession(deviceId: string): Promise<SecurityDevicesDocument | null> {
+		return SecurityDevicesModel.findOne({ deviceId }).exec();
 	}
 }
 

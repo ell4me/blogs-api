@@ -5,7 +5,7 @@ export interface PostViewDto {
 	content: string;
 	blogId: string;
 	blogName: string;
-	createdAt: string;
+	createdAt: Date;
 }
 
 export interface PostCreateByBlogIdDto {

@@ -1,22 +1,22 @@
-import { EmailConfirmation, UserModel } from './users.dto';
-import { usersCollection } from '../../helpers/runDb';
 import { DeleteResult, ObjectId } from 'mongodb';
+import { EmailConfirmation, UserCreate } from './users.types';
+import { UserDocument, UsersModel } from './users.model';
 
 export class UsersRepository {
-	async createUser(createdUser: UserModel): Promise<ObjectId> {
-		const { insertedId } = await usersCollection.insertOne(createdUser);
+	async createUser(createdUser: UserCreate): Promise<ObjectId> {
+		const { _id } = await UsersModel.create(createdUser);
 
-		return insertedId;
+		return _id;
 	}
 
 	async deleteUserById(id: string): Promise<boolean> {
-		const { deletedCount } = await usersCollection.deleteOne({ id });
+		const result = await UsersModel.findOneAndDelete({ id });
 
-		return deletedCount === 1;
+		return !!result;
 	}
 
 	deleteAllUsers(): Promise<DeleteResult> {
-		return usersCollection.deleteMany({});
+		return UsersModel.deleteMany().exec();
 	}
 
 	getUserByEmailOrLogin({
@@ -25,24 +25,21 @@ export class UsersRepository {
 	}: Partial<{
 		email: string;
 		login: string;
-	}>): Promise<UserModel | null> {
-		return usersCollection.findOne({ $or: [{ email }, { login }] });
+	}>): Promise<UserDocument | null> {
+		return UsersModel.findOne().or([{ email }, { login }]).exec();
 	}
 
-	getUserByConfirmationCode(code: string): Promise<UserModel | null> {
-		return usersCollection.findOne({ 'emailConfirmation.code': code });
+	getUserByConfirmationCode(code: string): Promise<UserDocument | null> {
+		return UsersModel.findOne({ 'emailConfirmation.code': code }).exec();
 	}
 
 	async updateUserEmailConfirmation(
 		id: string,
 		emailConfirmation: EmailConfirmation,
 	): Promise<boolean> {
-		const { modifiedCount } = await usersCollection.updateOne(
-			{ id },
-			{ $set: { emailConfirmation } },
-		);
+		const result = await UsersModel.findOneAndUpdate({ id }, { emailConfirmation });
 
-		return modifiedCount === 1;
+		return !!result;
 	}
 }
 

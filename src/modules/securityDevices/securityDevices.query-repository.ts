@@ -3,10 +3,12 @@ import { securityDevicesCollection } from '../../helpers/runDb';
 
 export class SecurityDevicesQueryRepository {
 	async getActiveDeviceSessions(userId: string): Promise<SecurityDevicesViewDto[]> {
-		const sessions = await securityDevicesCollection.find({
-			userId,
-			expiration: { $gt: new Date().getTime() },
-		}).toArray();
+		const sessions = await securityDevicesCollection
+			.find({
+				userId,
+				expiration: { $gt: new Date().getTime() },
+			})
+			.toArray();
 
 		return sessions.map(({ deviceId, iat, deviceName, ip }) => ({
 			deviceId,
@@ -15,7 +17,6 @@ export class SecurityDevicesQueryRepository {
 			ip,
 		}));
 	}
-
 
 	async getDeviceSession(deviceId: string): Promise<SecurityDevicesModel | null> {
 		return securityDevicesCollection.findOne({ deviceId });

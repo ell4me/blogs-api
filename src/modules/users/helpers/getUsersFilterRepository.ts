@@ -1,7 +1,10 @@
 import { Filter } from 'mongodb';
 import { UserViewDto } from '../users.dto';
 
-export const getUsersFilterRepository = (searchLoginTerm: string | null, searchEmailTerm: string | null) => {
+export const getUsersFilterRepository = (
+	searchLoginTerm: string | null,
+	searchEmailTerm: string | null,
+) => {
 	let filter: Filter<UserViewDto> = {};
 
 	if (searchLoginTerm || searchEmailTerm) {

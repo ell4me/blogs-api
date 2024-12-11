@@ -1,5 +1,12 @@
 import { Router } from 'express';
-import { FilteredBlogQueries, ReqBody, ReqBodyWithParams, ReqParams, ReqQuery, ReqQueryWithParams } from '../../types';
+import {
+	FilteredBlogQueries,
+	ReqBody,
+	ReqBodyWithParams,
+	ReqParams,
+	ReqQuery,
+	ReqQueryWithParams,
+} from '../../types';
 import { PostCreateByBlogIdDto, PostUpdateDto } from './posts.dto';
 import { HTTP_STATUSES, VALIDATION_MESSAGES } from '../../constants';
 import {
@@ -122,36 +129,47 @@ postsRouter.delete('/:id', authMiddleware, async (req: ReqParams<{ id: string }>
 	}
 });
 
-postsRouter.get('/:postId/comments', queryBlogParserMiddleware, async (req: ReqQueryWithParams<{ postId: string }, FilteredBlogQueries>, res) => {
-	try {
-		const post = await postsQueryRepository.getPostById(req.params.postId);
-		if (!post) {
-			res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
-			return;
+postsRouter.get(
+	'/:postId/comments',
+	queryBlogParserMiddleware,
+	async (req: ReqQueryWithParams<{ postId: string }, FilteredBlogQueries>, res) => {
+		try {
+			const post = await postsQueryRepository.getPostById(req.params.postId);
+			if (!post) {
+				res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
+				return;
+			}
+
+			const comments = await commentQueryRepository.getCommentsByPostId(
+				req.params.postId,
+				req.query,
+			);
+			res.send(comments);
+		} catch (e) {
+			res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
 		}
+	},
+);
 
-		const comments = await commentQueryRepository.getCommentsByPostId(req.params.postId, req.query);
-		res.send(comments);
-	} catch (e) {
-		res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
-	}
-});
+postsRouter.post(
+	'/:postId/comments',
+	...commentsMiddlewares,
+	async (req: ReqBodyWithParams<{ postId: string }, CommentCreateDto>, res) => {
+		try {
+			const post = await postsQueryRepository.getPostById(req.params.postId);
+			if (!post) {
+				res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
+				return;
+			}
 
-postsRouter.post('/:postId/comments', ...commentsMiddlewares, async (req: ReqBodyWithParams<{ postId: string }, CommentCreateDto>, res) => {
-	try {
-		const post = await postsQueryRepository.getPostById(req.params.postId);
-		if (!post) {
-			res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
-			return;
+			const user = await usersQueryRepository.getUserById(req.user.id!);
+			const { id } = await commentsService.createComment(req.body, req.params.postId, user!);
+
+			const comment = await commentQueryRepository.getCommentById(id);
+
+			res.status(HTTP_STATUSES.CREATED_201).send(comment!);
+		} catch (e) {
+			res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
 		}
-
-		const user = await usersQueryRepository.getUserById(req.user.id!);
-		const { id } = await commentsService.createComment(req.body, req.params.postId, user!);
-
-		const comment = await commentQueryRepository.getCommentById(id);
-
-		res.status(HTTP_STATUSES.CREATED_201).send(comment!);
-	} catch (e) {
-		res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
-	}
-});
+	},
+);

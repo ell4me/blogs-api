@@ -7,6 +7,4 @@ export const PATTERNS = {
 };
 
 export const patternMiddleware = (field: string, pattern: RegExp | string) =>
-	body(field)
-		.matches(pattern)
-		.withMessage(VALIDATION_MESSAGES.FIELD_IS_NOT_MATCH(field));
+	body(field).matches(pattern).withMessage(VALIDATION_MESSAGES.FIELD_IS_NOT_MATCH(field));

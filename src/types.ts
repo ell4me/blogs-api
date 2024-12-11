@@ -16,11 +16,23 @@ export interface ValidationErrorViewDto {
 	errorsMessages: ErrorMessage[];
 }
 
-export interface FilterBlogQueries extends Partial<Record<'searchNameTerm' | 'sortBy' | 'sortDirection' | 'pageNumber' | 'pageSize', string>> {
-}
+export interface FilterBlogQueries
+	extends Partial<
+		Record<'searchNameTerm' | 'sortBy' | 'sortDirection' | 'pageNumber' | 'pageSize', string>
+	> {}
 
-export interface FilterUserQueries extends Partial<Record<'searchLoginTerm' | 'searchEmailTerm' | 'sortBy' | 'sortDirection' | 'pageNumber' | 'pageSize', string>> {
-}
+export interface FilterUserQueries
+	extends Partial<
+		Record<
+			| 'searchLoginTerm'
+			| 'searchEmailTerm'
+			| 'sortBy'
+			| 'sortDirection'
+			| 'pageNumber'
+			| 'pageSize',
+			string
+		>
+	> {}
 
 export interface PaginationQueries {
 	sortBy: string;

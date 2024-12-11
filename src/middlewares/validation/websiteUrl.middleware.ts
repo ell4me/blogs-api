@@ -8,6 +8,6 @@ const websiteUrlMiddleware = body(FIELD_NAME)
 	.withMessage(VALIDATION_MESSAGES.FIELD_IS_NOT_URL);
 
 export const websiteUrlValidationMiddlewares = [
-	stringMiddleware({field: FIELD_NAME, maxLength: 100}),
+	stringMiddleware({ field: FIELD_NAME, maxLength: 100 }),
 	websiteUrlMiddleware,
 ];

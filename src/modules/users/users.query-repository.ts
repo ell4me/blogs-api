@@ -6,23 +6,24 @@ import { CurrentUserViewDto } from '../auth/auth.dto';
 
 export class UsersQueryRepository {
 	async getAllUsers({
-								 pageSize,
-								 pageNumber,
-								 sortBy,
-								 sortDirection,
-								 searchLoginTerm,
-								 searchEmailTerm,
-							 }: FilteredUserQueries): Promise<ItemsPaginationViewDto<UserViewDto>> {
+		pageSize,
+		pageNumber,
+		sortBy,
+		sortDirection,
+		searchLoginTerm,
+		searchEmailTerm,
+	}: FilteredUserQueries): Promise<ItemsPaginationViewDto<UserViewDto>> {
 		const filter = getUsersFilterRepository(searchLoginTerm, searchEmailTerm);
 
-		const users = await usersCollection.find(filter, {
-			projection: {
-				_id: false,
-				password: false,
-				emailConfirmation: false,
-				refreshToken: false,
-			},
-		})
+		const users = await usersCollection
+			.find(filter, {
+				projection: {
+					_id: false,
+					password: false,
+					emailConfirmation: false,
+					refreshToken: false,
+				},
+			})
 			.skip((pageNumber - 1) * pageSize)
 			.sort({ [sortBy]: sortDirection })
 			.limit(pageSize)
@@ -40,17 +41,23 @@ export class UsersQueryRepository {
 	}
 
 	getUserById(id: string): Promise<UserViewDto | null> {
-		return usersCollection.findOne({ id }, {
-			projection: {
-				_id: false,
-				password: false,
-				emailConfirmation: false,
-				refreshToken: false,
+		return usersCollection.findOne(
+			{ id },
+			{
+				projection: {
+					_id: false,
+					password: false,
+					emailConfirmation: false,
+					refreshToken: false,
+				},
 			},
-		});
+		);
 	}
 
-	getCountUsersByFilter(searchLoginTerm: string | null, searchEmailTerm: string | null): Promise<number> {
+	getCountUsersByFilter(
+		searchLoginTerm: string | null,
+		searchEmailTerm: string | null,
+	): Promise<number> {
 		const filter = getUsersFilterRepository(searchLoginTerm, searchEmailTerm);
 		return usersCollection.countDocuments(filter);
 	}

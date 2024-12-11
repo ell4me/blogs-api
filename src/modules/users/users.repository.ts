@@ -19,9 +19,12 @@ export class UsersRepository {
 		return usersCollection.deleteMany({});
 	}
 
-	getUserByEmailOrLogin({ email, login }: Partial<{
-		email: string,
-		login: string
+	getUserByEmailOrLogin({
+		email,
+		login,
+	}: Partial<{
+		email: string;
+		login: string;
 	}>): Promise<UserModel | null> {
 		return usersCollection.findOne({ $or: [{ email }, { login }] });
 	}
@@ -30,8 +33,14 @@ export class UsersRepository {
 		return usersCollection.findOne({ 'emailConfirmation.code': code });
 	}
 
-	async updateUserEmailConfirmation(id: string, emailConfirmation: EmailConfirmation): Promise<boolean> {
-		const { modifiedCount } = await usersCollection.updateOne({ id }, { $set: { emailConfirmation } });
+	async updateUserEmailConfirmation(
+		id: string,
+		emailConfirmation: EmailConfirmation,
+	): Promise<boolean> {
+		const { modifiedCount } = await usersCollection.updateOne(
+			{ id },
+			{ $set: { emailConfirmation } },
+		);
 
 		return modifiedCount === 1;
 	}

@@ -44,16 +44,19 @@ describe(ROUTERS_PATH.BLOGS, () => {
 	});
 
 	it('GET blogs should pass pagination queries to response', async () => {
-		await request(app).get(`${ROUTERS_PATH.BLOGS}?pageSize=5&pageNumber=2&sortDirection=desc&sortBy=name`).expect({
-			...emptyResponse,
-			pageSize: 5,
-			page: 2,
-		});
+		await request(app)
+			.get(`${ROUTERS_PATH.BLOGS}?pageSize=5&pageNumber=2&sortDirection=desc&sortBy=name`)
+			.expect({
+				...emptyResponse,
+				pageSize: 5,
+				page: 2,
+			});
 	});
 
-
 	it('GET posts with incorrect blog id', async () => {
-		await request(app).get(`${ROUTERS_PATH.BLOGS}/someId/posts`).expect(HTTP_STATUSES.NOT_FOUND_404);
+		await request(app)
+			.get(`${ROUTERS_PATH.BLOGS}/someId/posts`)
+			.expect(HTTP_STATUSES.NOT_FOUND_404);
 	});
 
 	it('POST won`t be to create with incorrect credentials', async () => {
@@ -109,13 +112,15 @@ describe(ROUTERS_PATH.BLOGS, () => {
 
 		expect(newBlog).toMatchObject(createBlogDto);
 
-		await request(app).get(ROUTERS_PATH.BLOGS).expect({
-			page: 1,
-			pagesCount: 1,
-			pageSize: 10,
-			totalCount: 1,
-			items: [newBlog],
-		});
+		await request(app)
+			.get(ROUTERS_PATH.BLOGS)
+			.expect({
+				page: 1,
+				pagesCount: 1,
+				pageSize: 10,
+				totalCount: 1,
+				items: [newBlog],
+			});
 	});
 
 	it(`POST should return ${HTTP_STATUSES.NOT_FOUND_404} status if blog doesn't exist`, async () => {
@@ -126,7 +131,8 @@ describe(ROUTERS_PATH.BLOGS, () => {
 				title: 'New post',
 				content: 'content',
 				shortDescription: 'description',
-			} as PostCreateDto).expect(HTTP_STATUSES.NOT_FOUND_404);
+			} as PostCreateDto)
+			.expect(HTTP_STATUSES.NOT_FOUND_404);
 	});
 
 	it('POST create post by blog id', async () => {
@@ -137,15 +143,18 @@ describe(ROUTERS_PATH.BLOGS, () => {
 				title: 'New post',
 				content: 'content',
 				shortDescription: 'description',
-			} as PostCreateDto).expect(HTTP_STATUSES.CREATED_201);
+			} as PostCreateDto)
+			.expect(HTTP_STATUSES.CREATED_201);
 
-		await request(app).get(`${ROUTERS_PATH.BLOGS}/${newBlog!.id}/posts?pageSize=2`).expect({
-			pageSize: 2,
-			page: 1,
-			pagesCount: 1,
-			totalCount: 1,
-			items: [post],
-		} as ItemsPaginationViewDto);
+		await request(app)
+			.get(`${ROUTERS_PATH.BLOGS}/${newBlog!.id}/posts?pageSize=2`)
+			.expect({
+				pageSize: 2,
+				page: 1,
+				pagesCount: 1,
+				totalCount: 1,
+				items: [post],
+			} as ItemsPaginationViewDto);
 
 		await request(app)
 			.delete(`${ROUTERS_PATH.POSTS}/${post!.id}`)
@@ -244,13 +253,15 @@ describe(ROUTERS_PATH.BLOGS, () => {
 			.send(createPostDto)
 			.expect(HTTP_STATUSES.CREATED_201);
 
-		await request(app).get(ROUTERS_PATH.POSTS).expect({
-			page: 1,
-			pagesCount: 1,
-			pageSize: 10,
-			totalCount: 1,
-			items: [responsePost.body],
-		});
+		await request(app)
+			.get(ROUTERS_PATH.POSTS)
+			.expect({
+				page: 1,
+				pagesCount: 1,
+				pageSize: 10,
+				totalCount: 1,
+				items: [responsePost.body],
+			});
 
 		await request(app)
 			.delete(`${ROUTERS_PATH.BLOGS}/${newBlog!.id}`)

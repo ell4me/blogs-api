@@ -1,15 +1,7 @@
 import { Router } from 'express';
-import {
-	FilteredUserQueries,
-	ReqBody,
-	ReqParams,
-	ReqQuery,
-} from '../../types';
+import { FilteredUserQueries, ReqBody, ReqParams, ReqQuery } from '../../types';
 import { HTTP_STATUSES } from '../../constants';
-import {
-	stringMiddleware,
-	fieldsCheckErrorsMiddleware,
-} from '../../middlewares/validation';
+import { stringMiddleware, fieldsCheckErrorsMiddleware } from '../../middlewares/validation';
 import { authMiddleware } from '../../middlewares/auth.middleware';
 import { queryUserParserMiddleware } from '../../middlewares/queryParser.middleware';
 import { UserCreateDto } from './users.dto';
@@ -28,14 +20,19 @@ const validationMiddlewares = [
 	fieldsCheckErrorsMiddleware,
 ];
 
-usersRouter.get('/', authMiddleware<FilteredUserQueries>, queryUserParserMiddleware, async (req: ReqQuery<FilteredUserQueries>, res) => {
-	try {
-		const users = await usersQueryRepository.getAllUsers(req.query);
-		res.send(users);
-	} catch (e) {
-		res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
-	}
-});
+usersRouter.get(
+	'/',
+	authMiddleware<FilteredUserQueries>,
+	queryUserParserMiddleware,
+	async (req: ReqQuery<FilteredUserQueries>, res) => {
+		try {
+			const users = await usersQueryRepository.getAllUsers(req.query);
+			res.send(users);
+		} catch (e) {
+			res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
+		}
+	},
+);
 
 usersRouter.post('/', ...validationMiddlewares, async (req: ReqBody<UserCreateDto>, res) => {
 	try {

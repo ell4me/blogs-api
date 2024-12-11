@@ -10,7 +10,10 @@ export class CommentsRepository {
 	}
 
 	async updateCommentById(id: string, updatedComment: CommentUpdateDto): Promise<boolean> {
-		const { modifiedCount } = await commentsCollection.updateOne({ id }, {$set: updatedComment});
+		const { modifiedCount } = await commentsCollection.updateOne(
+			{ id },
+			{ $set: updatedComment },
+		);
 
 		return modifiedCount === 1;
 	}

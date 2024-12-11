@@ -33,7 +33,10 @@ export class PostsRepository {
 	}
 
 	async updatePostsByBlogId(id: string, { name }: Pick<BlogUpdateDto, 'name'>): Promise<boolean> {
-		const { modifiedCount } = await postsCollection.updateMany({ blogId: id }, { $set: { blogName: name } });
+		const { modifiedCount } = await postsCollection.updateMany(
+			{ blogId: id },
+			{ $set: { blogName: name } },
+		);
 
 		return !!modifiedCount;
 	}

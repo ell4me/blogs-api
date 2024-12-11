@@ -44,11 +44,13 @@ describe(ROUTERS_PATH.POSTS, () => {
 	});
 
 	it('GET posts should pass pagination queries to response', async () => {
-		await request(app).get(`${ROUTERS_PATH.POSTS}/?pageSize=2&pageNumber=2&sortDirection=desc&sortBy=name`).expect({
-			...emptyResponse,
-			pageSize: 2,
-			page: 2,
-		});
+		await request(app)
+			.get(`${ROUTERS_PATH.POSTS}/?pageSize=2&pageNumber=2&sortDirection=desc&sortBy=name`)
+			.expect({
+				...emptyResponse,
+				pageSize: 2,
+				page: 2,
+			});
 	});
 
 	it('POST won`t be to create with incorrect credentials', async () => {
@@ -125,13 +127,15 @@ describe(ROUTERS_PATH.POSTS, () => {
 
 		expect(newPost).toMatchObject(createPostDto);
 
-		await request(app).get(ROUTERS_PATH.POSTS).expect({
-			page: 1,
-			pagesCount: 1,
-			pageSize: 10,
-			totalCount: 1,
-			items: [newPost],
-		});
+		await request(app)
+			.get(ROUTERS_PATH.POSTS)
+			.expect({
+				page: 1,
+				pagesCount: 1,
+				pageSize: 10,
+				totalCount: 1,
+				items: [newPost],
+			});
 	});
 
 	it('GET post with incorrect id', async () => {

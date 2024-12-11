@@ -1,4 +1,6 @@
 import { Collection, MongoClient } from 'mongodb';
+import mongoose from 'mongoose';
+
 import { COLLECTION_NAMES, SETTINGS } from '../constants';
 import { BlogViewDto } from '../modules/blogs/blogs.dto';
 import { PostViewDto } from '../modules/posts/posts.dto';
@@ -20,6 +22,8 @@ export const runDb = async (clientDb: MongoClient) => {
 		const db = clientDb.db(SETTINGS.DB_NAME);
 		await db.command({ ping: 1 });
 
+		await mongoose.connect(`${SETTINGS.DB_HOST}/${SETTINGS.DB_NAME}`);
+
 		blogsCollection = db.collection(COLLECTION_NAMES.BLOGS);
 		postsCollection = db.collection(COLLECTION_NAMES.POSTS);
 		usersCollection = db.collection(COLLECTION_NAMES.USERS);
@@ -28,5 +32,6 @@ export const runDb = async (clientDb: MongoClient) => {
 		securityDevicesCollection = db.collection(COLLECTION_NAMES.SECURITY_DEVICES);
 	} catch (e) {
 		await clientDb.close();
+		await mongoose.disconnect();
 	}
 };

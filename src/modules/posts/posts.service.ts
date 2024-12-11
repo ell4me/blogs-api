@@ -16,12 +16,12 @@ class PostsService {
 	}
 
 	async createPost({
-						 content,
-						 title,
-						 shortDescription,
-						 blogId,
-						 blogName,
-					 }: PostCreateByBlogId): Promise<{ id: string }> {
+		content,
+		title,
+		shortDescription,
+		blogId,
+		blogName,
+	}: PostCreateByBlogId): Promise<{ id: string }> {
 		const id = new Date().getTime().toString();
 
 		const createdPost: PostViewDto = {

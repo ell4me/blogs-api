@@ -19,13 +19,18 @@ export class EmailAdapter {
 		const mailOptions: Mail.Options = {
 			from: {
 				name: 'Blogs-api',
-				address: SETTINGS.SMTP_USER!
+				address: SETTINGS.SMTP_USER!,
 			},
 			to: emailTo,
 			subject: 'Confirm your email',
-			html: '<h1>Thanks for your registration</h1>\n' +
+			html:
+				'<h1>Thanks for your registration</h1>\n' +
 				'<p>To finish registration please follow the link below:\n' +
-				'<a href=' + SETTINGS.HOST + '/confirm-email?code=' + emailConfirmationCode + '>complete registration</a>\n' +
+				'<a href=' +
+				SETTINGS.HOST +
+				'/confirm-email?code=' +
+				emailConfirmationCode +
+				'>complete registration</a>\n' +
 				'</p>',
 		};
 

@@ -117,10 +117,12 @@ describe(ROUTERS_PATH.USERS, () => {
 				email: 'ell4me@gmail.com',
 				password: 'qwerty',
 			})
-			.expect(HTTP_STATUSES.BAD_REQUEST_400, [{
-				field: 'email',
-				message: VALIDATION_MESSAGES.FIELD_IS_EXIST('email'),
-			}]);
+			.expect(HTTP_STATUSES.BAD_REQUEST_400, [
+				{
+					field: 'email',
+					message: VALIDATION_MESSAGES.FIELD_IS_EXIST('email'),
+				},
+			]);
 
 		await request(app)
 			.get(ROUTERS_PATH.USERS)

@@ -1,7 +1,11 @@
 import { Router } from 'express';
 
 import { authService } from './auth.service';
-import { AuthLoginDto, RegistrationConfirmationDto, RegistrationEmailResendingDto } from './auth.dto';
+import {
+	AuthLoginDto,
+	RegistrationConfirmationDto,
+	RegistrationEmailResendingDto,
+} from './auth.dto';
 
 import { ReqBody } from '../../types';
 import { HTTP_STATUSES } from '../../constants';
@@ -32,35 +36,43 @@ const validationRegistrationMiddlewares = [
 	fieldsCheckErrorsMiddleware,
 ];
 
-authRouter.post('/login', ...validationLoginMiddlewares, async (req: ReqBody<AuthLoginDto>, res) => {
-	try {
-		const token = await authService.login(req.body, req.ip!, req.headers['user-agent']);
-		if (!token) {
-			res.sendStatus(HTTP_STATUSES.UNAUTHORIZED_401);
-			return;
+authRouter.post(
+	'/login',
+	...validationLoginMiddlewares,
+	async (req: ReqBody<AuthLoginDto>, res) => {
+		try {
+			const token = await authService.login(req.body, req.ip!, req.headers['user-agent']);
+			if (!token) {
+				res.sendStatus(HTTP_STATUSES.UNAUTHORIZED_401);
+				return;
+			}
+
+			res.cookie('refreshToken', token.refreshToken, { httpOnly: true, secure: true });
+			res.send({ accessToken: token.accessToken });
+		} catch (e) {
+			res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
 		}
+	},
+);
 
-		res.cookie('refreshToken', token.refreshToken, { httpOnly: true, secure: true });
-		res.send({ accessToken: token.accessToken });
-	} catch (e) {
-		res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
-	}
-});
+authRouter.post(
+	'/registration',
+	...validationRegistrationMiddlewares,
+	async (req: ReqBody<UserCreateDto>, res) => {
+		try {
+			const result = await authService.registration(req.body);
 
-authRouter.post('/registration', ...validationRegistrationMiddlewares, async (req: ReqBody<UserCreateDto>, res) => {
-	try {
-		const result = await authService.registration(req.body);
+			if (result) {
+				res.status(HTTP_STATUSES.BAD_REQUEST_400).send(result);
+				return;
+			}
 
-		if (result) {
-			res.status(HTTP_STATUSES.BAD_REQUEST_400).send(result);
-			return;
+			res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
+		} catch (e) {
+			res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
 		}
-
-		res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
-	} catch (e) {
-		res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
-	}
-});
+	},
+);
 
 authRouter.get('/me', authBearerMiddleware, fieldsCheckErrorsMiddleware, async (req, res) => {
 	try {
@@ -71,7 +83,8 @@ authRouter.get('/me', authBearerMiddleware, fieldsCheckErrorsMiddleware, async (
 	}
 });
 
-authRouter.post('/registration-confirmation',
+authRouter.post(
+	'/registration-confirmation',
 	rateLimitMiddleware,
 	stringMiddleware({ field: 'code' }),
 	fieldsCheckErrorsMiddleware,
@@ -88,9 +101,11 @@ authRouter.post('/registration-confirmation',
 		} catch (e) {
 			res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
 		}
-	});
+	},
+);
 
-authRouter.post('/registration-email-resending',
+authRouter.post(
+	'/registration-email-resending',
 	rateLimitMiddleware,
 	stringMiddleware({ field: 'email' }),
 	patternMiddleware('email', PATTERNS.EMAIL),
@@ -108,8 +123,8 @@ authRouter.post('/registration-email-resending',
 		} catch (e) {
 			res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
 		}
-	});
-
+	},
+);
 
 authRouter.post('/refresh-token', refreshTokenMiddleware, async (req, res) => {
 	try {

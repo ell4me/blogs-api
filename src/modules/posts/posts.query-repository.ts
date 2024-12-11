@@ -4,13 +4,12 @@ import { Filter } from 'mongodb';
 import { FilteredBlogQueries, ItemsPaginationViewDto } from '../../types';
 
 export class PostsQueryRepository {
-	async getAllPosts({
-								 pageSize,
-								 pageNumber,
-								 sortBy,
-								 sortDirection,
-							 }: FilteredBlogQueries, additionalFilter?: Filter<PostViewDto>): Promise<ItemsPaginationViewDto<PostViewDto>> {
-		const posts = await postsCollection.find(additionalFilter ? additionalFilter : {}, { projection: { _id: false } })
+	async getAllPosts(
+		{ pageSize, pageNumber, sortBy, sortDirection }: FilteredBlogQueries,
+		additionalFilter?: Filter<PostViewDto>,
+	): Promise<ItemsPaginationViewDto<PostViewDto>> {
+		const posts = await postsCollection
+			.find(additionalFilter ? additionalFilter : {}, { projection: { _id: false } })
 			.skip((pageNumber - 1) * pageSize)
 			.sort({ [sortBy]: sortDirection })
 			.limit(pageSize)

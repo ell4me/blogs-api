@@ -16,7 +16,11 @@ export class UsersService {
 		return this.usersRepository.createUser(createdUser);
 	}
 
-	async createUser({ login, password, email }: UserCreateDto): Promise<{ id: string } | ValidationErrorViewDto> {
+	async createUser({
+		login,
+		password,
+		email,
+	}: UserCreateDto): Promise<{ id: string } | ValidationErrorViewDto> {
 		const user = await this.usersRepository.getUserByEmailOrLogin({ email, login });
 
 		if (user) {
@@ -48,14 +52,19 @@ export class UsersService {
 		return this.usersRepository.deleteUserById(id);
 	}
 
-	updateUserEmailConfirmation(id: string, emailConfirmation: EmailConfirmation): Promise<boolean> {
+	updateUserEmailConfirmation(
+		id: string,
+		emailConfirmation: EmailConfirmation,
+	): Promise<boolean> {
 		return this.usersRepository.updateUserEmailConfirmation(id, emailConfirmation);
 	}
 
-	getUserByEmailOrLogin(emailOrLogin: Partial<{
-		email: string,
-		login: string
-	}>): Promise<UserModel | null> {
+	getUserByEmailOrLogin(
+		emailOrLogin: Partial<{
+			email: string;
+			login: string;
+		}>,
+	): Promise<UserModel | null> {
 		return this.usersRepository.getUserByEmailOrLogin(emailOrLogin);
 	}
 

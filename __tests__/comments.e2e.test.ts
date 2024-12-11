@@ -121,9 +121,7 @@ describe(ROUTERS_PATH.COMMENTS, () => {
 	});
 
 	it('GET comments empty response by post id', async () => {
-		await request(app)
-			.get(`${ROUTERS_PATH.POSTS}/${post.id}/comments`)
-			.expect(emptyResponse);
+		await request(app).get(`${ROUTERS_PATH.POSTS}/${post.id}/comments`).expect(emptyResponse);
 	});
 
 	it('GET comments empty response by post id with pageNumber=2 and pageSize=3', async () => {
@@ -152,10 +150,12 @@ describe(ROUTERS_PATH.COMMENTS, () => {
 			.auth(accessToken, { type: 'bearer' })
 			.send({ content: 'comment' })
 			.expect(HTTP_STATUSES.BAD_REQUEST_400, {
-				errorsMessages: [{
-					field: 'content',
-					message: VALIDATION_MESSAGES.LENGTH({ minLength: 20, maxLength: 300 }),
-				}],
+				errorsMessages: [
+					{
+						field: 'content',
+						message: VALIDATION_MESSAGES.LENGTH({ minLength: 20, maxLength: 300 }),
+					},
+				],
 			} as ValidationErrorViewDto);
 	});
 
@@ -189,9 +189,7 @@ describe(ROUTERS_PATH.COMMENTS, () => {
 	});
 
 	it('GET comment by id', async () => {
-		await request(app)
-			.get(`${ROUTERS_PATH.COMMENTS}/${comment.id}`)
-			.expect(comment);
+		await request(app).get(`${ROUTERS_PATH.COMMENTS}/${comment.id}`).expect(comment);
 	});
 
 	it('PUT should`t update comment when unauthorized', async () => {
@@ -215,15 +213,15 @@ describe(ROUTERS_PATH.COMMENTS, () => {
 			.auth(accessToken, { type: 'bearer' })
 			.send({ content: 'updated' })
 			.expect(HTTP_STATUSES.BAD_REQUEST_400, {
-				errorsMessages: [{
-					field: 'content',
-					message: VALIDATION_MESSAGES.LENGTH({ minLength: 20, maxLength: 300 }),
-				}],
+				errorsMessages: [
+					{
+						field: 'content',
+						message: VALIDATION_MESSAGES.LENGTH({ minLength: 20, maxLength: 300 }),
+					},
+				],
 			} as ValidationErrorViewDto);
 
-		await request(app)
-			.get(`${ROUTERS_PATH.COMMENTS}/${comment.id}`)
-			.expect(comment);
+		await request(app).get(`${ROUTERS_PATH.COMMENTS}/${comment.id}`).expect(comment);
 	});
 
 	it('PUT should`t update comment when this one is not belong to user', async () => {
@@ -233,9 +231,7 @@ describe(ROUTERS_PATH.COMMENTS, () => {
 			.send({ content: 'updated updated updated updated' })
 			.expect(HTTP_STATUSES.FORBIDDEN_403);
 
-		await request(app)
-			.get(`${ROUTERS_PATH.COMMENTS}/${comment.id}`)
-			.expect(comment);
+		await request(app).get(`${ROUTERS_PATH.COMMENTS}/${comment.id}`).expect(comment);
 	});
 
 	it('PUT should update comment', async () => {
@@ -248,9 +244,7 @@ describe(ROUTERS_PATH.COMMENTS, () => {
 
 		comment.content = payload.content;
 
-		await request(app)
-			.get(`${ROUTERS_PATH.COMMENTS}/${comment.id}`)
-			.expect(comment);
+		await request(app).get(`${ROUTERS_PATH.COMMENTS}/${comment.id}`).expect(comment);
 	});
 
 	it('DELETE should`t delete comment when unauthorized', async () => {

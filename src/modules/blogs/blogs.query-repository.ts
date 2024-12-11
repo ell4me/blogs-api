@@ -5,19 +5,20 @@ import { FilteredBlogQueries, ItemsPaginationViewDto } from '../../types';
 
 export class BlogsQueryRepository {
 	async getAllBlogs({
-						   pageSize,
-						   pageNumber,
-						   sortBy,
-						   sortDirection,
-						   searchNameTerm,
-					   }: FilteredBlogQueries): Promise<ItemsPaginationViewDto<BlogViewDto>> {
+		pageSize,
+		pageNumber,
+		sortBy,
+		sortDirection,
+		searchNameTerm,
+	}: FilteredBlogQueries): Promise<ItemsPaginationViewDto<BlogViewDto>> {
 		let filter: Filter<BlogViewDto> = {};
 
 		if (searchNameTerm) {
 			filter = { name: new RegExp(searchNameTerm, 'i') };
 		}
 
-		const blogs = await blogsCollection.find(filter, { projection: { _id: false } })
+		const blogs = await blogsCollection
+			.find(filter, { projection: { _id: false } })
 			.skip((pageNumber - 1) * pageSize)
 			.sort({ [sortBy]: sortDirection })
 			.limit(pageSize)

@@ -9,7 +9,11 @@ class CommentsService {
 		this.commentsRepository = commentsRepository;
 	}
 
-	async createComment({ content }: CommentCreateDto, postId: string, user: UserViewDto): Promise<{ id: string }> {
+	async createComment(
+		{ content }: CommentCreateDto,
+		postId: string,
+		user: UserViewDto,
+	): Promise<{ id: string }> {
 		const id = new Date().getTime().toString();
 
 		const newComment: CommentModel = {
@@ -21,13 +25,11 @@ class CommentsService {
 				userLogin: user.login,
 			},
 			createdAt: new Date().toISOString(),
-
 		};
 
 		await this.commentsRepository.createComment(newComment);
 
 		return { id };
-
 	}
 
 	async updateCommentById(commentId: string, content: CommentUpdateDto): Promise<boolean> {

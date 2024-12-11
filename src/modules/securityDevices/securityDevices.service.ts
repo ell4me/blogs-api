@@ -37,11 +37,10 @@ export class SecurityDevicesService {
 		return getTokens(userId, deviceId, currentDate.getTime());
 	}
 
-	async updateCurrentDeviceSession(deviceId: string, {
-		deviceName,
-		userId,
-		ip,
-	}: SecurityDevicesUpdate): Promise<Tokens | void> {
+	async updateCurrentDeviceSession(
+		deviceId: string,
+		{ deviceName, userId, ip }: SecurityDevicesUpdate,
+	): Promise<Tokens | void> {
 		const currentDate = new Date();
 		const expiration = addSeconds(currentDate, EXPIRATION_TOKEN.REFRESH).getTime();
 
@@ -52,9 +51,12 @@ export class SecurityDevicesService {
 			ip,
 		};
 
-		const isUpdated = await this.securityDevicesRepository.updateCurrentDeviceSession(deviceId, updatedSession);
+		const isUpdated = await this.securityDevicesRepository.updateCurrentDeviceSession(
+			deviceId,
+			updatedSession,
+		);
 
-		if(!isUpdated) {
+		if (!isUpdated) {
 			return;
 		}
 
@@ -62,7 +64,7 @@ export class SecurityDevicesService {
 	}
 
 	async deleteSessionByDeviceId(deviceId: string): Promise<boolean> {
-		return this.securityDevicesRepository.deleteSessionByDeviceId(deviceId)
+		return this.securityDevicesRepository.deleteSessionByDeviceId(deviceId);
 	}
 
 	async deleteAllDeviceSessionsExceptCurrent(userId: string, deviceId: string): Promise<void> {

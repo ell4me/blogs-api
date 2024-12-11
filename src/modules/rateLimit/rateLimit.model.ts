@@ -1,4 +1,4 @@
-export interface LimitData  {
+export interface LimitData {
 	limit: number;
 	ttlInSeconds: number;
 }

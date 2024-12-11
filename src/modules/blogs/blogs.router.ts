@@ -1,6 +1,13 @@
 import { Router } from 'express';
 import { blogsService } from './blogs.service';
-import { FilteredBlogQueries, ReqBody, ReqBodyWithParams, ReqParams, ReqQuery, ReqQueryWithParams } from '../../types';
+import {
+	FilteredBlogQueries,
+	ReqBody,
+	ReqBodyWithParams,
+	ReqParams,
+	ReqQuery,
+	ReqQueryWithParams,
+} from '../../types';
 import { BlogCreateDto, BlogUpdateDto } from './blogs.dto';
 import { HTTP_STATUSES } from '../../constants';
 import {
@@ -48,24 +55,36 @@ blogsRouter.get('/:id', async (req: ReqParams<{ id: string }>, res) => {
 	}
 });
 
-blogsRouter.get('/:id/posts', queryBlogParserMiddleware, async (req: ReqQueryWithParams<{
-	id: string
-}, FilteredBlogQueries>, res) => {
-	try {
-		const blog = await blogsQueryRepository.getBlogById(req.params.id);
+blogsRouter.get(
+	'/:id/posts',
+	queryBlogParserMiddleware,
+	async (
+		req: ReqQueryWithParams<
+			{
+				id: string;
+			},
+			FilteredBlogQueries
+		>,
+		res,
+	) => {
+		try {
+			const blog = await blogsQueryRepository.getBlogById(req.params.id);
 
-		if (!blog) {
-			res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
-			return;
+			if (!blog) {
+				res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
+				return;
+			}
+
+			const posts = await postsQueryRepository.getAllPosts(req.query, {
+				blogId: req.params.id,
+			});
+
+			res.send(posts);
+		} catch (e) {
+			res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
 		}
-
-		const posts = await postsQueryRepository.getAllPosts(req.query, { blogId: req.params.id });
-
-		res.send(posts);
-	} catch (e) {
-		res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
-	}
-});
+	},
+);
 
 blogsRouter.post(
 	'/',
@@ -98,7 +117,11 @@ blogsRouter.post(
 				return;
 			}
 
-			const { id } = await postsService.createPost({ ...newPost, blogId: params.id, blogName: blog.name });
+			const { id } = await postsService.createPost({
+				...newPost,
+				blogId: params.id,
+				blogName: blog.name,
+			});
 			const post = await postsQueryRepository.getPostById(id);
 
 			res.status(HTTP_STATUSES.CREATED_201).send(post!);

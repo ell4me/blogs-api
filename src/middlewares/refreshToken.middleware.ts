@@ -3,7 +3,6 @@ import { verify } from 'jsonwebtoken';
 import { HTTP_STATUSES, SETTINGS } from '../constants';
 import { securityDevicesQueryRepository } from '../modules/securityDevices/securityDevices.query-repository';
 
-
 export const refreshTokenMiddleware = async (req: Request, res: Response, next: NextFunction) => {
 	const token = req.cookies.refreshToken;
 
@@ -15,9 +14,15 @@ export const refreshTokenMiddleware = async (req: Request, res: Response, next: 
 				return;
 			}
 
-			const currentDeviceSession = await securityDevicesQueryRepository.getDeviceSession(jwtPayload.deviceId);
+			const currentDeviceSession = await securityDevicesQueryRepository.getDeviceSession(
+				jwtPayload.deviceId,
+			);
 
-			if (!currentDeviceSession || jwtPayload.iat !== currentDeviceSession.iat || currentDeviceSession.expiration < new Date().getTime()) {
+			if (
+				!currentDeviceSession ||
+				jwtPayload.iat !== currentDeviceSession.iat ||
+				currentDeviceSession.expiration < new Date().getTime()
+			) {
 				res.sendStatus(HTTP_STATUSES.UNAUTHORIZED_401);
 				return;
 			}

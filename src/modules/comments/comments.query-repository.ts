@@ -3,13 +3,12 @@ import { CommentViewDto } from './comments.dto';
 import { ItemsPaginationViewDto, PaginationQueries } from '../../types';
 
 export class CommentsQueryRepository {
-	async getCommentsByPostId(postId: string, {
-		sortBy,
-		sortDirection,
-		pageSize,
-		pageNumber,
-	}: PaginationQueries): Promise<ItemsPaginationViewDto<CommentViewDto>> {
-		const comments = await commentsCollection.find({ postId }, { projection: { _id: false, postId: false } })
+	async getCommentsByPostId(
+		postId: string,
+		{ sortBy, sortDirection, pageSize, pageNumber }: PaginationQueries,
+	): Promise<ItemsPaginationViewDto<CommentViewDto>> {
+		const comments = await commentsCollection
+			.find({ postId }, { projection: { _id: false, postId: false } })
 			.skip((pageNumber - 1) * pageSize)
 			.sort({ [sortBy]: sortDirection })
 			.limit(pageSize)

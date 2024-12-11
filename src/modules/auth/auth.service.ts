@@ -145,7 +145,9 @@ class AuthService {
 			isConfirmed: false,
 		});
 
-		this.emailAdapter.sendEmail(user.email, confirmationCode).catch(() => console.error('Send email failed'));
+		this.emailAdapter
+			.sendEmail(user.email, confirmationCode)
+			.catch(() => console.error('Send email failed'));
 	}
 
 	async refreshToken(

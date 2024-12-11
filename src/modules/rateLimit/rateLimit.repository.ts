@@ -13,11 +13,7 @@ export class RateLimitRepository {
 		return insertedId;
 	}
 
-	async deleteOldRecordsByRateLimit({
-		ip,
-		url,
-		date,
-	}: RateLimitModel): Promise<DeleteResult> {
+	async deleteOldRecordsByRateLimit({ ip, url, date }: RateLimitModel): Promise<DeleteResult> {
 		return rateLimitCollection.deleteMany({ ip, url, date: { $lt: date } });
 	}
 

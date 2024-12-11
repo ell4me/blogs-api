@@ -4,7 +4,11 @@ import { DeleteResult, ObjectId } from 'mongodb';
 
 export class BlogsRepository {
 	updateBlogById(id: string, newBlog: BlogUpdateDto): Promise<BlogViewDto | null> {
-		return blogsCollection.findOneAndUpdate({ id }, { $set: newBlog }, { returnDocument: 'before' });
+		return blogsCollection.findOneAndUpdate(
+			{ id },
+			{ $set: newBlog },
+			{ returnDocument: 'before' },
+		);
 	}
 
 	async createBlog(createdBlog: BlogViewDto): Promise<ObjectId> {

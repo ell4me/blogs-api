@@ -1,8 +1,19 @@
 import { NextFunction, Response } from 'express';
-import { FilterBlogQueries, FilteredBlogQueries, FilteredUserQueries, FilterUserQueries, ReqQuery } from '../types';
+import {
+	FilterBlogQueries,
+	FilteredBlogQueries,
+	FilteredUserQueries,
+	FilterUserQueries,
+	ReqQuery,
+} from '../types';
 
-export const queryBlogParserMiddleware = (req: ReqQuery<FilterBlogQueries | FilteredBlogQueries>, res: Response, next: NextFunction) => {
-	const { searchNameTerm, sortBy, sortDirection, pageSize, pageNumber } = req.query as FilterBlogQueries;
+export const queryBlogParserMiddleware = (
+	req: ReqQuery<FilterBlogQueries | FilteredBlogQueries>,
+	res: Response,
+	next: NextFunction,
+) => {
+	const { searchNameTerm, sortBy, sortDirection, pageSize, pageNumber } =
+		req.query as FilterBlogQueries;
 
 	req.query = <FilteredBlogQueries>{
 		...req.query,
@@ -16,15 +27,13 @@ export const queryBlogParserMiddleware = (req: ReqQuery<FilterBlogQueries | Filt
 	next();
 };
 
-export const queryUserParserMiddleware = (req: ReqQuery<FilterUserQueries | FilteredUserQueries>, res: Response, next: NextFunction) => {
-	const {
-		searchLoginTerm,
-		searchEmailTerm,
-		sortBy,
-		sortDirection,
-		pageSize,
-		pageNumber,
-	} = req.query as FilterUserQueries;
+export const queryUserParserMiddleware = (
+	req: ReqQuery<FilterUserQueries | FilteredUserQueries>,
+	res: Response,
+	next: NextFunction,
+) => {
+	const { searchLoginTerm, searchEmailTerm, sortBy, sortDirection, pageSize, pageNumber } =
+		req.query as FilterUserQueries;
 
 	req.query = <FilteredUserQueries>{
 		...req.query,

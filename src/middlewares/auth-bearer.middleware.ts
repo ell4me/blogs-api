@@ -2,7 +2,6 @@ import { NextFunction, Response, Request } from 'express';
 import { verify } from 'jsonwebtoken';
 import { HTTP_STATUSES, SETTINGS } from '../constants';
 
-
 export const authBearerMiddleware = (req: Request, res: Response, next: NextFunction) => {
 	const token = req.headers.authorization?.split('Bearer ')[1];
 

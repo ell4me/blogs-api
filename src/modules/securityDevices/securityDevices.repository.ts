@@ -1,7 +1,4 @@
-import {
-	SecurityDevicesModel,
-	UpdateDeviceSession,
-} from './securityDevices.dto';
+import { SecurityDevicesModel, UpdateDeviceSession } from './securityDevices.dto';
 import { securityDevicesCollection } from '../../helpers/runDb';
 import { DeleteResult, ObjectId } from 'mongodb';
 
@@ -12,13 +9,22 @@ export class SecurityDevicesRepository {
 		return insertedId;
 	}
 
-	async updateCurrentDeviceSession(deviceId: string, updatedSession: UpdateDeviceSession): Promise<boolean> {
-		const { modifiedCount } = await securityDevicesCollection.updateOne({ deviceId }, { $set: updatedSession });
+	async updateCurrentDeviceSession(
+		deviceId: string,
+		updatedSession: UpdateDeviceSession,
+	): Promise<boolean> {
+		const { modifiedCount } = await securityDevicesCollection.updateOne(
+			{ deviceId },
+			{ $set: updatedSession },
+		);
 
 		return modifiedCount === 1;
 	}
 
-	async deleteAllDeviceSessionsExceptCurrent(userId: string, deviceId: string): Promise<DeleteResult> {
+	async deleteAllDeviceSessionsExceptCurrent(
+		userId: string,
+		deviceId: string,
+	): Promise<DeleteResult> {
 		return securityDevicesCollection.deleteMany({ userId, deviceId: { $nin: [deviceId] } });
 	}
 

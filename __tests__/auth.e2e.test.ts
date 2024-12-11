@@ -147,7 +147,11 @@ describe(ROUTERS_PATH.AUTH, () => {
 		await request(app)
 			.get(`${ROUTERS_PATH.AUTH}/me`)
 			.auth(accessToken, { type: 'bearer' })
-			.expect({ userId: newUser.id, login: newUser.login, email: newUser.email } as CurrentUserViewDto);
+			.expect({
+				userId: newUser.id,
+				login: newUser.login,
+				email: newUser.email,
+			} as CurrentUserViewDto);
 	});
 
 	it('POST shouldn`t register user with wrong data', async () => {
@@ -382,7 +386,7 @@ describe(ROUTERS_PATH.AUTH, () => {
 			await request(app)
 				.delete(`${ROUTERS_PATH.TESTING}/all-data`)
 				.expect(HTTP_STATUSES.NO_CONTENT_204);
-		})
+		});
 
 		it('POST login should return 429 after 5 attempts', async () => {
 			const payload: AuthLoginDto = {
@@ -390,7 +394,7 @@ describe(ROUTERS_PATH.AUTH, () => {
 				password: '',
 			};
 
-			for(let i = 0; i < 5; i++) {
+			for (let i = 0; i < 5; i++) {
 				await request(app)
 					.post(`${ROUTERS_PATH.AUTH}/login`)
 					.send(payload)
@@ -410,7 +414,7 @@ describe(ROUTERS_PATH.AUTH, () => {
 				password: '',
 			};
 
-			for(let i = 0; i < 5; i++) {
+			for (let i = 0; i < 5; i++) {
 				await request(app)
 					.post(`${ROUTERS_PATH.AUTH}/registration`)
 					.send(payload)
@@ -428,7 +432,7 @@ describe(ROUTERS_PATH.AUTH, () => {
 				code: '',
 			};
 
-			for(let i = 0; i < 5; i++) {
+			for (let i = 0; i < 5; i++) {
 				await request(app)
 					.post(`${ROUTERS_PATH.AUTH}/registration-confirmation`)
 					.send(payload)
@@ -446,7 +450,7 @@ describe(ROUTERS_PATH.AUTH, () => {
 				email: '',
 			};
 
-			for(let i = 0; i < 5; i++) {
+			for (let i = 0; i < 5; i++) {
 				await request(app)
 					.post(`${ROUTERS_PATH.AUTH}/registration-email-resending`)
 					.send(payload)
@@ -458,5 +462,5 @@ describe(ROUTERS_PATH.AUTH, () => {
 				.send(payload)
 				.expect(HTTP_STATUSES.TOO_MANY_REQUESTS_429);
 		});
-	})
+	});
 });

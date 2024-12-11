@@ -29,42 +29,51 @@ commentsRouter.get('/:id', async (req: ReqParams<{ id: string }>, res) => {
 	}
 });
 
-commentsRouter.put('/:commentId', ...validationMiddlewares, async (req: ReqBodyWithParams<{ commentId: string }, CommentUpdateDto>, res) => {
-	try {
-		const comment = await commentQueryRepository.getCommentById(req.params.commentId);
-		if (!comment) {
-			res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
-			return;
+commentsRouter.put(
+	'/:commentId',
+	...validationMiddlewares,
+	async (req: ReqBodyWithParams<{ commentId: string }, CommentUpdateDto>, res) => {
+		try {
+			const comment = await commentQueryRepository.getCommentById(req.params.commentId);
+			if (!comment) {
+				res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
+				return;
+			}
+
+			if (comment?.commentatorInfo.userId !== req.user.id) {
+				res.sendStatus(HTTP_STATUSES.FORBIDDEN_403);
+				return;
+			}
+
+			await commentsService.updateCommentById(req.params.commentId, req.body);
+			res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
+		} catch (e) {
+			res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
 		}
+	},
+);
 
-		if (comment?.commentatorInfo.userId !== req.user.id) {
-			res.sendStatus(HTTP_STATUSES.FORBIDDEN_403);
-			return;
+commentsRouter.delete(
+	'/:commentId',
+	authBearerMiddleware,
+	fieldsCheckErrorsMiddleware,
+	async (req: ReqParams<{ commentId: string }>, res) => {
+		try {
+			const comment = await commentQueryRepository.getCommentById(req.params.commentId);
+			if (!comment) {
+				res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
+				return;
+			}
+
+			if (comment?.commentatorInfo.userId !== req.user.id) {
+				res.sendStatus(HTTP_STATUSES.FORBIDDEN_403);
+				return;
+			}
+
+			await commentsService.deleteCommentById(req.params.commentId);
+			res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
+		} catch (e) {
+			res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
 		}
-
-		await commentsService.updateCommentById(req.params.commentId, req.body);
-		res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
-	} catch (e) {
-		res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
-	}
-});
-
-commentsRouter.delete('/:commentId', authBearerMiddleware, fieldsCheckErrorsMiddleware, async (req: ReqParams<{ commentId: string }>, res) => {
-	try {
-		const comment = await commentQueryRepository.getCommentById(req.params.commentId);
-		if (!comment) {
-			res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
-			return;
-		}
-
-		if (comment?.commentatorInfo.userId !== req.user.id) {
-			res.sendStatus(HTTP_STATUSES.FORBIDDEN_403);
-			return;
-		}
-
-		await commentsService.deleteCommentById(req.params.commentId);
-		res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
-	} catch (e) {
-		res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
-	}
-});
+	},
+);

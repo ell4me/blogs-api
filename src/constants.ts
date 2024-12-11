@@ -6,6 +6,7 @@ export const SETTINGS = {
 	PORT: process.env.PORT || 80,
 	DB_HOST: process.env.DB_HOST || 'mongodb://mongodb:27017',
 	DB_NAME: process.env.DB_NAME || 'blog_db',
+	DB_NAME_TEST: 'test',
 	DB_USER: process.env.DB_USER || 'root',
 	DB_PASS: process.env.DB_PASS || 'password',
 	LOGIN: process.env.LOGIN || 'admin',
@@ -21,7 +22,7 @@ export const SETTINGS = {
 export const EXPIRATION_TOKEN = {
 	ACCESS: 10,
 	REFRESH: 20,
-}
+};
 
 export const COLLECTION_NAMES = {
 	BLOGS: 'blogs',
@@ -61,7 +62,7 @@ export const VALIDATION_MESSAGES = {
 	AVAILABLE_RESOLUTIONS:
 		'Field must include at least one of this value and nothing else: P144, P240, P360, P480, P720, P1080, P1440, P2160',
 	FIELD_INVALID_TYPE: (type: string) => `Field must be ${type}`,
-	LENGTH: ({ maxLength, minLength }: { maxLength?: number, minLength?: number }) => {
+	LENGTH: ({ maxLength, minLength }: { maxLength?: number; minLength?: number }) => {
 		if (maxLength && minLength) {
 			return `Field must not be more than ${maxLength} symbols and less than ${minLength}`;
 		}

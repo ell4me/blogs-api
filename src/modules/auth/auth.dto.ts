@@ -16,3 +16,12 @@ export interface RegistrationConfirmationDto {
 export interface RegistrationEmailResendingDto {
 	email: string;
 }
+
+export interface PasswordRecoveryEmailDto {
+	email: string;
+}
+
+export interface PasswordRecoveryDto {
+	newPassword: string;
+	recoveryCode: string;
+}

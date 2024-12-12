@@ -2,7 +2,7 @@ import { compare, hash } from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
 import { add } from 'date-fns/add';
 
-import { AuthLoginDto } from './auth.dto';
+import { AuthLoginDto, PasswordRecoveryDto } from './auth.dto';
 import { VALIDATION_MESSAGES } from '../../constants';
 import { UserCreateDto } from '../users/users.dto';
 import { validateUserIsExist } from '../../helpers/validateUserIsExist';
@@ -14,17 +14,13 @@ import {
 } from '../securityDevices/securityDevices.service';
 import { UsersService, usersService } from '../users/users.service';
 import { SecurityDevicesUpdate } from '../securityDevices/securityDevices.types';
-import { Tokens, UserCreate } from '../users/users.types';
+import { PasswordRecovery, Tokens, UserCreate } from '../users/users.types';
 
 class AuthService {
-	private usersService: UsersService;
-	private emailAdapter: EmailAdapter;
-	private securityDevicesService: SecurityDevicesService;
-
 	constructor(
-		usersService: UsersService,
-		emailAdapter: EmailAdapter,
-		securityDevicesService: SecurityDevicesService,
+		private readonly usersService: UsersService,
+		private readonly emailAdapter: EmailAdapter,
+		private readonly securityDevicesService: SecurityDevicesService,
 	) {
 		this.usersService = usersService;
 		this.emailAdapter = emailAdapter;
@@ -87,7 +83,7 @@ class AuthService {
 		await this.usersService.createUserRegistration(createdUser);
 
 		this.emailAdapter
-			.sendEmail(createdUser.email, createdUser.emailConfirmation.code)
+			.sendEmailConfirmation(createdUser.email, createdUser.emailConfirmation.code)
 			.catch(() => this.registrationEmailResending(email));
 	}
 
@@ -101,7 +97,7 @@ class AuthService {
 		});
 
 		if (!user) {
-			return getErrorMessage(VALIDATION_MESSAGES.CONFIRMATION_CODE_IS_NOT_CORRECT);
+			return getErrorMessage(VALIDATION_MESSAGES.CODE_IS_NOT_CORRECT('Confirmation'));
 		}
 
 		if (user.emailConfirmation.isConfirmed) {
@@ -109,7 +105,7 @@ class AuthService {
 		}
 
 		if (user.emailConfirmation.expiration < new Date().getTime()) {
-			return getErrorMessage(VALIDATION_MESSAGES.CONFIRMATION_CODE_EXPIRED);
+			return getErrorMessage(VALIDATION_MESSAGES.CODE_EXPIRED('Confirmation'));
 		}
 
 		await usersService.updateUserEmailConfirmation(user.id, {
@@ -146,7 +142,7 @@ class AuthService {
 		});
 
 		this.emailAdapter
-			.sendEmail(user.email, confirmationCode)
+			.sendEmailConfirmation(user.email, confirmationCode)
 			.catch(() => console.error('Send email failed'));
 	}
 
@@ -162,6 +158,63 @@ class AuthService {
 
 	async logout(deviceId: string): Promise<boolean> {
 		return this.securityDevicesService.deleteSessionByDeviceId(deviceId);
+	}
+
+	async sendPasswordRecoveryEmail(email: string): Promise<void> {
+		const user = await this.usersService.getUserByEmailOrLogin({ email });
+
+		if (!user) {
+			return;
+		}
+
+		const passwordRecovery: PasswordRecovery = {
+			code: uuidv4(),
+			expiration: add(new Date(), { hours: 1 }).getTime(),
+		};
+
+		await this.usersService.updateUserPasswordRecovery(user.id, passwordRecovery);
+
+		this.emailAdapter
+			.sendEmailRecoveryPassword(email, passwordRecovery.code)
+			.catch(() => console.error('Send email failed'));
+
+		return;
+	}
+
+	async updateUserPasswordByRecoveryCode({
+		recoveryCode,
+		newPassword,
+	}: PasswordRecoveryDto): Promise<ValidationErrorViewDto | { result: boolean }> {
+		const user = await this.usersService.getUserByPasswordRecoveryCode(recoveryCode);
+
+		if (!user) {
+			return  {
+				errorsMessages: [
+					{
+						message: VALIDATION_MESSAGES.CODE_IS_NOT_CORRECT('Recovery'),
+						field: 'recoveryCode',
+					},
+				],
+			};
+		}
+
+		if (!user.passwordRecovery?.expiration || user.passwordRecovery.expiration < new Date().getTime()) {
+			return {
+				errorsMessages: [
+					{
+						message: VALIDATION_MESSAGES.CODE_EXPIRED('Recovery'),
+						field: 'recoveryCode',
+					},
+				],
+			};
+		}
+
+		const newPasswordHash = await hash(newPassword, 10);
+
+		await this.usersService.updateUserPasswordRecovery(user.id, { code: '', expiration: 0 });
+		const result = await this.usersService.updateUserPassword(user.id, newPasswordHash);
+
+		return { result };
 	}
 }
 

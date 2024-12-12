@@ -7,6 +7,8 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 import {
 	AuthLoginDto,
 	CurrentUserViewDto,
+	PasswordRecoveryDto,
+	PasswordRecoveryEmailDto,
 	RegistrationConfirmationDto,
 	RegistrationEmailResendingDto,
 } from '../src/modules/auth/auth.dto';
@@ -15,6 +17,7 @@ import { usersRepository } from '../src/modules/users/users.repository';
 import { add } from 'date-fns/add';
 import mongoose from 'mongoose';
 import { UserDocument } from '../src/modules/users/users.model';
+import { PasswordRecovery } from '../src/modules/users/users.types';
 
 const createUserDto = {
 	login: 'ell4me',
@@ -253,7 +256,7 @@ describe(ROUTERS_PATH.AUTH, () => {
 				errorsMessages: [
 					{
 						field: 'code',
-						message: VALIDATION_MESSAGES.CONFIRMATION_CODE_IS_NOT_CORRECT,
+						message: VALIDATION_MESSAGES.CODE_IS_NOT_CORRECT('Confirmation'),
 					},
 				],
 			} as ValidationErrorViewDto);
@@ -274,7 +277,7 @@ describe(ROUTERS_PATH.AUTH, () => {
 				errorsMessages: [
 					{
 						field: 'code',
-						message: VALIDATION_MESSAGES.CONFIRMATION_CODE_EXPIRED,
+						message: VALIDATION_MESSAGES.CODE_EXPIRED('Confirmation'),
 					},
 				],
 			} as ValidationErrorViewDto);
@@ -376,6 +379,149 @@ describe(ROUTERS_PATH.AUTH, () => {
 			.expect(HTTP_STATUSES.NO_CONTENT_204);
 	});
 
+	it('POST shouldn`t send email with recovery code when email is not valid', async () => {
+		const passwordRecoveryDto = {
+			email: 'qwe@gmai',
+		};
+
+		await request(app)
+			.post(`${ROUTERS_PATH.AUTH}/password-recovery`)
+			.send(passwordRecoveryDto)
+			.expect(HTTP_STATUSES.BAD_REQUEST_400, {
+				errorsMessages: [
+					{
+						message: VALIDATION_MESSAGES.FIELD_IS_NOT_MATCH('email'),
+						field: 'email',
+					},
+				],
+			} as ValidationErrorViewDto);
+	});
+
+	it('POST shouldn`t send email with recovery code when email is not correct, but anyway should return 204', async () => {
+		const passwordRecoveryDto = {
+			email: 'vcxvcdfds@gmail.com',
+		};
+
+		await request(app)
+			.post(`${ROUTERS_PATH.AUTH}/password-recovery`)
+			.send(passwordRecoveryDto)
+			.expect(HTTP_STATUSES.NO_CONTENT_204);
+
+		const user = await usersRepository.getUserByEmailOrLogin({
+			email: passwordRecoveryDto.email,
+		});
+
+		expect(user).toBeNull();
+	});
+
+	it('POST should send email with recovery code', async () => {
+		const passwordRecoveryDto = {
+			email: registeredUser!.email,
+		};
+
+		await request(app)
+			.post(`${ROUTERS_PATH.AUTH}/password-recovery`)
+			.send(passwordRecoveryDto)
+			.expect(HTTP_STATUSES.NO_CONTENT_204);
+
+		registeredUser = await usersRepository.getUserByEmailOrLogin({
+			email: passwordRecoveryDto.email,
+		});
+
+		expect(registeredUser!.passwordRecovery?.code).not.toBe('');
+	});
+
+	it('POST should`t update password when data is not correct', async () => {
+		const passwordRecoveryDto = {
+			newPassword: 'o',
+			recoveryCode: 0,
+		};
+
+		await request(app)
+			.post(`${ROUTERS_PATH.AUTH}/new-password`)
+			.send(passwordRecoveryDto)
+			.expect(HTTP_STATUSES.BAD_REQUEST_400, {
+				errorsMessages: [
+					{
+						message: VALIDATION_MESSAGES.LENGTH({ maxLength: 20, minLength: 6 }),
+						field: 'newPassword',
+					},
+					{
+						message: VALIDATION_MESSAGES.FIELD_INVALID_TYPE('string'),
+						field: 'recoveryCode',
+					},
+				],
+			} as ValidationErrorViewDto);
+
+		const loginResponse = await request(app)
+			.post(`${ROUTERS_PATH.AUTH}/login`)
+			.send({
+				loginOrEmail: createUserDto.login,
+				password: createUserDto.password,
+			} as AuthLoginDto);
+
+		expect(loginResponse.body).toMatchObject({ accessToken: expect.any(String) });
+
+	});
+
+	it('POST should`t update password when recoveryCode is not correct', async () => {
+		const passwordRecoveryDto = {
+			newPassword: 'zxcqwe',
+			recoveryCode: 'ewer',
+		};
+
+		await request(app)
+			.post(`${ROUTERS_PATH.AUTH}/new-password`)
+			.send(passwordRecoveryDto)
+			.expect(HTTP_STATUSES.BAD_REQUEST_400, {
+				errorsMessages: [
+					{
+						message: VALIDATION_MESSAGES.CODE_IS_NOT_CORRECT('Recovery'),
+						field: 'recoveryCode',
+					},
+				],
+			} as ValidationErrorViewDto);
+
+		const loginResponse = await request(app)
+			.post(`${ROUTERS_PATH.AUTH}/login`)
+			.send({
+				loginOrEmail: createUserDto.login,
+				password: createUserDto.password,
+			} as AuthLoginDto);
+
+		expect(loginResponse.body).toMatchObject({ accessToken: expect.any(String) });
+	});
+
+	it('POST should update password', async () => {
+		const passwordRecoveryDto = {
+			newPassword: 'zxcqwe',
+			recoveryCode: registeredUser!.passwordRecovery!.code,
+		};
+
+		await request(app)
+			.post(`${ROUTERS_PATH.AUTH}/new-password`)
+			.send(passwordRecoveryDto)
+			.expect(HTTP_STATUSES.NO_CONTENT_204);
+
+		const user = await usersRepository.getUserByEmailOrLogin({
+			email: registeredUser!.email,
+		});
+
+		const loginResponse = await request(app)
+			.post(`${ROUTERS_PATH.AUTH}/login`)
+			.send({
+				loginOrEmail: user?.login!,
+				password: passwordRecoveryDto.newPassword,
+			} as AuthLoginDto);
+
+		expect(loginResponse.body).toMatchObject({ accessToken: expect.any(String) });
+
+		expect(user!.passwordRecovery).toMatchObject({
+			code: '',
+			expiration: 0,
+		} as PasswordRecovery);
+	});
+
 	describe('Rate limit', () => {
 		beforeAll(async () => {
 			await request(app)
@@ -454,6 +600,43 @@ describe(ROUTERS_PATH.AUTH, () => {
 
 			await request(app)
 				.post(`${ROUTERS_PATH.AUTH}/registration`)
+				.send(payload)
+				.expect(HTTP_STATUSES.TOO_MANY_REQUESTS_429);
+		});
+
+		it('POST password-recovery should return 429 after 5 attempts', async () => {
+			const payload: PasswordRecoveryEmailDto = {
+				email: '',
+			};
+
+			for (let i = 0; i < 5; i++) {
+				await request(app)
+					.post(`${ROUTERS_PATH.AUTH}/password-recovery`)
+					.send(payload)
+					.expect(HTTP_STATUSES.BAD_REQUEST_400);
+			}
+
+			await request(app)
+				.post(`${ROUTERS_PATH.AUTH}/password-recovery`)
+				.send(payload)
+				.expect(HTTP_STATUSES.TOO_MANY_REQUESTS_429);
+		});
+
+		it('POST password-recovery should return 429 after 5 attempts', async () => {
+			const payload: PasswordRecoveryDto = {
+				newPassword: '',
+				recoveryCode: '',
+			};
+
+			for (let i = 0; i < 5; i++) {
+				await request(app)
+					.post(`${ROUTERS_PATH.AUTH}/new-password`)
+					.send(payload)
+					.expect(HTTP_STATUSES.BAD_REQUEST_400);
+			}
+
+			await request(app)
+				.post(`${ROUTERS_PATH.AUTH}/new-password`)
 				.send(payload)
 				.expect(HTTP_STATUSES.TOO_MANY_REQUESTS_429);
 		});

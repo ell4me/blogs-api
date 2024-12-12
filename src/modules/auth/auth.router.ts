@@ -2,7 +2,8 @@ import { Router } from 'express';
 
 import { authService } from './auth.service';
 import {
-	AuthLoginDto,
+	AuthLoginDto, PasswordRecoveryDto,
+	PasswordRecoveryEmailDto,
 	RegistrationConfirmationDto,
 	RegistrationEmailResendingDto,
 } from './auth.dto';
@@ -160,3 +161,45 @@ authRouter.post('/logout', refreshTokenMiddleware, async (req, res) => {
 		res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
 	}
 });
+
+authRouter.post(
+	'/password-recovery',
+	rateLimitMiddleware,
+	stringMiddleware({ field: 'email' }),
+	patternMiddleware('email', PATTERNS.EMAIL),
+	fieldsCheckErrorsMiddleware,
+	async (req: ReqBody<PasswordRecoveryEmailDto>, res) => {
+		try {
+			await authService.sendPasswordRecoveryEmail(req.body.email);
+			res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
+		} catch (e) {
+			res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
+		}
+	},
+);
+
+authRouter.post(
+	'/new-password',
+	rateLimitMiddleware,
+	stringMiddleware({ field: 'newPassword', maxLength: 20, minLength: 6 }),
+	stringMiddleware({ field: 'recoveryCode' }),
+	fieldsCheckErrorsMiddleware,
+	async (req: ReqBody<PasswordRecoveryDto>, res) => {
+		try {
+			const result = await authService.updateUserPasswordByRecoveryCode(req.body);
+
+			if ('errorsMessages' in result) {
+				res.status(HTTP_STATUSES.BAD_REQUEST_400).send(result);
+				return;
+			}
+
+			if(!result.result) {
+				res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
+			}
+
+			res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
+		} catch (e) {
+			res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
+		}
+	},
+);

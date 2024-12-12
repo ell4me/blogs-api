@@ -1,5 +1,5 @@
 import { DeleteResult, ObjectId } from 'mongodb';
-import { EmailConfirmation, UserCreate } from './users.types';
+import { EmailConfirmation, PasswordRecovery, UserCreate } from './users.types';
 import { UserDocument, UsersModel } from './users.model';
 
 export class UsersRepository {
@@ -33,11 +33,33 @@ export class UsersRepository {
 		return UsersModel.findOne({ 'emailConfirmation.code': code }).exec();
 	}
 
+	getUserByPasswordRecoveryCode(code: string): Promise<UserDocument | null> {
+		return UsersModel.findOne({ 'passwordRecovery.code': code }).exec();
+	}
+
 	async updateUserEmailConfirmation(
 		id: string,
 		emailConfirmation: EmailConfirmation,
 	): Promise<boolean> {
 		const result = await UsersModel.findOneAndUpdate({ id }, { emailConfirmation });
+
+		return !!result;
+	}
+
+	async updateUserPasswordRecovery(
+		id: string,
+		passwordRecovery: PasswordRecovery,
+	): Promise<boolean> {
+		const result = await UsersModel.findOneAndUpdate({ id }, { passwordRecovery });
+
+		return !!result;
+	}
+
+	async updateUserPassword(
+		id: string,
+		newPassword: string,
+	): Promise<boolean> {
+		const result = await UsersModel.findOneAndUpdate({ id }, { password: newPassword });
 
 		return !!result;
 	}

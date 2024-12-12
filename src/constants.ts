@@ -75,7 +75,7 @@ export const VALIDATION_MESSAGES = {
 	FIELD_IS_EXIST: (field: string) => `User with current ${field} is already exist`,
 	FIELD_IS_NOT_MATCH: (field: string) => `${field} doesn't match to pattern`,
 	USER_IS_NOT_FOUND: 'User with that email is not found',
-	CONFIRMATION_CODE_IS_NOT_CORRECT: 'Confirmation code is not correct',
-	CONFIRMATION_CODE_EXPIRED: 'Confirmation code has already expired',
+	CODE_IS_NOT_CORRECT: (nameCode?: string) => `${nameCode} code is not correct`,
+	CODE_EXPIRED: (nameCode?: string) => `${nameCode} code has already expired`,
 	USER_ALREADY_CONFIRMED: 'User has already confirmed',
 };

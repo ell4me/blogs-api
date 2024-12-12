@@ -15,7 +15,7 @@ export class EmailAdapter {
 		});
 	}
 
-	sendEmail(emailTo: string, emailConfirmationCode: string) {
+	sendEmailConfirmation(emailTo: string, emailConfirmationCode: string): Promise<void> {
 		const mailOptions: Mail.Options = {
 			from: {
 				name: 'Blogs-api',
@@ -31,6 +31,28 @@ export class EmailAdapter {
 				'/confirm-email?code=' +
 				emailConfirmationCode +
 				'>complete registration</a>\n' +
+				'</p>',
+		};
+
+		return this.transporter.sendMail(mailOptions);
+	}
+
+	sendEmailRecoveryPassword(emailTo: string, passwordRecoveryCode: string): Promise<void> {
+		const mailOptions: Mail.Options = {
+			from: {
+				name: 'Blogs-api',
+				address: SETTINGS.SMTP_USER!,
+			},
+			to: emailTo,
+			subject: 'Password recovery',
+			html:
+				'<h1>Password recovery</h1>\n' +
+				'<p>To finish password recovery please follow the link below:\n' +
+				'<a href=' +
+				SETTINGS.HOST +
+				'/password-recovery?recoveryCode=' +
+				passwordRecoveryCode +
+				'>recovery password</a>\n' +
 				'</p>',
 		};
 

@@ -3,7 +3,7 @@ import { ValidationErrorViewDto } from '../../types';
 import { hash } from 'bcrypt';
 import { validateUserIsExist } from '../../helpers/validateUserIsExist';
 import { ObjectId } from 'mongodb';
-import { EmailConfirmation, UserCreate } from './users.types';
+import { EmailConfirmation, PasswordRecovery, UserCreate } from './users.types';
 import { UserCreateDto } from './users.dto';
 import { UserDocument } from './users.model';
 
@@ -60,6 +60,20 @@ export class UsersService {
 		return this.usersRepository.updateUserEmailConfirmation(id, emailConfirmation);
 	}
 
+	updateUserPasswordRecovery(
+		id: string,
+		passwordRecovery: PasswordRecovery,
+	): Promise<boolean> {
+		return this.usersRepository.updateUserPasswordRecovery(id, passwordRecovery);
+	}
+
+	updateUserPassword(
+		id: string,
+		newPassword: string,
+	): Promise<boolean> {
+		return this.usersRepository.updateUserPassword(id, newPassword);
+	}
+
 	getUserByEmailOrLogin(
 		emailOrLogin: Partial<{
 			email: string;
@@ -71,6 +85,10 @@ export class UsersService {
 
 	getUserByConfirmationCode(code: string): Promise<UserDocument | null> {
 		return usersRepository.getUserByConfirmationCode(code);
+	}
+
+	getUserByPasswordRecoveryCode(code: string): Promise<UserDocument | null> {
+		return usersRepository.getUserByPasswordRecoveryCode(code);
 	}
 }
 

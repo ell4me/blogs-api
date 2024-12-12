@@ -4,6 +4,11 @@ export interface EmailConfirmation {
 	isConfirmed: boolean;
 }
 
+export interface PasswordRecovery {
+	code: string;
+	expiration: number;
+}
+
 export interface Tokens {
 	accessToken: string;
 	refreshToken: string;

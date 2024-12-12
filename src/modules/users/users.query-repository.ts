@@ -20,7 +20,7 @@ export class UsersQueryRepository {
 			.skip((pageNumber - 1) * pageSize)
 			.sort({ [sortBy]: sortDirection })
 			.limit(pageSize)
-			.select('-_id -__v -updatedAt -password -emailConfirmation');
+			.select('-_id -__v -updatedAt -password -emailConfirmation -passwordRecovery');
 
 		const totalCount = await this.getCountUsersByFilter(searchLoginTerm, searchEmailTerm);
 
@@ -35,7 +35,7 @@ export class UsersQueryRepository {
 
 	getUserById(id: string): Promise<UserViewDto | null> {
 		return UsersModel.findOne({ id })
-			.select('-_id -__v -updatedAt -password -emailConfirmation')
+			.select('-_id -__v -updatedAt -password -emailConfirmation -passwordRecovery')
 			.exec();
 	}
 

@@ -1,6 +1,6 @@
 import { Schema, model } from 'mongoose';
 import { MODELS_NAMES } from '../../constants';
-import { EmailConfirmation } from './users.types';
+import { EmailConfirmation, PasswordRecovery } from './users.types';
 
 export interface UserDocument {
 	id: string;
@@ -10,6 +10,7 @@ export interface UserDocument {
 	createdAt: Date;
 	updatedAt: Date;
 	emailConfirmation: EmailConfirmation;
+	passwordRecovery?: PasswordRecovery;
 }
 
 const usersSchema = new Schema<UserDocument>(
@@ -22,6 +23,10 @@ const usersSchema = new Schema<UserDocument>(
 			isConfirmed: { type: Boolean, default: false },
 			expiration: { type: Number, required: true },
 			code: { type: String, default: '' },
+		},
+		passwordRecovery: {
+			code: String,
+			expiration: Number,
 		},
 	},
 	{ timestamps: true },

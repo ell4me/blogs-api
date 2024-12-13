@@ -461,7 +461,6 @@ describe(ROUTERS_PATH.AUTH, () => {
 			} as AuthLoginDto);
 
 		expect(loginResponse.body).toMatchObject({ accessToken: expect.any(String) });
-
 	});
 
 	it('POST should`t update password when recoveryCode is not correct', async () => {

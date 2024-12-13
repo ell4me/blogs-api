@@ -174,7 +174,7 @@ class AuthService {
 
 		await this.usersService.updateUserPasswordRecovery(user.id, passwordRecovery);
 
-		this.emailAdapter
+		await this.emailAdapter
 			.sendEmailRecoveryPassword(email, passwordRecovery.code)
 			.catch(() => console.error('Send email failed'));
 

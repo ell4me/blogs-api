@@ -8,17 +8,17 @@ export const securityDevicesRouter = Router();
 securityDevicesRouter.get(
 	'/',
 	refreshTokenMiddleware,
-	securityDevicesController.getActiveDeviceSessions,
+	securityDevicesController.getActiveDeviceSessions.bind(securityDevicesController),
 );
 
 securityDevicesRouter.delete(
 	'/',
 	refreshTokenMiddleware,
-	securityDevicesController.deleteAllDeviceSessionsExceptCurrent,
+	securityDevicesController.deleteAllDeviceSessionsExceptCurrent.bind(securityDevicesController),
 );
 
 securityDevicesRouter.delete(
 	'/:deviceId',
 	refreshTokenMiddleware,
-	securityDevicesController.deleteSessionByDeviceId,
+	securityDevicesController.deleteSessionByDeviceId.bind(securityDevicesController),
 );

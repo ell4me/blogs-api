@@ -27,15 +27,19 @@ const validationRegistrationMiddlewares = [
 	fieldsCheckErrorsMiddleware,
 ];
 
-authRouter.post('/login', ...validationLoginMiddlewares, authController.login);
+authRouter.post('/login', ...validationLoginMiddlewares, authController.login.bind(authController));
 
-authRouter.post('/registration', ...validationRegistrationMiddlewares, authController.registration);
+authRouter.post(
+	'/registration',
+	...validationRegistrationMiddlewares,
+	authController.registration.bind(authController),
+);
 
 authRouter.get(
 	'/me',
 	authBearerMiddleware,
 	fieldsCheckErrorsMiddleware,
-	authController.getCurrentUser,
+	authController.getCurrentUser.bind(authController),
 );
 
 authRouter.post(
@@ -43,7 +47,7 @@ authRouter.post(
 	rateLimitMiddleware,
 	stringMiddleware({ field: 'code' }),
 	fieldsCheckErrorsMiddleware,
-	authController.registrationConfirmation,
+	authController.registrationConfirmation.bind(authController),
 );
 
 authRouter.post(
@@ -52,12 +56,16 @@ authRouter.post(
 	stringMiddleware({ field: 'email' }),
 	patternMiddleware('email', PATTERNS.EMAIL),
 	fieldsCheckErrorsMiddleware,
-	authController.registrationEmailResending,
+	authController.registrationEmailResending.bind(authController),
 );
 
-authRouter.post('/refresh-token', refreshTokenMiddleware, authController.refreshToken);
+authRouter.post(
+	'/refresh-token',
+	refreshTokenMiddleware,
+	authController.refreshToken.bind(authController),
+);
 
-authRouter.post('/logout', refreshTokenMiddleware, authController.logout);
+authRouter.post('/logout', refreshTokenMiddleware, authController.logout.bind(authController));
 
 authRouter.post(
 	'/password-recovery',
@@ -65,7 +73,7 @@ authRouter.post(
 	stringMiddleware({ field: 'email' }),
 	patternMiddleware('email', PATTERNS.EMAIL),
 	fieldsCheckErrorsMiddleware,
-	authController.sendPasswordRecoveryEmail,
+	authController.sendPasswordRecoveryEmail.bind(authController),
 );
 
 authRouter.post(
@@ -74,5 +82,5 @@ authRouter.post(
 	stringMiddleware({ field: 'newPassword', maxLength: 20, minLength: 6 }),
 	stringMiddleware({ field: 'recoveryCode' }),
 	fieldsCheckErrorsMiddleware,
-	authController.updateUserPasswordByRecoveryCode,
+	authController.updateUserPasswordByRecoveryCode.bind(authController),
 );

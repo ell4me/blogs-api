@@ -17,12 +17,12 @@ const validationMiddlewares = [
 	fieldsCheckErrorsMiddleware,
 ];
 
-blogsRouter.get('/', queryBlogParserMiddleware, blogsController.getAllBlogs);
-blogsRouter.get('/:id', blogsController.getBlogById);
+blogsRouter.get('/', queryBlogParserMiddleware, blogsController.getAllBlogs.bind(blogsController));
+blogsRouter.get('/:id', blogsController.getBlogById.bind(blogsController));
 
-blogsRouter.get('/:id/posts', queryBlogParserMiddleware, blogsController.getPostsByBlogId);
+blogsRouter.get('/:id/posts', queryBlogParserMiddleware, blogsController.getPostsByBlogId.bind(blogsController));
 
-blogsRouter.post('/', ...validationMiddlewares, blogsController.createBlog);
+blogsRouter.post('/', ...validationMiddlewares, blogsController.createBlog.bind(blogsController));
 
 blogsRouter.post(
 	'/:id/posts',
@@ -31,9 +31,9 @@ blogsRouter.post(
 	stringMiddleware({ field: 'shortDescription', maxLength: 100 }),
 	stringMiddleware({ field: 'content', maxLength: 1000 }),
 	fieldsCheckErrorsMiddleware,
-	blogsController.createPostByBlogId,
+	blogsController.createPostByBlogId.bind(blogsController),
 );
 
-blogsRouter.put('/:id', ...validationMiddlewares, blogsController.updateBlogById);
+blogsRouter.put('/:id', ...validationMiddlewares, blogsController.updateBlogById.bind(blogsController));
 
-blogsRouter.delete('/:id', authMiddleware, blogsController.deleteBlogById);
+blogsRouter.delete('/:id', authMiddleware, blogsController.deleteBlogById.bind(blogsController));

@@ -2,7 +2,7 @@ import { PostCreateByBlogId, PostUpdateDto } from './posts.dto';
 import { postsRepository, PostsRepository } from './posts.repository';
 import { PostCreate } from './posts.types';
 
-class PostsService {
+export class PostsService {
 	constructor(private readonly postsRepository: PostsRepository) {}
 
 	async updatePostById(id: string, updatedPost: PostUpdateDto): Promise<boolean> {

@@ -29,20 +29,24 @@ const commentsMiddlewares = [
 	fieldsCheckErrorsMiddleware,
 ];
 
-postsRouter.get('/', queryBlogParserMiddleware, postsController.getAllPosts);
+postsRouter.get('/', queryBlogParserMiddleware, postsController.getAllPosts.bind(postsController));
 
-postsRouter.get('/:id', postsController.getPostById);
+postsRouter.get('/:id', postsController.getPostById.bind(postsController));
 
-postsRouter.post('/', ...validationMiddlewares, postsController.createPost);
+postsRouter.post('/', ...validationMiddlewares, postsController.createPost.bind(postsController));
 
-postsRouter.put('/:id', ...validationMiddlewares, postsController.updatePostById);
+postsRouter.put(
+	'/:id',
+	...validationMiddlewares,
+	postsController.updatePostById.bind(postsController),
+);
 
-postsRouter.delete('/:id', authMiddleware, postsController.deletePostById);
+postsRouter.delete('/:id', authMiddleware, postsController.deletePostById.bind(postsController));
 
 postsRouter.get(
 	'/:postId/comments',
 	queryBlogParserMiddleware,
-	postsController.getCommentsByPostId,
+	postsController.getCommentsByPostId.bind(postsController),
 );
 
-postsRouter.post('/:postId/comments', ...commentsMiddlewares, postsController.createComment);
+postsRouter.post('/:postId/comments', ...commentsMiddlewares, postsController.createComment.bind(postsController));

@@ -3,7 +3,7 @@ import { CommentCreateDto, CommentUpdateDto } from './comments.dto';
 import { UserViewDto } from '../users/users.dto';
 import { CommentCreate } from './comments.types';
 
-class CommentsService {
+export class CommentsService {
 	constructor(private readonly commentsRepository: CommentsRepository) {}
 
 	async createComment(

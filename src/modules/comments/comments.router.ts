@@ -11,13 +11,17 @@ const validationMiddlewares = [
 	fieldsCheckErrorsMiddleware,
 ];
 
-commentsRouter.get('/:id', commentsController.getCommentById);
+commentsRouter.get('/:id', commentsController.getCommentById.bind(commentsController));
 
-commentsRouter.put('/:commentId', ...validationMiddlewares, commentsController.updateCommentById);
+commentsRouter.put(
+	'/:commentId',
+	...validationMiddlewares,
+	commentsController.updateCommentById.bind(commentsController),
+);
 
 commentsRouter.delete(
 	'/:commentId',
 	authBearerMiddleware,
 	fieldsCheckErrorsMiddleware,
-	commentsController.deleteCommentById,
+	commentsController.deleteCommentById.bind(commentsController),
 );

@@ -3,7 +3,7 @@ import { postsRepository, PostsRepository } from '../posts/posts.repository';
 import { BlogCreateDto, BlogUpdateDto } from './blogs.dto';
 import { BlogCreate } from './blogs.types';
 
-class BlogsService {
+export class BlogsService {
 	constructor(
 		private readonly postsRepository: PostsRepository,
 		private readonly blogsRepository: BlogsRepository,

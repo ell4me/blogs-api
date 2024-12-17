@@ -21,7 +21,7 @@ usersRouter.get(
 	'/',
 	authMiddleware<FilteredUserQueries>,
 	queryUserParserMiddleware,
-	usersController.getAllUsers,
+	usersController.getAllUsers.bind(usersController),
 );
-usersRouter.post('/', ...validationMiddlewares, usersController.createUser);
-usersRouter.delete('/:id', authMiddleware, usersController.deleteUserById);
+usersRouter.post('/', ...validationMiddlewares, usersController.createUser.bind(usersController));
+usersRouter.delete('/:id', authMiddleware, usersController.deleteUserById.bind(usersController));

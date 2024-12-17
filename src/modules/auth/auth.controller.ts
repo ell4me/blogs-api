@@ -8,15 +8,24 @@ import {
 	RegistrationConfirmationDto,
 	RegistrationEmailResendingDto,
 } from './auth.dto';
-import { authService } from './auth.service';
+import { AuthService, authService } from './auth.service';
 import { HTTP_STATUSES } from '../../constants';
 import { UserCreateDto } from '../users/users.dto';
-import { usersQueryRepository } from '../users/users.query-repository';
+import { UsersQueryRepository, usersQueryRepository } from '../users/users.query-repository';
 
 class AuthController {
+	constructor(
+		private readonly authService: AuthService,
+		private readonly usersQueryRepository: UsersQueryRepository,
+	) {}
+
 	async login(req: ReqBody<AuthLoginDto>, res: Response) {
 		try {
-			const token = await authService.login(req.body, req.ip!, req.headers['user-agent']);
+			const token = await this.authService.login(
+				req.body,
+				req.ip!,
+				req.headers['user-agent'],
+			);
 			if (!token) {
 				res.sendStatus(HTTP_STATUSES.UNAUTHORIZED_401);
 				return;
@@ -31,7 +40,7 @@ class AuthController {
 
 	async registration(req: ReqBody<UserCreateDto>, res: Response) {
 		try {
-			const result = await authService.registration(req.body);
+			const result = await this.authService.registration(req.body);
 
 			if (result) {
 				res.status(HTTP_STATUSES.BAD_REQUEST_400).send(result);
@@ -46,7 +55,7 @@ class AuthController {
 
 	async getCurrentUser(req: Request, res: Response) {
 		try {
-			const userInfo = await usersQueryRepository.getCurrentUser(req.user.id!);
+			const userInfo = await this.usersQueryRepository.getCurrentUser(req.user.id!);
 			res.send(userInfo);
 		} catch (e) {
 			res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
@@ -55,7 +64,7 @@ class AuthController {
 
 	async registrationConfirmation(req: ReqBody<RegistrationConfirmationDto>, res: Response) {
 		try {
-			const result = await authService.registrationConfirmation(req.body.code);
+			const result = await this.authService.registrationConfirmation(req.body.code);
 
 			if (result) {
 				res.status(HTTP_STATUSES.BAD_REQUEST_400).send(result);
@@ -70,7 +79,7 @@ class AuthController {
 
 	async registrationEmailResending(req: ReqBody<RegistrationEmailResendingDto>, res: Response) {
 		try {
-			const result = await authService.registrationEmailResending(req.body.email);
+			const result = await this.authService.registrationEmailResending(req.body.email);
 
 			if (result) {
 				res.status(HTTP_STATUSES.BAD_REQUEST_400).send(result);
@@ -85,7 +94,7 @@ class AuthController {
 
 	async refreshToken(req: Request, res: Response) {
 		try {
-			const token = await authService.refreshToken(req.user.deviceId!, {
+			const token = await this.authService.refreshToken(req.user.deviceId!, {
 				userId: req.user.id!,
 				ip: req.ip!,
 				deviceName: req.headers['user-agent']!,
@@ -105,7 +114,7 @@ class AuthController {
 
 	async logout(req: Request, res: Response) {
 		try {
-			const isLogout = await authService.logout(req.user.deviceId!);
+			const isLogout = await this.authService.logout(req.user.deviceId!);
 
 			if (!isLogout) {
 				res.sendStatus(HTTP_STATUSES.UNAUTHORIZED_401);
@@ -120,7 +129,7 @@ class AuthController {
 
 	async sendPasswordRecoveryEmail(req: ReqBody<PasswordRecoveryEmailDto>, res: Response) {
 		try {
-			await authService.sendPasswordRecoveryEmail(req.body.email);
+			await this.authService.sendPasswordRecoveryEmail(req.body.email);
 			res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
 		} catch (e) {
 			res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
@@ -129,7 +138,7 @@ class AuthController {
 
 	async updateUserPasswordByRecoveryCode(req: ReqBody<PasswordRecoveryDto>, res: Response) {
 		try {
-			const result = await authService.updateUserPasswordByRecoveryCode(req.body);
+			const result = await this.authService.updateUserPasswordByRecoveryCode(req.body);
 
 			if ('errorsMessages' in result) {
 				res.status(HTTP_STATUSES.BAD_REQUEST_400).send(result);
@@ -147,4 +156,4 @@ class AuthController {
 	}
 }
 
-export const authController = new AuthController();
+export const authController = new AuthController(authService, usersQueryRepository);

@@ -7,20 +7,32 @@ import {
 	ReqQuery,
 	ReqQueryWithParams,
 } from '../../types';
-import { postsQueryRepository } from './posts.query-repository';
+import { PostsQueryRepository, postsQueryRepository } from './posts.query-repository';
 import { HTTP_STATUSES, VALIDATION_MESSAGES } from '../../constants';
 import { PostCreateByBlogIdDto, PostUpdateDto } from './posts.dto';
-import { blogsQueryRepository } from '../blogs/blogs.query-repository';
-import { postsService } from './posts.service';
-import { commentQueryRepository } from '../comments/comments.query-repository';
+import { BlogsQueryRepository, blogsQueryRepository } from '../blogs/blogs.query-repository';
+import { PostsService, postsService } from './posts.service';
+import {
+	commentQueryRepository,
+	CommentsQueryRepository,
+} from '../comments/comments.query-repository';
 import { CommentCreateDto } from '../comments/comments.dto';
-import { usersQueryRepository } from '../users/users.query-repository';
-import { commentsService } from '../comments/comments.service';
+import { UsersQueryRepository, usersQueryRepository } from '../users/users.query-repository';
+import { commentsService, CommentsService } from '../comments/comments.service';
 
 class PostsController {
+	constructor(
+		private readonly postsQueryRepository: PostsQueryRepository,
+		private readonly blogsQueryRepository: BlogsQueryRepository,
+		private readonly commentQueryRepository: CommentsQueryRepository,
+		private readonly usersQueryRepository: UsersQueryRepository,
+		private readonly postsService: PostsService,
+		private readonly commentsService: CommentsService,
+	) {}
+
 	async getAllPosts(req: ReqQuery<FilteredBlogQueries>, res: Response) {
 		try {
-			const posts = await postsQueryRepository.getAllPosts(req.query);
+			const posts = await this.postsQueryRepository.getAllPosts(req.query);
 			res.send(posts);
 		} catch (e) {
 			res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
@@ -29,7 +41,7 @@ class PostsController {
 
 	async getPostById(req: ReqParams<{ id: string }>, res: Response) {
 		try {
-			const post = await postsQueryRepository.getPostById(req.params.id);
+			const post = await this.postsQueryRepository.getPostById(req.params.id);
 
 			if (!post) {
 				res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
@@ -44,7 +56,7 @@ class PostsController {
 
 	async createPost({ body: newPost }: ReqBody<PostCreateByBlogIdDto>, res: Response) {
 		try {
-			const blog = await blogsQueryRepository.getBlogById(newPost.blogId);
+			const blog = await this.blogsQueryRepository.getBlogById(newPost.blogId);
 
 			if (!blog) {
 				res.status(HTTP_STATUSES.BAD_REQUEST_400).send({
@@ -55,8 +67,8 @@ class PostsController {
 				return;
 			}
 
-			const { id } = await postsService.createPost({ ...newPost, blogName: blog.name });
-			const post = await postsQueryRepository.getPostById(id);
+			const { id } = await this.postsService.createPost({ ...newPost, blogName: blog.name });
+			const post = await this.postsQueryRepository.getPostById(id);
 
 			res.status(HTTP_STATUSES.CREATED_201).send(post!);
 		} catch (e) {
@@ -66,7 +78,7 @@ class PostsController {
 
 	async updatePostById(req: ReqBodyWithParams<{ id: string }, PostUpdateDto>, res: Response) {
 		try {
-			const isUpdated = await postsService.updatePostById(req.params.id, req.body);
+			const isUpdated = await this.postsService.updatePostById(req.params.id, req.body);
 
 			if (!isUpdated) {
 				res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
@@ -81,7 +93,7 @@ class PostsController {
 
 	async deletePostById(req: ReqParams<{ id: string }>, res: Response) {
 		try {
-			const isDeleted = await postsService.deletePostById(req.params.id);
+			const isDeleted = await this.postsService.deletePostById(req.params.id);
 
 			if (!isDeleted) {
 				res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
@@ -99,13 +111,13 @@ class PostsController {
 		res: Response,
 	) {
 		try {
-			const post = await postsQueryRepository.getPostById(req.params.postId);
+			const post = await this.postsQueryRepository.getPostById(req.params.postId);
 			if (!post) {
 				res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
 				return;
 			}
 
-			const comments = await commentQueryRepository.getCommentsByPostId(
+			const comments = await this.commentQueryRepository.getCommentsByPostId(
 				req.params.postId,
 				req.query,
 			);
@@ -120,16 +132,20 @@ class PostsController {
 		res: Response,
 	) {
 		try {
-			const post = await postsQueryRepository.getPostById(req.params.postId);
+			const post = await this.postsQueryRepository.getPostById(req.params.postId);
 			if (!post) {
 				res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
 				return;
 			}
 
-			const user = await usersQueryRepository.getUserById(req.user.id!);
-			const { id } = await commentsService.createComment(req.body, req.params.postId, user!);
+			const user = await this.usersQueryRepository.getUserById(req.user.id!);
+			const { id } = await this.commentsService.createComment(
+				req.body,
+				req.params.postId,
+				user!,
+			);
 
-			const comment = await commentQueryRepository.getCommentById(id);
+			const comment = await this.commentQueryRepository.getCommentById(id);
 
 			res.status(HTTP_STATUSES.CREATED_201).send(comment!);
 		} catch (e) {
@@ -138,4 +154,11 @@ class PostsController {
 	}
 }
 
-export const postsController = new PostsController();
+export const postsController = new PostsController(
+	postsQueryRepository,
+	blogsQueryRepository,
+	commentQueryRepository,
+	usersQueryRepository,
+	postsService,
+	commentsService,
+);

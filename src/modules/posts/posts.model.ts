@@ -1,7 +1,7 @@
 import { Schema, model } from 'mongoose';
 import { MODELS_NAMES } from '../../constants';
 
-interface PostDocument {
+export interface PostDocument {
 	id: string;
 	title: string;
 	shortDescription: string;

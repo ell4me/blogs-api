@@ -13,11 +13,7 @@ import { SecurityDevicesDocument } from './securityDevices.model';
 import { Tokens } from '../users/users.types';
 
 export class SecurityDevicesService {
-	private securityDevicesRepository: SecurityDevicesRepository;
-
-	constructor(securityDevicesRepository: SecurityDevicesRepository) {
-		this.securityDevicesRepository = securityDevicesRepository;
-	}
+	constructor(private readonly securityDevicesRepository: SecurityDevicesRepository) {}
 
 	async createDeviceSession({ userId, deviceName, ip }: SecurityDevicesCreate): Promise<Tokens> {
 		const deviceId = uuidv4();

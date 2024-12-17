@@ -4,13 +4,10 @@ import { BlogCreateDto, BlogUpdateDto } from './blogs.dto';
 import { BlogCreate } from './blogs.types';
 
 class BlogsService {
-	private postsRepository: PostsRepository;
-	private blogsRepository: BlogsRepository;
-
-	constructor(postsRepository: PostsRepository, blogsRepository: BlogsRepository) {
-		this.postsRepository = postsRepository;
-		this.blogsRepository = blogsRepository;
-	}
+	constructor(
+		private readonly postsRepository: PostsRepository,
+		private readonly blogsRepository: BlogsRepository,
+	) {}
 
 	async updateBlogById(id: string, updatedBlog: BlogUpdateDto): Promise<boolean> {
 		const blog = await this.blogsRepository.updateBlogById(id, updatedBlog);

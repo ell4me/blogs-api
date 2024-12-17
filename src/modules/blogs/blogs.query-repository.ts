@@ -1,8 +1,11 @@
 import { BlogViewDto } from './blogs.dto';
 import { FilteredBlogQueries, ItemsPaginationViewDto } from '../../types';
-import { BlogsModel } from './blogs.model';
+import { Model } from 'mongoose';
+import { BlogDocument, BlogsModel } from './blogs.model';
 
 export class BlogsQueryRepository {
+	constructor(private readonly BlogsModel: Model<BlogDocument>) {}
+
 	async getAllBlogs({
 		pageSize,
 		pageNumber,
@@ -10,7 +13,7 @@ export class BlogsQueryRepository {
 		sortDirection,
 		searchNameTerm,
 	}: FilteredBlogQueries): Promise<ItemsPaginationViewDto<BlogViewDto>> {
-		const blogsQuery = BlogsModel.find();
+		const blogsQuery = this.BlogsModel.find();
 
 		if (searchNameTerm) {
 			blogsQuery.where('name').regex(new RegExp(searchNameTerm, 'i'));
@@ -34,11 +37,11 @@ export class BlogsQueryRepository {
 	}
 
 	getBlogById(id: string): Promise<BlogViewDto | null> {
-		return BlogsModel.findOne({ id }).select('-_id -__v -updatedAt').exec();
+		return this.BlogsModel.findOne({ id }).select('-_id -__v -updatedAt').exec();
 	}
 
 	getCountBlogsByFilter(searchNameTerm: string | null): Promise<number> {
-		const blogsCountQuery = BlogsModel.countDocuments();
+		const blogsCountQuery = this.BlogsModel.countDocuments();
 
 		if (searchNameTerm) {
 			blogsCountQuery.where('name').regex(new RegExp(searchNameTerm, 'i'));
@@ -48,6 +51,6 @@ export class BlogsQueryRepository {
 	}
 }
 
-const blogsQueryRepository = new BlogsQueryRepository();
+const blogsQueryRepository = new BlogsQueryRepository(BlogsModel);
 
 export { blogsQueryRepository };

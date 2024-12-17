@@ -4,11 +4,7 @@ import { subSeconds } from 'date-fns/subSeconds';
 import { LimitData } from './rateLimit.types';
 
 class RateLimitService {
-	private rateLimitRepository: RateLimitRepository;
-
-	constructor(rateLimitRepository: RateLimitRepository) {
-		this.rateLimitRepository = rateLimitRepository;
-	}
+	constructor(private readonly rateLimitRepository: RateLimitRepository) {}
 
 	async checkRateLimit(
 		rateLimit: RateLimitDocument,

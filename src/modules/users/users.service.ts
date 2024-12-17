@@ -8,11 +8,7 @@ import { UserCreateDto } from './users.dto';
 import { UserDocument } from './users.model';
 
 export class UsersService {
-	private usersRepository: UsersRepository;
-
-	constructor(usersRepository: UsersRepository) {
-		this.usersRepository = usersRepository;
-	}
+	constructor(private readonly usersRepository: UsersRepository) {}
 
 	createUserRegistration(createdUser: UserCreate): Promise<ObjectId> {
 		return this.usersRepository.createUser(createdUser);
@@ -60,17 +56,11 @@ export class UsersService {
 		return this.usersRepository.updateUserEmailConfirmation(id, emailConfirmation);
 	}
 
-	updateUserPasswordRecovery(
-		id: string,
-		passwordRecovery: PasswordRecovery,
-	): Promise<boolean> {
+	updateUserPasswordRecovery(id: string, passwordRecovery: PasswordRecovery): Promise<boolean> {
 		return this.usersRepository.updateUserPasswordRecovery(id, passwordRecovery);
 	}
 
-	updateUserPassword(
-		id: string,
-		newPassword: string,
-	): Promise<boolean> {
+	updateUserPassword(id: string, newPassword: string): Promise<boolean> {
 		return this.usersRepository.updateUserPassword(id, newPassword);
 	}
 

@@ -3,9 +3,7 @@ import { postsRepository, PostsRepository } from './posts.repository';
 import { PostCreate } from './posts.types';
 
 class PostsService {
-	constructor(private readonly postsRepository: PostsRepository) {
-		this.postsRepository = postsRepository;
-	}
+	constructor(private readonly postsRepository: PostsRepository) {}
 
 	async updatePostById(id: string, updatedPost: PostUpdateDto): Promise<boolean> {
 		return this.postsRepository.updatePostById(id, updatedPost);

@@ -16,16 +16,12 @@ import { UsersService, usersService } from '../users/users.service';
 import { SecurityDevicesUpdate } from '../securityDevices/securityDevices.types';
 import { PasswordRecovery, Tokens, UserCreate } from '../users/users.types';
 
-class AuthService {
+export class AuthService {
 	constructor(
 		private readonly usersService: UsersService,
 		private readonly emailAdapter: EmailAdapter,
 		private readonly securityDevicesService: SecurityDevicesService,
-	) {
-		this.usersService = usersService;
-		this.emailAdapter = emailAdapter;
-		this.securityDevicesService = securityDevicesService;
-	}
+	) {}
 
 	async login(
 		{ loginOrEmail, password }: AuthLoginDto,
@@ -188,7 +184,7 @@ class AuthService {
 		const user = await this.usersService.getUserByPasswordRecoveryCode(recoveryCode);
 
 		if (!user) {
-			return  {
+			return {
 				errorsMessages: [
 					{
 						message: VALIDATION_MESSAGES.CODE_IS_NOT_CORRECT('Recovery'),
@@ -198,7 +194,10 @@ class AuthService {
 			};
 		}
 
-		if (!user.passwordRecovery?.expiration || user.passwordRecovery.expiration < new Date().getTime()) {
+		if (
+			!user.passwordRecovery?.expiration ||
+			user.passwordRecovery.expiration < new Date().getTime()
+		) {
 			return {
 				errorsMessages: [
 					{

@@ -1,13 +1,16 @@
 import { CommentViewDto } from './comments.dto';
 import { ItemsPaginationViewDto, PaginationQueries } from '../../types';
-import { CommentsModel } from './comments.model';
+import { CommentDocument, CommentsModel } from './comments.model';
+import { Model } from 'mongoose';
 
 export class CommentsQueryRepository {
+	constructor(private readonly CommentsModel: Model<CommentDocument>) {}
+
 	async getCommentsByPostId(
 		postId: string,
 		{ sortBy, sortDirection, pageSize, pageNumber }: PaginationQueries,
 	): Promise<ItemsPaginationViewDto<CommentViewDto>> {
-		const comments = await CommentsModel.find({ postId })
+		const comments = await this.CommentsModel.find({ postId })
 			.skip((pageNumber - 1) * pageSize)
 			.sort({ [sortBy]: sortDirection })
 			.limit(pageSize)
@@ -25,14 +28,14 @@ export class CommentsQueryRepository {
 	}
 
 	getCommentById(id: string): Promise<CommentViewDto | null> {
-		return CommentsModel.findOne({ id }).select('-__v -_id -updatedAt').exec();
+		return this.CommentsModel.findOne({ id }).select('-__v -_id -updatedAt').exec();
 	}
 
 	getCountComments(postId: string): Promise<number> {
-		return CommentsModel.countDocuments({ postId }).exec();
+		return this.CommentsModel.countDocuments({ postId }).exec();
 	}
 }
 
-const commentQueryRepository = new CommentsQueryRepository();
+const commentQueryRepository = new CommentsQueryRepository(CommentsModel);
 
 export { commentQueryRepository };

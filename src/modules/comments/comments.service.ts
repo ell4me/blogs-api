@@ -4,11 +4,7 @@ import { UserViewDto } from '../users/users.dto';
 import { CommentCreate } from './comments.types';
 
 class CommentsService {
-	private commentsRepository: CommentsRepository;
-
-	constructor(commentsRepository: CommentsRepository) {
-		this.commentsRepository = commentsRepository;
-	}
+	constructor(private readonly commentsRepository: CommentsRepository) {}
 
 	async createComment(
 		{ content }: CommentCreateDto,

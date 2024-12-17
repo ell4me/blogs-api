@@ -2,9 +2,12 @@ import { FilteredUserQueries, ItemsPaginationViewDto } from '../../types';
 import { getUsersFilterRepository } from './helpers/getUsersFilterRepository';
 import { UserViewDto } from './users.dto';
 import { CurrentUserViewDto } from '../auth/auth.dto';
-import { UsersModel } from './users.model';
+import { UserDocument, UsersModel } from './users.model';
+import { Model } from 'mongoose';
 
 export class UsersQueryRepository {
+	constructor(private readonly UsersModel: Model<UserDocument>) {}
+
 	async getAllUsers({
 		pageSize,
 		pageNumber,
@@ -15,7 +18,7 @@ export class UsersQueryRepository {
 	}: FilteredUserQueries): Promise<ItemsPaginationViewDto<UserViewDto>> {
 		const filterOr = getUsersFilterRepository(searchLoginTerm, searchEmailTerm);
 
-		const users = await UsersModel.find()
+		const users = await this.UsersModel.find()
 			.or(filterOr)
 			.skip((pageNumber - 1) * pageSize)
 			.sort({ [sortBy]: sortDirection })
@@ -34,7 +37,7 @@ export class UsersQueryRepository {
 	}
 
 	getUserById(id: string): Promise<UserViewDto | null> {
-		return UsersModel.findOne({ id })
+		return this.UsersModel.findOne({ id })
 			.select('-_id -__v -updatedAt -password -emailConfirmation -passwordRecovery')
 			.exec();
 	}
@@ -44,11 +47,11 @@ export class UsersQueryRepository {
 		searchEmailTerm: string | null,
 	): Promise<number> {
 		const filterOr = getUsersFilterRepository(searchLoginTerm, searchEmailTerm);
-		return UsersModel.countDocuments().or(filterOr).exec();
+		return this.UsersModel.countDocuments().or(filterOr).exec();
 	}
 
 	async getCurrentUser(id: string): Promise<CurrentUserViewDto> {
-		const user = await UsersModel.findOne({ id });
+		const user = await this.UsersModel.findOne({ id });
 
 		return {
 			email: user!.email,
@@ -58,6 +61,6 @@ export class UsersQueryRepository {
 	}
 }
 
-const usersQueryRepository = new UsersQueryRepository();
+const usersQueryRepository = new UsersQueryRepository(UsersModel);
 
 export { usersQueryRepository };

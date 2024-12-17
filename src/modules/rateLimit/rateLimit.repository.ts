@@ -1,26 +1,30 @@
 import { RateLimitDocument, RateLimitModel } from './rateLimit.model';
 import { DeleteResult, ObjectId } from 'mongodb';
+import { Model } from 'mongoose';
+import { CommentDocument } from '../comments/comments.model';
 
 export class RateLimitRepository {
+	constructor(private readonly RateLimitModel: Model<RateLimitDocument>) {}
+
 	getRateLimitsCount({ ip, date, url }: RateLimitDocument): Promise<number> {
-		return RateLimitModel.countDocuments({ ip, url }).where('date').gte(date).exec();
+		return this.RateLimitModel.countDocuments({ ip, url }).where('date').gte(date).exec();
 	}
 
 	async updateRateLimit(rateLimit: RateLimitDocument): Promise<ObjectId> {
-		const { _id } = await RateLimitModel.create(rateLimit);
+		const { _id } = await this.RateLimitModel.create(rateLimit);
 
 		return _id;
 	}
 
 	async deleteOldRecordsByRateLimit({ ip, url, date }: RateLimitDocument): Promise<DeleteResult> {
-		return RateLimitModel.deleteMany({ ip, url }).where('date').lt(date).exec();
+		return this.RateLimitModel.deleteMany({ ip, url }).where('date').lt(date).exec();
 	}
 
 	async deleteAllRateLimits(): Promise<DeleteResult> {
-		return RateLimitModel.deleteMany().exec();
+		return this.RateLimitModel.deleteMany().exec();
 	}
 }
 
-const rateLimitRepository = new RateLimitRepository();
+const rateLimitRepository = new RateLimitRepository(RateLimitModel);
 
 export { rateLimitRepository };

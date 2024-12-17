@@ -2,7 +2,8 @@ import { Router } from 'express';
 
 import { authService } from './auth.service';
 import {
-	AuthLoginDto, PasswordRecoveryDto,
+	AuthLoginDto,
+	PasswordRecoveryDto,
 	PasswordRecoveryEmailDto,
 	RegistrationConfirmationDto,
 	RegistrationEmailResendingDto,
@@ -36,6 +37,10 @@ const validationRegistrationMiddlewares = [
 	patternMiddleware('email', PATTERNS.EMAIL),
 	fieldsCheckErrorsMiddleware,
 ];
+
+class AuthController {
+	constructor() {}
+}
 
 authRouter.post(
 	'/login',
@@ -193,7 +198,7 @@ authRouter.post(
 				return;
 			}
 
-			if(!result.result) {
+			if (!result.result) {
 				res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
 			}
 

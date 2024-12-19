@@ -16,7 +16,7 @@ class SecurityDevicesController {
 	async getActiveDeviceSessions(req: Request, res: Response) {
 		try {
 			const activeDeviceSessions =
-				await this.securityDevicesQueryRepository.getActiveDeviceSessions(req.user.id!);
+				await this.securityDevicesQueryRepository.getActiveDeviceSessions(req.user?.id!);
 			res.send(activeDeviceSessions);
 		} catch (e) {
 			res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
@@ -26,7 +26,7 @@ class SecurityDevicesController {
 	async deleteAllDeviceSessionsExceptCurrent(req: Request, res: Response) {
 		try {
 			await this.securityDevicesService.deleteAllDeviceSessionsExceptCurrent(
-				req.user.id!,
+				req.user?.id!,
 				req.user.deviceId!,
 			);
 
@@ -47,7 +47,7 @@ class SecurityDevicesController {
 				return;
 			}
 
-			if (currentDeviceSession.userId !== req.user.id!) {
+			if (currentDeviceSession.userId !== req.user?.id!) {
 				res.sendStatus(HTTP_STATUSES.FORBIDDEN_403);
 				return;
 			}

@@ -1,5 +1,5 @@
 import { Schema, model } from 'mongoose';
-import { CommentatorInfo } from './comments.types';
+import { CommentatorInfo, LikesInfoDocument } from './comments.types';
 import { MODELS_NAMES } from '../../constants';
 
 export interface CommentDocument {
@@ -9,6 +9,7 @@ export interface CommentDocument {
 	commentatorInfo: CommentatorInfo;
 	createdAt: Date;
 	updatedAt: Date;
+	likesInfo: LikesInfoDocument;
 }
 
 const commentsSchema = new Schema<CommentDocument>(
@@ -19,6 +20,10 @@ const commentsSchema = new Schema<CommentDocument>(
 		commentatorInfo: {
 			userId: { type: String, required: true },
 			userLogin: { type: String, required: true },
+		},
+		likesInfo: {
+			likes: Array,
+			dislikes: Array,
 		},
 	},
 	{ timestamps: true },

@@ -19,8 +19,8 @@ export const SETTINGS = {
 
 // In seconds
 export const EXPIRATION_TOKEN = {
-	ACCESS: 10,
-	REFRESH: 20,
+	ACCESS: 600,
+	REFRESH: 1200,
 };
 
 export const MODELS_NAMES = {
@@ -78,4 +78,5 @@ export const VALIDATION_MESSAGES = {
 	CODE_IS_NOT_CORRECT: (nameCode?: string) => `${nameCode} code is not correct`,
 	CODE_EXPIRED: (nameCode?: string) => `${nameCode} code has already expired`,
 	USER_ALREADY_CONFIRMED: 'User has already confirmed',
+	LIKE_STATUS: 'Like status is not correct',
 };

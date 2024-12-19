@@ -7,7 +7,7 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 import { AuthLoginDto } from '../src/modules/auth/auth.dto';
 import { BlogCreateDto } from '../src/modules/blogs/blogs.dto';
 import { PostCreateByBlogIdDto, PostViewDto } from '../src/modules/posts/posts.dto';
-import { CommentCreate } from '../src/modules/comments/comments.types';
+import { CommentCreate, LikesInfo } from '../src/modules/comments/comments.types';
 import mongoose from 'mongoose';
 
 const emptyResponse: ItemsPaginationViewDto = {
@@ -159,7 +159,14 @@ describe(ROUTERS_PATH.COMMENTS, () => {
 
 		comment = response.body;
 
-		expect(comment).toMatchObject(payload);
+		expect(comment).toMatchObject({
+			...payload,
+			likesInfo: {
+				likesCount: 0,
+				dislikesCount: 0,
+				myStatus: 'None',
+			} as LikesInfo,
+		});
 
 		await request(app)
 			.get(`${ROUTERS_PATH.POSTS}/${post.id}/comments`)

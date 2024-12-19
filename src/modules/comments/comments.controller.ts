@@ -2,7 +2,7 @@ import { Response } from 'express';
 import { ReqBodyWithParams, ReqParams } from '../../types';
 import { commentQueryRepository, CommentsQueryRepository } from './comments.query-repository';
 import { HTTP_STATUSES } from '../../constants';
-import { CommentUpdateDto } from './comments.dto';
+import { CommentLikeDto, CommentUpdateDto } from './comments.dto';
 import { CommentsService, commentsService } from './comments.service';
 
 class CommentsController {
@@ -13,7 +13,7 @@ class CommentsController {
 
 	async getCommentById(req: ReqParams<{ id: string }>, res: Response) {
 		try {
-			const comment = await this.commentQueryRepository.getCommentById(req.params.id);
+			const comment = await this.commentQueryRepository.getCommentById(req.params.id, req.user?.id);
 			if (!comment) {
 				res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
 				return;
@@ -36,7 +36,7 @@ class CommentsController {
 				return;
 			}
 
-			if (comment?.commentatorInfo.userId !== req.user.id) {
+			if (comment?.commentatorInfo.userId !== req.user?.id) {
 				res.sendStatus(HTTP_STATUSES.FORBIDDEN_403);
 				return;
 			}
@@ -48,15 +48,38 @@ class CommentsController {
 		}
 	}
 
-	async deleteCommentById(req: ReqParams<{ commentId: string }>, res: Response) {
+	async likeCommentById(
+		req: ReqBodyWithParams<{ commentId: string }, CommentLikeDto>,
+		res: Response,
+	) {
 		try {
-			const comment = await this.commentQueryRepository.getCommentById(req.params.commentId);
+			const comment = await this.commentQueryRepository.getCommentById(req.params.commentId, req.user?.id);
 			if (!comment) {
 				res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
 				return;
 			}
 
-			if (comment?.commentatorInfo.userId !== req.user.id) {
+			const result = await this.commentsService.likeCommentById(comment, req.body, req.user?.id!);
+			if ('errorsMessages' in result) {
+				res.status(HTTP_STATUSES.BAD_REQUEST_400).send(result.errorsMessages);
+				return;
+			}
+
+			res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
+		} catch (e) {
+			res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
+		}
+	}
+
+	async deleteCommentById(req: ReqParams<{ commentId: string }>, res: Response) {
+		try {
+			const comment = await this.commentQueryRepository.getCommentById(req.params.commentId, req.user?.id);
+			if (!comment) {
+				res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
+				return;
+			}
+
+			if (comment?.commentatorInfo.userId !== req.user?.id) {
 				res.sendStatus(HTTP_STATUSES.FORBIDDEN_403);
 				return;
 			}

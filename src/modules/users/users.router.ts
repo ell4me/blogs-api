@@ -19,7 +19,7 @@ const validationMiddlewares = [
 
 usersRouter.get(
 	'/',
-	authMiddleware<FilteredUserQueries>,
+	authMiddleware,
 	queryUserParserMiddleware,
 	usersController.getAllUsers.bind(usersController),
 );

@@ -8,6 +8,7 @@ import { authMiddleware } from '../../middlewares/auth.middleware';
 import { queryBlogParserMiddleware } from '../../middlewares/queryParser.middleware';
 import { authBearerMiddleware } from '../../middlewares/auth-bearer.middleware';
 import { postsController } from './posts.controller';
+import { accessTokenMiddleware } from '../../middlewares/accessToken.middleware';
 
 export const postsRouter = Router();
 const validationMiddlewares = [
@@ -45,6 +46,7 @@ postsRouter.delete('/:id', authMiddleware, postsController.deletePostById.bind(p
 
 postsRouter.get(
 	'/:postId/comments',
+	accessTokenMiddleware,
 	queryBlogParserMiddleware,
 	postsController.getCommentsByPostId.bind(postsController),
 );

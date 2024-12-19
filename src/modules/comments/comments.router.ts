@@ -3,6 +3,7 @@ import { Router } from 'express';
 import { fieldsCheckErrorsMiddleware, stringMiddleware } from '../../middlewares/validation';
 import { authBearerMiddleware } from '../../middlewares/auth-bearer.middleware';
 import { commentsController } from './comments.controller';
+import { accessTokenMiddleware } from '../../middlewares/accessToken.middleware';
 
 export const commentsRouter = Router();
 const validationMiddlewares = [
@@ -11,12 +12,24 @@ const validationMiddlewares = [
 	fieldsCheckErrorsMiddleware,
 ];
 
-commentsRouter.get('/:id', commentsController.getCommentById.bind(commentsController));
+const validationLikeMiddlewares = [
+	authBearerMiddleware,
+	stringMiddleware({ field: 'likeStatus' }),
+	fieldsCheckErrorsMiddleware,
+];
+
+commentsRouter.get('/:id', accessTokenMiddleware, commentsController.getCommentById.bind(commentsController));
 
 commentsRouter.put(
 	'/:commentId',
 	...validationMiddlewares,
 	commentsController.updateCommentById.bind(commentsController),
+);
+
+commentsRouter.put(
+	'/:commentId/like-status',
+	...validationLikeMiddlewares,
+	commentsController.likeCommentById.bind(commentsController),
 );
 
 commentsRouter.delete(

@@ -1,7 +1,10 @@
 import { CommentsRepository, commentsRepository } from './comments.repository';
-import { CommentCreateDto, CommentUpdateDto } from './comments.dto';
+import { CommentCreateDto, CommentLikeDto, CommentUpdateDto, CommentViewDto } from './comments.dto';
 import { UserViewDto } from '../users/users.dto';
 import { CommentCreate } from './comments.types';
+import { STATUSES_LIKE } from './comments.constants';
+import { ValidationErrorViewDto } from '../../types';
+import { VALIDATION_MESSAGES } from '../../constants';
 
 export class CommentsService {
 	constructor(private readonly commentsRepository: CommentsRepository) {}
@@ -30,6 +33,31 @@ export class CommentsService {
 
 	async updateCommentById(commentId: string, content: CommentUpdateDto): Promise<boolean> {
 		return this.commentsRepository.updateCommentById(commentId, content);
+	}
+
+	async likeCommentById(
+		{ likesInfo, id }: CommentViewDto,
+		{ likeStatus }: CommentLikeDto,
+		userId: string,
+	): Promise<ValidationErrorViewDto | { result: boolean }> {
+		if (!STATUSES_LIKE.includes(likeStatus)) {
+			return {
+				errorsMessages: [
+					{
+						message: VALIDATION_MESSAGES.LIKE_STATUS,
+						field: 'likeStatus',
+					},
+				],
+			};
+		}
+
+		if (likesInfo.myStatus === likeStatus) {
+			return { result: false };
+		}
+
+		const result = await this.commentsRepository.likeCommentById(id, userId, likeStatus);
+
+		return { result };
 	}
 
 	async deleteCommentById(commentId: string): Promise<boolean> {

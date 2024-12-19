@@ -120,6 +120,7 @@ class PostsController {
 			const comments = await this.commentQueryRepository.getCommentsByPostId(
 				req.params.postId,
 				req.query,
+				req.user?.id
 			);
 			res.send(comments);
 		} catch (e) {
@@ -138,14 +139,14 @@ class PostsController {
 				return;
 			}
 
-			const user = await this.usersQueryRepository.getUserById(req.user.id!);
+			const user = await this.usersQueryRepository.getUserById(req.user?.id!);
 			const { id } = await this.commentsService.createComment(
 				req.body,
 				req.params.postId,
 				user!,
 			);
 
-			const comment = await this.commentQueryRepository.getCommentById(id);
+			const comment = await this.commentQueryRepository.getCommentById(id, req.user?.id);
 
 			res.status(HTTP_STATUSES.CREATED_201).send(comment!);
 		} catch (e) {

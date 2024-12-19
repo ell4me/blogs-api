@@ -55,7 +55,7 @@ class AuthController {
 
 	async getCurrentUser(req: Request, res: Response) {
 		try {
-			const userInfo = await this.usersQueryRepository.getCurrentUser(req.user.id!);
+			const userInfo = await this.usersQueryRepository.getCurrentUser(req.user?.id!);
 			res.send(userInfo);
 		} catch (e) {
 			res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
@@ -95,7 +95,7 @@ class AuthController {
 	async refreshToken(req: Request, res: Response) {
 		try {
 			const token = await this.authService.refreshToken(req.user.deviceId!, {
-				userId: req.user.id!,
+				userId: req.user?.id!,
 				ip: req.ip!,
 				deviceName: req.headers['user-agent']!,
 			});

@@ -61,7 +61,7 @@ class CommentsController {
 
 			const result = await this.commentsService.likeCommentById(comment, req.body, req.user?.id!);
 			if ('errorsMessages' in result) {
-				res.status(HTTP_STATUSES.BAD_REQUEST_400).send(result.errorsMessages);
+				res.status(HTTP_STATUSES.BAD_REQUEST_400).send(result);
 				return;
 			}
 

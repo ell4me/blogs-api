@@ -16,7 +16,7 @@ export class CommentsQueryRepository {
 			.skip((pageNumber - 1) * pageSize)
 			.sort({ [sortBy]: sortDirection })
 			.limit(pageSize)
-			.select('-__v -_id -updatedAt')
+			.select('-__v -_id -updatedAt -postId')
 			.lean();
 
 		const commentsCountByFilter = await this.getCountComments(postId);
@@ -37,7 +37,7 @@ export class CommentsQueryRepository {
 
 	async getCommentById(commentId: string, userId?: string): Promise<CommentViewDto | null> {
 		const comment = await this.CommentsModel.findOne({ id: commentId })
-			.select('-__v -_id -updatedAt')
+			.select('-__v -_id -updatedAt -postId')
 			.lean();
 
 		if (!comment) {

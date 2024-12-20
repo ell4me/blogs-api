@@ -7,8 +7,8 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 import { AuthLoginDto } from '../src/modules/auth/auth.dto';
 import { BlogCreateDto } from '../src/modules/blogs/blogs.dto';
 import { PostCreateByBlogIdDto, PostViewDto } from '../src/modules/posts/posts.dto';
-import { CommentCreate, LikesInfo } from '../src/modules/comments/comments.types';
 import mongoose from 'mongoose';
+import { CommentViewDto } from '../src/modules/comments/comments.dto';
 
 const emptyResponse: ItemsPaginationViewDto = {
 	page: 1,
@@ -23,7 +23,7 @@ describe(ROUTERS_PATH.COMMENTS, () => {
 	let accessToken: string;
 	let accessAnotherToken: string;
 	let post: PostViewDto;
-	let comment: CommentCreate;
+	let comment: CommentViewDto;
 
 	beforeAll(async () => {
 		server = await MongoMemoryServer.create();
@@ -159,14 +159,17 @@ describe(ROUTERS_PATH.COMMENTS, () => {
 
 		comment = response.body;
 
-		expect(comment).toMatchObject({
+		expect(comment).toEqual({
 			...payload,
 			likesInfo: {
 				likesCount: 0,
 				dislikesCount: 0,
 				myStatus: 'None',
-			} as LikesInfo,
-		});
+			},
+			id: comment.id,
+			createdAt: comment.createdAt,
+			commentatorInfo: comment.commentatorInfo,
+		} as CommentViewDto);
 
 		await request(app)
 			.get(`${ROUTERS_PATH.POSTS}/${post.id}/comments`)
@@ -242,6 +245,105 @@ describe(ROUTERS_PATH.COMMENTS, () => {
 		comment.content = payload.content;
 
 		await request(app).get(`${ROUTERS_PATH.COMMENTS}/${comment.id}`).expect(comment);
+	});
+
+	it('PUT should`t change like status when unauthorized', async () => {
+		const payload = { likeStatus: 'few' };
+		await request(app)
+			.put(`${ROUTERS_PATH.COMMENTS}/${comment.id}/like-status`)
+			.send(payload)
+			.expect(HTTP_STATUSES.UNAUTHORIZED_401);
+
+		await request(app).get(`${ROUTERS_PATH.COMMENTS}/${comment.id}`).expect(comment);
+	});
+
+	it('PUT should`t change like status when comment is not found', async () => {
+		const payload = { likeStatus: 'few' };
+		await request(app)
+			.put(`${ROUTERS_PATH.COMMENTS}/randomId/like-status`)
+			.auth(accessToken, { type: 'bearer' })
+			.send(payload)
+			.expect(HTTP_STATUSES.NOT_FOUND_404);
+
+		await request(app).get(`${ROUTERS_PATH.COMMENTS}/${comment.id}`).expect(comment);
+	});
+
+	it('PUT should`t change like status when data is not valid', async () => {
+		const payload = { likeStatus: 'few' };
+		await request(app)
+			.put(`${ROUTERS_PATH.COMMENTS}/${comment.id}/like-status`)
+			.auth(accessToken, { type: 'bearer' })
+			.send(payload)
+			.expect(HTTP_STATUSES.BAD_REQUEST_400, {
+				errorsMessages: [
+					{
+						message: VALIDATION_MESSAGES.LIKE_STATUS,
+						field: 'likeStatus',
+					},
+				],
+			} as ValidationErrorViewDto);
+
+		await request(app).get(`${ROUTERS_PATH.COMMENTS}/${comment.id}`).expect(comment);
+	});
+
+	it('PUT should change like status', async () => {
+		const payload = { likeStatus: 'Like' };
+		await request(app)
+			.put(`${ROUTERS_PATH.COMMENTS}/${comment.id}/like-status`)
+			.auth(accessToken, { type: 'bearer' })
+			.send(payload)
+			.expect(HTTP_STATUSES.NO_CONTENT_204);
+
+		const likesInfo = { likesCount: 1, dislikesCount: 0, myStatus: 'None' };
+
+		await request(app)
+			.get(`${ROUTERS_PATH.COMMENTS}/${comment.id}`)
+			.expect({
+				...comment,
+				likesInfo,
+			} as CommentViewDto);
+
+		await request(app)
+			.get(`${ROUTERS_PATH.COMMENTS}/${comment.id}`)
+			.auth(accessToken, { type: 'bearer' })
+			.expect({
+				...comment,
+				likesInfo: { ...likesInfo, myStatus: 'Like' },
+			} as CommentViewDto);
+	});
+
+	it('PUT should change like status on `Dislike` when your status was `Like`', async () => {
+		const payload = { likeStatus: 'Dislike' };
+		await request(app)
+			.put(`${ROUTERS_PATH.COMMENTS}/${comment.id}/like-status`)
+			.auth(accessToken, { type: 'bearer' })
+			.send(payload)
+			.expect(HTTP_STATUSES.NO_CONTENT_204);
+
+		await request(app)
+			.get(`${ROUTERS_PATH.COMMENTS}/${comment.id}`)
+			.auth(accessToken, { type: 'bearer' })
+			.expect({
+				...comment,
+				likesInfo: { likesCount: 0, dislikesCount: 1, myStatus: 'Dislike' },
+			} as CommentViewDto);
+	});
+
+	it('PUT should change like status on `None`', async () => {
+		const payload = { likeStatus: 'None' };
+		await request(app)
+			.put(`${ROUTERS_PATH.COMMENTS}/${comment.id}/like-status`)
+			.auth(accessToken, { type: 'bearer' })
+			.send(payload)
+			.expect(HTTP_STATUSES.NO_CONTENT_204);
+
+		await request(app)
+			.get(`${ROUTERS_PATH.COMMENTS}/${comment.id}`)
+			.auth(accessToken, { type: 'bearer' })
+			.expect({
+				...comment,
+				likesInfo: { likesCount: 0, dislikesCount: 0, myStatus: 'None' },
+			} as CommentViewDto);
 	});
 
 	it('DELETE should`t delete comment when unauthorized', async () => {

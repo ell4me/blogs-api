@@ -1,4 +1,4 @@
-import { SecurityDevicesRepository, securityDevicesRepository } from './securityDevices.repository';
+import { SecurityDevicesRepository } from './securityDevices.repository';
 
 import { v4 as uuidv4 } from 'uuid';
 import { getTokens } from '../users/helpers/getTokens';
@@ -11,9 +11,14 @@ import {
 } from './securityDevices.types';
 import { SecurityDevicesDocument } from './securityDevices.model';
 import { Tokens } from '../users/users.types';
+import { inject, injectable } from 'inversify';
 
+@injectable()
 export class SecurityDevicesService {
-	constructor(private readonly securityDevicesRepository: SecurityDevicesRepository) {}
+	constructor(
+		@inject(SecurityDevicesRepository)
+		private readonly securityDevicesRepository: SecurityDevicesRepository,
+	) {}
 
 	async createDeviceSession({ userId, deviceName, ip }: SecurityDevicesCreate): Promise<Tokens> {
 		const deviceId = uuidv4();
@@ -68,5 +73,3 @@ export class SecurityDevicesService {
 		await this.securityDevicesRepository.deleteAllDeviceSessionsExceptCurrent(userId, deviceId);
 	}
 }
-
-export const securityDevicesService = new SecurityDevicesService(securityDevicesRepository);

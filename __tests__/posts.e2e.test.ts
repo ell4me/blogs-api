@@ -79,10 +79,6 @@ describe(ROUTERS_PATH.POSTS, () => {
 						field: 'content',
 						message: VALIDATION_MESSAGES.FIELD_INVALID_TYPE('string'),
 					},
-					{
-						field: 'blogId',
-						message: VALIDATION_MESSAGES.BLOG_IS_NOT_EXIST,
-					},
 				],
 			} as ValidationErrorViewDto);
 

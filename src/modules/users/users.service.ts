@@ -1,4 +1,5 @@
-import { UsersRepository, usersRepository } from './users.repository';
+import { inject, injectable } from 'inversify';
+import { UsersRepository } from './users.repository';
 import { ValidationErrorViewDto } from '../../types';
 import { hash } from 'bcrypt';
 import { validateUserIsExist } from '../../helpers/validateUserIsExist';
@@ -7,8 +8,9 @@ import { EmailConfirmation, PasswordRecovery, UserCreate } from './users.types';
 import { UserCreateDto } from './users.dto';
 import { UserDocument } from './users.model';
 
+@injectable()
 export class UsersService {
-	constructor(private readonly usersRepository: UsersRepository) {}
+	constructor(@inject(UsersRepository) private readonly usersRepository: UsersRepository) {}
 
 	createUserRegistration(createdUser: UserCreate): Promise<ObjectId> {
 		return this.usersRepository.createUser(createdUser);
@@ -74,12 +76,10 @@ export class UsersService {
 	}
 
 	getUserByConfirmationCode(code: string): Promise<UserDocument | null> {
-		return usersRepository.getUserByConfirmationCode(code);
+		return this.usersRepository.getUserByConfirmationCode(code);
 	}
 
 	getUserByPasswordRecoveryCode(code: string): Promise<UserDocument | null> {
-		return usersRepository.getUserByPasswordRecoveryCode(code);
+		return this.usersRepository.getUserByPasswordRecoveryCode(code);
 	}
 }
-
-export const usersService = new UsersService(usersRepository);

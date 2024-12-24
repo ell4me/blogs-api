@@ -1,19 +1,26 @@
+import { injectable } from 'inversify';
 import { Response } from 'express';
 import { ReqBodyWithParams, ReqParams } from '../../types';
-import { commentQueryRepository, CommentsQueryRepository } from './comments.query-repository';
+import { CommentsQueryRepository } from './comments.query-repository';
 import { HTTP_STATUSES } from '../../constants';
 import { CommentLikeDto, CommentUpdateDto } from './comments.dto';
-import { CommentsService, commentsService } from './comments.service';
+import { CommentsService } from './comments.service';
+import { inject } from 'inversify';
 
-class CommentsController {
+@injectable()
+export class CommentsController {
 	constructor(
+		@inject(CommentsQueryRepository)
 		private readonly commentQueryRepository: CommentsQueryRepository,
-		private readonly commentsService: CommentsService,
+		@inject(CommentsService) private readonly commentsService: CommentsService,
 	) {}
 
 	async getCommentById(req: ReqParams<{ id: string }>, res: Response) {
 		try {
-			const comment = await this.commentQueryRepository.getCommentById(req.params.id, req.user?.id);
+			const comment = await this.commentQueryRepository.getCommentById(
+				req.params.id,
+				req.user?.id,
+			);
 			if (!comment) {
 				res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
 				return;
@@ -53,13 +60,20 @@ class CommentsController {
 		res: Response,
 	) {
 		try {
-			const comment = await this.commentQueryRepository.getCommentById(req.params.commentId, req.user?.id);
+			const comment = await this.commentQueryRepository.getCommentById(
+				req.params.commentId,
+				req.user?.id,
+			);
 			if (!comment) {
 				res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
 				return;
 			}
 
-			const result = await this.commentsService.likeCommentById(comment, req.body, req.user?.id!);
+			const result = await this.commentsService.likeCommentById(
+				comment,
+				req.body,
+				req.user?.id!,
+			);
 			if ('errorsMessages' in result) {
 				res.status(HTTP_STATUSES.BAD_REQUEST_400).send(result);
 				return;
@@ -73,7 +87,10 @@ class CommentsController {
 
 	async deleteCommentById(req: ReqParams<{ commentId: string }>, res: Response) {
 		try {
-			const comment = await this.commentQueryRepository.getCommentById(req.params.commentId, req.user?.id);
+			const comment = await this.commentQueryRepository.getCommentById(
+				req.params.commentId,
+				req.user?.id,
+			);
 			if (!comment) {
 				res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
 				return;
@@ -91,5 +108,3 @@ class CommentsController {
 		}
 	}
 }
-
-export const commentsController = new CommentsController(commentQueryRepository, commentsService);

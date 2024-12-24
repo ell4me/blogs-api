@@ -1,7 +1,10 @@
 import { NextFunction, Response, Request } from 'express';
 import { verify } from 'jsonwebtoken';
 import { HTTP_STATUSES, SETTINGS } from '../constants';
-import { securityDevicesQueryRepository } from '../modules/securityDevices/securityDevices.query-repository';
+import { compositionRoot } from '../inversify.config';
+import { SecurityDevicesQueryRepository } from '../modules/securityDevices/securityDevices.query-repository';
+
+const securityDevicesQueryRepository = compositionRoot.resolve(SecurityDevicesQueryRepository);
 
 export const refreshTokenMiddleware = async (req: Request, res: Response, next: NextFunction) => {
 	const token = req.cookies.refreshToken;

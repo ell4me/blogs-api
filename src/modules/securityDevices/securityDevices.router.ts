@@ -1,8 +1,10 @@
 import { Router } from 'express';
 
 import { refreshTokenMiddleware } from '../../middlewares/refreshToken.middleware';
-import { securityDevicesController } from './securityDevices.controller';
+import { compositionRoot } from '../../inversify.config';
+import { SecurityDevicesController } from './securityDevices.controller';
 
+const securityDevicesController = compositionRoot.resolve(SecurityDevicesController);
 export const securityDevicesRouter = Router();
 
 securityDevicesRouter.get(

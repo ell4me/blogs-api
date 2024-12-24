@@ -1,9 +1,11 @@
 import { PostCreateByBlogId, PostUpdateDto } from './posts.dto';
-import { postsRepository, PostsRepository } from './posts.repository';
+import { PostsRepository } from './posts.repository';
 import { PostCreate } from './posts.types';
+import { inject, injectable } from 'inversify';
 
+@injectable()
 export class PostsService {
-	constructor(private readonly postsRepository: PostsRepository) {}
+	constructor(@inject(PostsRepository) private readonly postsRepository: PostsRepository) {}
 
 	async updatePostById(id: string, updatedPost: PostUpdateDto): Promise<boolean> {
 		return this.postsRepository.updatePostById(id, updatedPost);
@@ -36,5 +38,3 @@ export class PostsService {
 		return this.postsRepository.deletePostById(id);
 	}
 }
-
-export const postsService = new PostsService(postsRepository);

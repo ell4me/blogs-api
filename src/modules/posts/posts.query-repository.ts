@@ -1,16 +1,15 @@
 import { PostViewDto } from './posts.dto';
 import { FilteredBlogQueries, ItemsPaginationViewDto } from '../../types';
-import { PostDocument, PostsModel } from './posts.model';
-import { Model } from 'mongoose';
+import { PostsModel } from './posts.model';
+import { injectable } from 'inversify';
 
+@injectable()
 export class PostsQueryRepository {
-	constructor(private readonly PostsModel: Model<PostDocument>) {}
-
 	async getAllPosts(
 		{ pageSize, pageNumber, sortBy, sortDirection, searchNameTerm }: FilteredBlogQueries,
 		additionalFilter?: { blogId?: string },
 	): Promise<ItemsPaginationViewDto<PostViewDto>> {
-		const postsQuery = this.PostsModel.find();
+		const postsQuery = PostsModel.find();
 
 		if (searchNameTerm) {
 			postsQuery.where('title').regex(RegExp(searchNameTerm, 'i'));
@@ -38,11 +37,11 @@ export class PostsQueryRepository {
 	}
 
 	getPostById(id: string): Promise<PostViewDto | null> {
-		return this.PostsModel.findOne({ id }).select('-__v -_id -updatedAt').exec();
+		return PostsModel.findOne({ id }).select('-__v -_id -updatedAt').exec();
 	}
 
 	getCountPosts(filter?: { blogId?: string }): Promise<number> {
-		const postsQueryCount = this.PostsModel.countDocuments();
+		const postsQueryCount = PostsModel.countDocuments();
 
 		if (filter?.blogId) {
 			postsQueryCount.where('blogId', filter.blogId);
@@ -51,7 +50,3 @@ export class PostsQueryRepository {
 		return postsQueryCount.exec();
 	}
 }
-
-const postsQueryRepository = new PostsQueryRepository(PostsModel);
-
-export { postsQueryRepository };

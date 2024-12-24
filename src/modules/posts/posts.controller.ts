@@ -6,28 +6,29 @@ import {
 	ReqParams,
 	ReqQuery,
 	ReqQueryWithParams,
+	ValidationErrorViewDto,
 } from '../../types';
-import { PostsQueryRepository, postsQueryRepository } from './posts.query-repository';
+import { PostsQueryRepository } from './posts.query-repository';
 import { HTTP_STATUSES, VALIDATION_MESSAGES } from '../../constants';
 import { PostCreateByBlogIdDto, PostUpdateDto } from './posts.dto';
-import { BlogsQueryRepository, blogsQueryRepository } from '../blogs/blogs.query-repository';
-import { PostsService, postsService } from './posts.service';
-import {
-	commentQueryRepository,
-	CommentsQueryRepository,
-} from '../comments/comments.query-repository';
+import { BlogsQueryRepository } from '../blogs/blogs.query-repository';
+import { PostsService } from './posts.service';
+import { CommentsQueryRepository } from '../comments/comments.query-repository';
 import { CommentCreateDto } from '../comments/comments.dto';
-import { UsersQueryRepository, usersQueryRepository } from '../users/users.query-repository';
-import { commentsService, CommentsService } from '../comments/comments.service';
+import { UsersQueryRepository } from '../users/users.query-repository';
+import { CommentsService } from '../comments/comments.service';
+import { inject, injectable } from 'inversify';
 
-class PostsController {
+@injectable()
+export class PostsController {
 	constructor(
-		private readonly postsQueryRepository: PostsQueryRepository,
-		private readonly blogsQueryRepository: BlogsQueryRepository,
+		@inject(PostsQueryRepository) private readonly postsQueryRepository: PostsQueryRepository,
+		@inject(BlogsQueryRepository) private readonly blogsQueryRepository: BlogsQueryRepository,
+		@inject(CommentsQueryRepository)
 		private readonly commentQueryRepository: CommentsQueryRepository,
-		private readonly usersQueryRepository: UsersQueryRepository,
-		private readonly postsService: PostsService,
-		private readonly commentsService: CommentsService,
+		@inject(UsersQueryRepository) private readonly usersQueryRepository: UsersQueryRepository,
+		@inject(PostsService) private readonly postsService: PostsService,
+		@inject(CommentsService) private readonly commentsService: CommentsService,
 	) {}
 
 	async getAllPosts(req: ReqQuery<FilteredBlogQueries>, res: Response) {
@@ -60,9 +61,13 @@ class PostsController {
 
 			if (!blog) {
 				res.status(HTTP_STATUSES.BAD_REQUEST_400).send({
-					field: 'blogId',
-					message: VALIDATION_MESSAGES.BLOG_IS_NOT_EXIST,
-				});
+					errorsMessages: [
+						{
+							field: 'blogId',
+							message: VALIDATION_MESSAGES.BLOG_IS_NOT_EXIST,
+						},
+					],
+				} as ValidationErrorViewDto);
 
 				return;
 			}
@@ -78,6 +83,21 @@ class PostsController {
 
 	async updatePostById(req: ReqBodyWithParams<{ id: string }, PostUpdateDto>, res: Response) {
 		try {
+			const blog = await this.blogsQueryRepository.getBlogById(req.body.blogId);
+
+			if (!blog) {
+				res.status(HTTP_STATUSES.BAD_REQUEST_400).send({
+					errorsMessages: [
+						{
+							field: 'blogId',
+							message: VALIDATION_MESSAGES.BLOG_IS_NOT_EXIST,
+						},
+					],
+				} as ValidationErrorViewDto);
+
+				return;
+			}
+
 			const isUpdated = await this.postsService.updatePostById(req.params.id, req.body);
 
 			if (!isUpdated) {
@@ -120,7 +140,7 @@ class PostsController {
 			const comments = await this.commentQueryRepository.getCommentsByPostId(
 				req.params.postId,
 				req.query,
-				req.user?.id
+				req.user?.id,
 			);
 			res.send(comments);
 		} catch (e) {
@@ -150,16 +170,8 @@ class PostsController {
 
 			res.status(HTTP_STATUSES.CREATED_201).send(comment!);
 		} catch (e) {
+			console.log(e, 'e');
 			res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
 		}
 	}
 }
-
-export const postsController = new PostsController(
-	postsQueryRepository,
-	blogsQueryRepository,
-	commentQueryRepository,
-	usersQueryRepository,
-	postsService,
-	commentsService,
-);

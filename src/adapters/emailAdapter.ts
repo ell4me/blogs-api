@@ -1,7 +1,9 @@
 import nodemailer, { Transporter } from 'nodemailer';
 import Mail from 'nodemailer/lib/mailer';
 import { SETTINGS } from '../constants';
+import { injectable } from 'inversify';
 
+@injectable()
 export class EmailAdapter {
 	private transporter: Transporter;
 
@@ -59,5 +61,3 @@ export class EmailAdapter {
 		return this.transporter.sendMail(mailOptions);
 	}
 }
-
-export const emailAdapter = new EmailAdapter();

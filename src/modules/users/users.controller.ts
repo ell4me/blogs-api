@@ -1,14 +1,16 @@
 import { Response } from 'express';
 import { FilteredUserQueries, ReqBody, ReqParams, ReqQuery } from '../../types';
-import { UsersQueryRepository, usersQueryRepository } from './users.query-repository';
+import { UsersQueryRepository } from './users.query-repository';
 import { HTTP_STATUSES } from '../../constants';
 import { UserCreateDto } from './users.dto';
-import { UsersService, usersService } from './users.service';
+import { UsersService } from './users.service';
+import { inject, injectable } from 'inversify';
 
-class UsersController {
+@injectable()
+export class UsersController {
 	constructor(
-		private readonly usersQueryRepository: UsersQueryRepository,
-		private readonly usersService: UsersService,
+		@inject(UsersQueryRepository) private readonly usersQueryRepository: UsersQueryRepository,
+		@inject(UsersService) private readonly usersService: UsersService,
 	) {}
 
 	async getAllUsers(req: ReqQuery<FilteredUserQueries>, res: Response) {
@@ -51,5 +53,3 @@ class UsersController {
 		}
 	}
 }
-
-export const usersController = new UsersController(usersQueryRepository, usersService);

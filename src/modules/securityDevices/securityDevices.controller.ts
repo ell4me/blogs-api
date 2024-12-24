@@ -1,15 +1,16 @@
 import { Request, Response } from 'express';
-import {
-	SecurityDevicesQueryRepository,
-	securityDevicesQueryRepository,
-} from './securityDevices.query-repository';
+import { SecurityDevicesQueryRepository } from './securityDevices.query-repository';
 import { HTTP_STATUSES } from '../../constants';
-import { SecurityDevicesService, securityDevicesService } from './securityDevices.service';
+import { SecurityDevicesService } from './securityDevices.service';
 import { ReqParams } from '../../types';
+import { inject, injectable } from 'inversify';
 
-class SecurityDevicesController {
+@injectable()
+export class SecurityDevicesController {
 	constructor(
+		@inject(SecurityDevicesQueryRepository)
 		private readonly securityDevicesQueryRepository: SecurityDevicesQueryRepository,
+		@inject(SecurityDevicesService)
 		private readonly securityDevicesService: SecurityDevicesService,
 	) {}
 
@@ -60,8 +61,3 @@ class SecurityDevicesController {
 		}
 	}
 }
-
-export const securityDevicesController = new SecurityDevicesController(
-	securityDevicesQueryRepository,
-	securityDevicesService,
-);

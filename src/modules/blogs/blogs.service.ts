@@ -1,12 +1,14 @@
-import { blogsRepository, BlogsRepository } from './blogs.repository';
-import { postsRepository, PostsRepository } from '../posts/posts.repository';
+import { BlogsRepository } from './blogs.repository';
+import { PostsRepository } from '../posts/posts.repository';
 import { BlogCreateDto, BlogUpdateDto } from './blogs.dto';
 import { BlogCreate } from './blogs.types';
+import { inject, injectable } from 'inversify';
 
+@injectable()
 export class BlogsService {
 	constructor(
-		private readonly postsRepository: PostsRepository,
-		private readonly blogsRepository: BlogsRepository,
+		@inject(PostsRepository) private readonly postsRepository: PostsRepository,
+		@inject(BlogsRepository) private readonly blogsRepository: BlogsRepository,
 	) {}
 
 	async updateBlogById(id: string, updatedBlog: BlogUpdateDto): Promise<boolean> {
@@ -49,5 +51,3 @@ export class BlogsService {
 		return isDeleted;
 	}
 }
-
-export const blogsService = new BlogsService(postsRepository, blogsRepository);

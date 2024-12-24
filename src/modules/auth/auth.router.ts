@@ -5,8 +5,10 @@ import { authBearerMiddleware } from '../../middlewares/auth-bearer.middleware';
 import { patternMiddleware, PATTERNS } from '../../middlewares/validation/pattern.middleware';
 import { getRateLimitMiddleware } from '../../middlewares/rateLimit.middleware';
 import { refreshTokenMiddleware } from '../../middlewares/refreshToken.middleware';
-import { authController } from './auth.controller';
+import { AuthController } from './auth.controller';
+import { compositionRoot } from '../../inversify.config';
 
+const authController = compositionRoot.resolve(AuthController);
 export const authRouter = Router();
 
 const rateLimitMiddleware = getRateLimitMiddleware({ limit: 5, ttlInSeconds: 10 });

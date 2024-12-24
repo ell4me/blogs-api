@@ -1,11 +1,10 @@
+import { injectable } from 'inversify';
 import { BlogViewDto } from './blogs.dto';
 import { FilteredBlogQueries, ItemsPaginationViewDto } from '../../types';
-import { Model } from 'mongoose';
-import { BlogDocument, BlogsModel } from './blogs.model';
+import { BlogsModel } from './blogs.model';
 
+@injectable()
 export class BlogsQueryRepository {
-	constructor(private readonly BlogsModel: Model<BlogDocument>) {}
-
 	async getAllBlogs({
 		pageSize,
 		pageNumber,
@@ -13,7 +12,7 @@ export class BlogsQueryRepository {
 		sortDirection,
 		searchNameTerm,
 	}: FilteredBlogQueries): Promise<ItemsPaginationViewDto<BlogViewDto>> {
-		const blogsQuery = this.BlogsModel.find();
+		const blogsQuery = BlogsModel.find();
 
 		if (searchNameTerm) {
 			blogsQuery.where('name').regex(new RegExp(searchNameTerm, 'i'));
@@ -37,11 +36,11 @@ export class BlogsQueryRepository {
 	}
 
 	getBlogById(id: string): Promise<BlogViewDto | null> {
-		return this.BlogsModel.findOne({ id }).select('-_id -__v -updatedAt').exec();
+		return BlogsModel.findOne({ id }).select('-_id -__v -updatedAt').exec();
 	}
 
 	getCountBlogsByFilter(searchNameTerm: string | null): Promise<number> {
-		const blogsCountQuery = this.BlogsModel.countDocuments();
+		const blogsCountQuery = BlogsModel.countDocuments();
 
 		if (searchNameTerm) {
 			blogsCountQuery.where('name').regex(new RegExp(searchNameTerm, 'i'));
@@ -50,7 +49,3 @@ export class BlogsQueryRepository {
 		return blogsCountQuery.exec();
 	}
 }
-
-const blogsQueryRepository = new BlogsQueryRepository(BlogsModel);
-
-export { blogsQueryRepository };

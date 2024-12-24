@@ -1,7 +1,6 @@
 import { RateLimitDocument, RateLimitModel } from './rateLimit.model';
 import { DeleteResult, ObjectId } from 'mongodb';
 import { Model } from 'mongoose';
-import { CommentDocument } from '../comments/comments.model';
 
 export class RateLimitRepository {
 	constructor(private readonly RateLimitModel: Model<RateLimitDocument>) {}

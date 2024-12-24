@@ -1,18 +1,17 @@
+import { injectable } from 'inversify';
 import { CommentViewDto } from './comments.dto';
 import { ItemsPaginationViewDto, PaginationQueries } from '../../types';
-import { CommentDocument, CommentsModel } from './comments.model';
-import { Model } from 'mongoose';
+import { CommentsModel } from './comments.model';
 import { getLikesInfoByUser } from '../../helpers/getLikesInfoByUser';
 
+@injectable()
 export class CommentsQueryRepository {
-	constructor(private readonly CommentsModel: Model<CommentDocument>) {}
-
 	async getCommentsByPostId(
 		postId: string,
 		{ sortBy, sortDirection, pageSize, pageNumber }: PaginationQueries,
 		userId?: string,
 	): Promise<ItemsPaginationViewDto<CommentViewDto>> {
-		const comments = await this.CommentsModel.find({ postId })
+		const comments = await CommentsModel.find({ postId })
 			.skip((pageNumber - 1) * pageSize)
 			.sort({ [sortBy]: sortDirection })
 			.limit(pageSize)
@@ -36,7 +35,7 @@ export class CommentsQueryRepository {
 	}
 
 	async getCommentById(commentId: string, userId?: string): Promise<CommentViewDto | null> {
-		const comment = await this.CommentsModel.findOne({ id: commentId })
+		const comment = await CommentsModel.findOne({ id: commentId })
 			.select('-__v -_id -updatedAt -postId')
 			.lean();
 
@@ -51,10 +50,6 @@ export class CommentsQueryRepository {
 	}
 
 	getCountComments(postId: string): Promise<number> {
-		return this.CommentsModel.countDocuments({ postId }).exec();
+		return CommentsModel.countDocuments({ postId }).exec();
 	}
 }
-
-const commentQueryRepository = new CommentsQueryRepository(CommentsModel);
-
-export { commentQueryRepository };

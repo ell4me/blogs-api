@@ -2,9 +2,11 @@ import { Router } from 'express';
 
 import { fieldsCheckErrorsMiddleware, stringMiddleware } from '../../middlewares/validation';
 import { authBearerMiddleware } from '../../middlewares/auth-bearer.middleware';
-import { commentsController } from './comments.controller';
 import { accessTokenMiddleware } from '../../middlewares/accessToken.middleware';
+import { compositionRoot } from '../../inversify.config';
+import { CommentsController } from './comments.controller';
 
+const commentsController = compositionRoot.resolve(CommentsController);
 export const commentsRouter = Router();
 const validationMiddlewares = [
 	authBearerMiddleware,
@@ -18,7 +20,11 @@ const validationLikeMiddlewares = [
 	fieldsCheckErrorsMiddleware,
 ];
 
-commentsRouter.get('/:id', accessTokenMiddleware, commentsController.getCommentById.bind(commentsController));
+commentsRouter.get(
+	'/:id',
+	accessTokenMiddleware,
+	commentsController.getCommentById.bind(commentsController),
+);
 
 commentsRouter.put(
 	'/:commentId',

@@ -1,13 +1,19 @@
 import { Router } from 'express';
-import { blogsRepository } from '../blogs/blogs.repository';
-import { postsRepository } from '../posts/posts.repository';
-import { usersRepository } from '../users/users.repository';
-import { commentsRepository } from '../comments/comments.repository';
+import { BlogsRepository } from '../blogs/blogs.repository';
+import { PostsRepository } from '../posts/posts.repository';
+import { UsersRepository } from '../users/users.repository';
+import { CommentsRepository } from '../comments/comments.repository';
 import { rateLimitRepository } from '../rateLimit/rateLimit.repository';
 import { HTTP_STATUSES } from '../../constants';
-import { securityDevicesRepository } from '../securityDevices/securityDevices.repository';
+import { compositionRoot } from '../../inversify.config';
+import { SecurityDevicesRepository } from '../securityDevices/securityDevices.repository';
 
 export const testingRouter = Router();
+const securityDevicesRepository = compositionRoot.resolve(SecurityDevicesRepository);
+const commentsRepository = compositionRoot.resolve(CommentsRepository);
+const usersRepository = compositionRoot.resolve(UsersRepository);
+const postsRepository = compositionRoot.resolve(PostsRepository);
+const blogsRepository = compositionRoot.resolve(BlogsRepository);
 
 testingRouter.delete('/all-data', async (req, res) => {
 	try {

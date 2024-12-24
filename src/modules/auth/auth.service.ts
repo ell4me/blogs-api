@@ -7,19 +7,19 @@ import { VALIDATION_MESSAGES } from '../../constants';
 import { UserCreateDto } from '../users/users.dto';
 import { validateUserIsExist } from '../../helpers/validateUserIsExist';
 import { ValidationErrorViewDto } from '../../types';
-import { EmailAdapter, emailAdapter } from '../../adapters/emailAdapter';
-import {
-	SecurityDevicesService,
-	securityDevicesService,
-} from '../securityDevices/securityDevices.service';
-import { UsersService, usersService } from '../users/users.service';
+import { EmailAdapter } from '../../adapters/emailAdapter';
+import { SecurityDevicesService } from '../securityDevices/securityDevices.service';
+import { UsersService } from '../users/users.service';
 import { SecurityDevicesUpdate } from '../securityDevices/securityDevices.types';
 import { PasswordRecovery, Tokens, UserCreate } from '../users/users.types';
+import { inject, injectable } from 'inversify';
 
+@injectable()
 export class AuthService {
 	constructor(
-		private readonly usersService: UsersService,
-		private readonly emailAdapter: EmailAdapter,
+		@inject(UsersService) private readonly usersService: UsersService,
+		@inject(EmailAdapter) private readonly emailAdapter: EmailAdapter,
+		@inject(SecurityDevicesService)
 		private readonly securityDevicesService: SecurityDevicesService,
 	) {}
 
@@ -43,7 +43,7 @@ export class AuthService {
 			return;
 		}
 
-		return securityDevicesService.createDeviceSession({
+		return this.securityDevicesService.createDeviceSession({
 			userId: user.id,
 			ip,
 			deviceName: deviceName || 'Unknown',
@@ -104,7 +104,7 @@ export class AuthService {
 			return getErrorMessage(VALIDATION_MESSAGES.CODE_EXPIRED('Confirmation'));
 		}
 
-		await usersService.updateUserEmailConfirmation(user.id, {
+		await this.usersService.updateUserEmailConfirmation(user.id, {
 			...user.emailConfirmation,
 			isConfirmed: true,
 		});
@@ -216,5 +216,3 @@ export class AuthService {
 		return { result };
 	}
 }
-
-export const authService = new AuthService(usersService, emailAdapter, securityDevicesService);

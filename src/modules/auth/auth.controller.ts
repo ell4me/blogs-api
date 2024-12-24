@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-
+import { inject, injectable } from 'inversify';
 import { ReqBody } from '../../types';
 import {
 	AuthLoginDto,
@@ -8,15 +8,16 @@ import {
 	RegistrationConfirmationDto,
 	RegistrationEmailResendingDto,
 } from './auth.dto';
-import { AuthService, authService } from './auth.service';
+import { AuthService } from './auth.service';
 import { HTTP_STATUSES } from '../../constants';
 import { UserCreateDto } from '../users/users.dto';
-import { UsersQueryRepository, usersQueryRepository } from '../users/users.query-repository';
+import { UsersQueryRepository } from '../users/users.query-repository';
 
-class AuthController {
+@injectable()
+export class AuthController {
 	constructor(
-		private readonly authService: AuthService,
-		private readonly usersQueryRepository: UsersQueryRepository,
+		@inject(AuthService) private readonly authService: AuthService,
+		@inject(UsersQueryRepository) private readonly usersQueryRepository: UsersQueryRepository,
 	) {}
 
 	async login(req: ReqBody<AuthLoginDto>, res: Response) {
@@ -155,5 +156,3 @@ class AuthController {
 		}
 	}
 }
-
-export const authController = new AuthController(authService, usersQueryRepository);

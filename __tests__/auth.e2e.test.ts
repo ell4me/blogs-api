@@ -13,11 +13,12 @@ import {
 	RegistrationEmailResendingDto,
 } from '../src/modules/auth/auth.dto';
 import { UserCreateDto, UserViewDto } from '../src/modules/users/users.dto';
-import { usersRepository } from '../src/modules/users/users.repository';
 import { add } from 'date-fns/add';
 import mongoose from 'mongoose';
 import { UserDocument } from '../src/modules/users/users.model';
 import { PasswordRecovery } from '../src/modules/users/users.types';
+import { compositionRoot } from '../src/inversify.config';
+import { UsersRepository } from '../src/modules/users/users.repository';
 
 const createUserDto = {
 	login: 'ell4me',
@@ -32,6 +33,7 @@ describe(ROUTERS_PATH.AUTH, () => {
 	let accessToken: string;
 	let cookiesWithRefreshToken: string;
 	let updatedCookiesWithRefreshToken: string;
+	const usersRepository = compositionRoot.resolve(UsersRepository);
 
 	beforeAll(async () => {
 		server = await MongoMemoryServer.create();

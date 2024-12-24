@@ -1,4 +1,5 @@
 import { Response } from 'express';
+import { injectable, inject } from 'inversify';
 import {
 	FilteredBlogQueries,
 	ReqBody,
@@ -7,20 +8,21 @@ import {
 	ReqQuery,
 	ReqQueryWithParams,
 } from '../../types';
-import { BlogsQueryRepository, blogsQueryRepository } from './blogs.query-repository';
+import { BlogsQueryRepository } from './blogs.query-repository';
 import { HTTP_STATUSES } from '../../constants';
-import { PostsQueryRepository, postsQueryRepository } from '../posts/posts.query-repository';
+import { PostsQueryRepository } from '../posts/posts.query-repository';
 import { BlogCreateDto, BlogUpdateDto } from './blogs.dto';
-import { BlogsService, blogsService } from './blogs.service';
+import { BlogsService } from './blogs.service';
 import { PostCreateDto } from '../posts/posts.dto';
-import { PostsService, postsService } from '../posts/posts.service';
+import { PostsService } from '../posts/posts.service';
 
-class BlogsController {
+@injectable()
+export class BlogsController {
 	constructor(
-		private readonly blogsQueryRepository: BlogsQueryRepository,
-		private readonly postsQueryRepository: PostsQueryRepository,
-		private readonly blogsService: BlogsService,
-		private readonly postsService: PostsService,
+		@inject(BlogsQueryRepository) private readonly blogsQueryRepository: BlogsQueryRepository,
+		@inject(PostsQueryRepository) private readonly postsQueryRepository: PostsQueryRepository,
+		@inject(BlogsService) private readonly blogsService: BlogsService,
+		@inject(PostsService) private readonly postsService: PostsService,
 	) {}
 
 	async getAllBlogs(req: ReqQuery<FilteredBlogQueries>, res: Response) {
@@ -135,10 +137,3 @@ class BlogsController {
 		}
 	}
 }
-
-export const blogsController = new BlogsController(
-	blogsQueryRepository,
-	postsQueryRepository,
-	blogsService,
-	postsService,
-);

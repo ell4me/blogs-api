@@ -6,8 +6,10 @@ import {
 } from '../../middlewares/validation';
 import { authMiddleware } from '../../middlewares/auth.middleware';
 import { queryBlogParserMiddleware } from '../../middlewares/queryParser.middleware';
-import { blogsController } from './blogs.controller';
+import { BlogsController } from './blogs.controller';
+import { compositionRoot } from '../../inversify.config';
 
+const blogsController = compositionRoot.resolve(BlogsController);
 export const blogsRouter = Router();
 const validationMiddlewares = [
 	authMiddleware,
@@ -20,7 +22,11 @@ const validationMiddlewares = [
 blogsRouter.get('/', queryBlogParserMiddleware, blogsController.getAllBlogs.bind(blogsController));
 blogsRouter.get('/:id', blogsController.getBlogById.bind(blogsController));
 
-blogsRouter.get('/:id/posts', queryBlogParserMiddleware, blogsController.getPostsByBlogId.bind(blogsController));
+blogsRouter.get(
+	'/:id/posts',
+	queryBlogParserMiddleware,
+	blogsController.getPostsByBlogId.bind(blogsController),
+);
 
 blogsRouter.post('/', ...validationMiddlewares, blogsController.createBlog.bind(blogsController));
 
@@ -34,6 +40,10 @@ blogsRouter.post(
 	blogsController.createPostByBlogId.bind(blogsController),
 );
 
-blogsRouter.put('/:id', ...validationMiddlewares, blogsController.updateBlogById.bind(blogsController));
+blogsRouter.put(
+	'/:id',
+	...validationMiddlewares,
+	blogsController.updateBlogById.bind(blogsController),
+);
 
 blogsRouter.delete('/:id', authMiddleware, blogsController.deleteBlogById.bind(blogsController));

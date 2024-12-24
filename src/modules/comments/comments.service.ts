@@ -1,4 +1,5 @@
-import { CommentsRepository, commentsRepository } from './comments.repository';
+import { injectable, inject } from 'inversify';
+import { CommentsRepository } from './comments.repository';
 import { CommentCreateDto, CommentLikeDto, CommentUpdateDto, CommentViewDto } from './comments.dto';
 import { UserViewDto } from '../users/users.dto';
 import { CommentCreate } from './comments.types';
@@ -6,8 +7,11 @@ import { STATUSES_LIKE } from './comments.constants';
 import { ValidationErrorViewDto } from '../../types';
 import { VALIDATION_MESSAGES } from '../../constants';
 
+@injectable()
 export class CommentsService {
-	constructor(private readonly commentsRepository: CommentsRepository) {}
+	constructor(
+		@inject(CommentsRepository) private readonly commentsRepository: CommentsRepository,
+	) {}
 
 	async createComment(
 		{ content }: CommentCreateDto,
@@ -64,5 +68,3 @@ export class CommentsService {
 		return this.commentsRepository.deleteCommentById(commentId);
 	}
 }
-
-export const commentsService = new CommentsService(commentsRepository);

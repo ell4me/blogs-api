@@ -1,22 +1,20 @@
 import { Router } from 'express';
-import {
-	stringMiddleware,
-	fieldsCheckErrorsMiddleware,
-	blogIdMiddleware,
-} from '../../middlewares/validation';
+import { stringMiddleware, fieldsCheckErrorsMiddleware } from '../../middlewares/validation';
 import { authMiddleware } from '../../middlewares/auth.middleware';
 import { queryBlogParserMiddleware } from '../../middlewares/queryParser.middleware';
 import { authBearerMiddleware } from '../../middlewares/auth-bearer.middleware';
-import { postsController } from './posts.controller';
+import { PostsController } from './posts.controller';
 import { accessTokenMiddleware } from '../../middlewares/accessToken.middleware';
+import { compositionRoot } from '../../inversify.config';
 
+const postsController = compositionRoot.resolve(PostsController);
 export const postsRouter = Router();
 const validationMiddlewares = [
 	authMiddleware,
 	stringMiddleware({ field: 'title', maxLength: 30 }),
 	stringMiddleware({ field: 'shortDescription', maxLength: 100 }),
 	stringMiddleware({ field: 'content', maxLength: 1000 }),
-	blogIdMiddleware,
+	stringMiddleware({ field: 'blogId' }),
 	fieldsCheckErrorsMiddleware,
 ];
 
@@ -51,4 +49,8 @@ postsRouter.get(
 	postsController.getCommentsByPostId.bind(postsController),
 );
 
-postsRouter.post('/:postId/comments', ...commentsMiddlewares, postsController.createComment.bind(postsController));
+postsRouter.post(
+	'/:postId/comments',
+	...commentsMiddlewares,
+	postsController.createComment.bind(postsController),
+);

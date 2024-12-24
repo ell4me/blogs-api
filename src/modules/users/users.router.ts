@@ -1,11 +1,12 @@
 import { Router } from 'express';
-import { FilteredUserQueries } from '../../types';
 import { stringMiddleware, fieldsCheckErrorsMiddleware } from '../../middlewares/validation';
 import { authMiddleware } from '../../middlewares/auth.middleware';
 import { queryUserParserMiddleware } from '../../middlewares/queryParser.middleware';
 import { patternMiddleware, PATTERNS } from '../../middlewares/validation/pattern.middleware';
-import { usersController } from './users.controller';
+import { compositionRoot } from '../../inversify.config';
+import { UsersController } from './users.controller';
 
+const usersController = compositionRoot.resolve(UsersController);
 export const usersRouter = Router();
 const validationMiddlewares = [
 	authMiddleware,

@@ -1,28 +1,22 @@
-import { PostUpdateDto } from './posts.dto';
-import { DeleteResult, ObjectId } from 'mongodb';
+import { DeleteResult } from 'mongodb';
 import { BlogUpdateDto } from '../blogs/blogs.dto';
-import { PostsModel } from './posts.model';
-import { PostCreate } from './posts.types';
+import { HydratedPostDocument, PostsModel } from './posts.model';
 import { injectable } from 'inversify';
 
 @injectable()
 export class PostsRepository {
+	async getPostById(id: string): Promise<HydratedPostDocument | null> {
+		return PostsModel.findOne({ id });
+	}
+
 	async deleteAllPostsByBlogId(blogId: string): Promise<boolean> {
 		const result = await PostsModel.deleteMany({ blogId });
 
 		return !!result;
 	}
 
-	async updatePostById(id: string, newPost: PostUpdateDto): Promise<boolean> {
-		const result = await PostsModel.findOneAndUpdate({ id }, newPost);
-
-		return !!result;
-	}
-
-	async createPost(createdPost: PostCreate): Promise<ObjectId> {
-		const { _id } = await PostsModel.create(createdPost);
-
-		return _id;
+	async save(post: HydratedPostDocument): Promise<HydratedPostDocument> {
+		return post.save();
 	}
 
 	async deletePostById(id: string): Promise<boolean> {
@@ -32,7 +26,7 @@ export class PostsRepository {
 	}
 
 	deleteAllPosts(): Promise<DeleteResult> {
-		return PostsModel.deleteMany().exec();
+		return PostsModel.deleteMany();
 	}
 
 	async updatePostsByBlogId(id: string, { name }: Pick<BlogUpdateDto, 'name'>): Promise<boolean> {

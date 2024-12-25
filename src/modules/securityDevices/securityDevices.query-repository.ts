@@ -18,6 +18,6 @@ export class SecurityDevicesQueryRepository {
 	}
 
 	async getDeviceSession(deviceId: string): Promise<SecurityDevicesDocument | null> {
-		return SecurityDevicesModel.findOne({ deviceId }).exec();
+		return SecurityDevicesModel.findOne({ deviceId });
 	}
 }

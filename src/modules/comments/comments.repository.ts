@@ -55,6 +55,6 @@ export class CommentsRepository {
 	}
 
 	deleteAllComments(): Promise<DeleteResult> {
-		return CommentsModel.deleteMany().exec();
+		return CommentsModel.deleteMany();
 	}
 }

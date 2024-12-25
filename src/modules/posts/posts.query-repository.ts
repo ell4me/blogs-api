@@ -23,7 +23,8 @@ export class PostsQueryRepository {
 			.skip((pageNumber - 1) * pageSize)
 			.sort({ [sortBy]: sortDirection })
 			.limit(pageSize)
-			.select('-__v -_id -updatedAt');
+			.select('-__v -_id -updatedAt')
+			.lean();
 
 		const postsCountByFilter = await this.getCountPosts(additionalFilter);
 
@@ -37,7 +38,7 @@ export class PostsQueryRepository {
 	}
 
 	getPostById(id: string): Promise<PostViewDto | null> {
-		return PostsModel.findOne({ id }).select('-__v -_id -updatedAt').exec();
+		return PostsModel.findOne({ id }).select('-__v -_id -updatedAt');
 	}
 
 	getCountPosts(filter?: { blogId?: string }): Promise<number> {
@@ -47,6 +48,6 @@ export class PostsQueryRepository {
 			postsQueryCount.where('blogId', filter.blogId);
 		}
 
-		return postsQueryCount.exec();
+		return postsQueryCount;
 	}
 }

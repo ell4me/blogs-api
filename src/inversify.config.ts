@@ -26,44 +26,68 @@ import { SecurityDevicesService } from './modules/securityDevices/securityDevice
 export const compositionRoot = new Container();
 
 // Blogs
-compositionRoot.bind<BlogsController>(BlogsController).to(BlogsController);
-compositionRoot.bind<BlogsQueryRepository>(BlogsQueryRepository).to(BlogsQueryRepository);
-compositionRoot.bind<BlogsRepository>(BlogsRepository).to(BlogsRepository);
-compositionRoot.bind<BlogsService>(BlogsService).to(BlogsService);
+compositionRoot.bind<BlogsController>(BlogsController).to(BlogsController).inSingletonScope();
+compositionRoot
+	.bind<BlogsQueryRepository>(BlogsQueryRepository)
+	.to(BlogsQueryRepository)
+	.inSingletonScope();
+compositionRoot.bind<BlogsRepository>(BlogsRepository).to(BlogsRepository).inSingletonScope();
+compositionRoot.bind<BlogsService>(BlogsService).to(BlogsService).inSingletonScope();
 
 // Posts
-compositionRoot.bind<PostsController>(PostsController).to(PostsController);
-compositionRoot.bind<PostsQueryRepository>(PostsQueryRepository).to(PostsQueryRepository);
-compositionRoot.bind<PostsRepository>(PostsRepository).to(PostsRepository);
-compositionRoot.bind<PostsService>(PostsService).to(PostsService);
+compositionRoot.bind<PostsController>(PostsController).to(PostsController).inSingletonScope();
+compositionRoot
+	.bind<PostsQueryRepository>(PostsQueryRepository)
+	.to(PostsQueryRepository)
+	.inSingletonScope();
+compositionRoot.bind<PostsRepository>(PostsRepository).to(PostsRepository).inSingletonScope();
+compositionRoot.bind<PostsService>(PostsService).to(PostsService).inSingletonScope();
 
 // Users
-compositionRoot.bind<UsersController>(UsersController).to(UsersController);
-compositionRoot.bind<UsersQueryRepository>(UsersQueryRepository).to(UsersQueryRepository);
-compositionRoot.bind<UsersRepository>(UsersRepository).to(UsersRepository);
-compositionRoot.bind<UsersService>(UsersService).to(UsersService);
+compositionRoot.bind<UsersController>(UsersController).to(UsersController).inSingletonScope();
+compositionRoot
+	.bind<UsersQueryRepository>(UsersQueryRepository)
+	.to(UsersQueryRepository)
+	.inSingletonScope();
+compositionRoot.bind<UsersRepository>(UsersRepository).to(UsersRepository).inSingletonScope();
+compositionRoot.bind<UsersService>(UsersService).to(UsersService).inSingletonScope();
 
 // Comments
-compositionRoot.bind<CommentsController>(CommentsController).to(CommentsController);
-compositionRoot.bind<CommentsQueryRepository>(CommentsQueryRepository).to(CommentsQueryRepository);
-compositionRoot.bind<CommentsRepository>(CommentsRepository).to(CommentsRepository);
-compositionRoot.bind<CommentsService>(CommentsService).to(CommentsService);
+compositionRoot
+	.bind<CommentsController>(CommentsController)
+	.to(CommentsController)
+	.inSingletonScope();
+compositionRoot
+	.bind<CommentsQueryRepository>(CommentsQueryRepository)
+	.to(CommentsQueryRepository)
+	.inSingletonScope();
+compositionRoot
+	.bind<CommentsRepository>(CommentsRepository)
+	.to(CommentsRepository)
+	.inSingletonScope();
+compositionRoot.bind<CommentsService>(CommentsService).to(CommentsService).inSingletonScope();
 
 // Auth
-compositionRoot.bind<AuthService>(AuthService).to(AuthService);
-compositionRoot.bind<AuthController>(AuthController).to(AuthController);
+compositionRoot.bind<AuthService>(AuthService).to(AuthService).inSingletonScope();
+compositionRoot.bind<AuthController>(AuthController).to(AuthController).inSingletonScope();
 
 // SecurityDevices
 compositionRoot
 	.bind<SecurityDevicesController>(SecurityDevicesController)
-	.to(SecurityDevicesController);
+	.to(SecurityDevicesController)
+	.inSingletonScope();
 compositionRoot
 	.bind<SecurityDevicesQueryRepository>(SecurityDevicesQueryRepository)
-	.to(SecurityDevicesQueryRepository);
+	.to(SecurityDevicesQueryRepository)
+	.inSingletonScope();
 compositionRoot
 	.bind<SecurityDevicesRepository>(SecurityDevicesRepository)
-	.to(SecurityDevicesRepository);
-compositionRoot.bind<SecurityDevicesService>(SecurityDevicesService).to(SecurityDevicesService);
+	.to(SecurityDevicesRepository)
+	.inSingletonScope();
+compositionRoot
+	.bind<SecurityDevicesService>(SecurityDevicesService)
+	.to(SecurityDevicesService)
+	.inSingletonScope();
 
 // Adapters
-compositionRoot.bind<EmailAdapter>(EmailAdapter).to(EmailAdapter);
+compositionRoot.bind<EmailAdapter>(EmailAdapter).to(EmailAdapter).inSingletonScope();

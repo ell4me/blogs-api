@@ -18,7 +18,7 @@ export class UsersRepository {
 	}
 
 	deleteAllUsers(): Promise<DeleteResult> {
-		return UsersModel.deleteMany().exec();
+		return UsersModel.deleteMany();
 	}
 
 	getUserByEmailOrLogin({
@@ -28,15 +28,15 @@ export class UsersRepository {
 		email: string;
 		login: string;
 	}>): Promise<UserDocument | null> {
-		return UsersModel.findOne().or([{ email }, { login }]).exec();
+		return UsersModel.findOne().or([{ email }, { login }]);
 	}
 
 	getUserByConfirmationCode(code: string): Promise<UserDocument | null> {
-		return UsersModel.findOne({ 'emailConfirmation.code': code }).exec();
+		return UsersModel.findOne({ 'emailConfirmation.code': code });
 	}
 
 	getUserByPasswordRecoveryCode(code: string): Promise<UserDocument | null> {
-		return UsersModel.findOne({ 'passwordRecovery.code': code }).exec();
+		return UsersModel.findOne({ 'passwordRecovery.code': code });
 	}
 
 	async updateUserEmailConfirmation(

@@ -37,8 +37,7 @@ export class UsersQueryRepository {
 
 	getUserById(id: string): Promise<UserViewDto | null> {
 		return UsersModel.findOne({ id })
-			.select('-_id -__v -updatedAt -password -emailConfirmation -passwordRecovery')
-			.exec();
+			.select('-_id -__v -updatedAt -password -emailConfirmation -passwordRecovery');
 	}
 
 	getCountUsersByFilter(
@@ -46,7 +45,7 @@ export class UsersQueryRepository {
 		searchEmailTerm: string | null,
 	): Promise<number> {
 		const filterOr = getUsersFilterRepository(searchLoginTerm, searchEmailTerm);
-		return UsersModel.countDocuments().or(filterOr).exec();
+		return UsersModel.countDocuments().or(filterOr);
 	}
 
 	async getCurrentUser(id: string): Promise<CurrentUserViewDto> {

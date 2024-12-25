@@ -25,16 +25,16 @@ export class SecurityDevicesRepository {
 		userId: string,
 		deviceId: string,
 	): Promise<DeleteResult> {
-		return SecurityDevicesModel.deleteMany({ userId }).where('deviceId').nin([deviceId]).exec();
+		return SecurityDevicesModel.deleteMany({ userId }).where('deviceId').nin([deviceId]);
 	}
 
 	async deleteSessionByDeviceId(deviceId: string): Promise<boolean> {
-		const result = await SecurityDevicesModel.findOneAndDelete({ deviceId }).exec();
+		const result = await SecurityDevicesModel.findOneAndDelete({ deviceId });
 
 		return !!result;
 	}
 
 	deleteAllSessions(): Promise<DeleteResult> {
-		return SecurityDevicesModel.deleteMany().exec();
+		return SecurityDevicesModel.deleteMany();
 	}
 }

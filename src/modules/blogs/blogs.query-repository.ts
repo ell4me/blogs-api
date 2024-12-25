@@ -36,7 +36,7 @@ export class BlogsQueryRepository {
 	}
 
 	getBlogById(id: string): Promise<BlogViewDto | null> {
-		return BlogsModel.findOne({ id }).select('-_id -__v -updatedAt').exec();
+		return BlogsModel.findOne({ id }).select('-_id -__v -updatedAt');
 	}
 
 	getCountBlogsByFilter(searchNameTerm: string | null): Promise<number> {
@@ -46,6 +46,6 @@ export class BlogsQueryRepository {
 			blogsCountQuery.where('name').regex(new RegExp(searchNameTerm, 'i'));
 		}
 
-		return blogsCountQuery.exec();
+		return blogsCountQuery;
 	}
 }

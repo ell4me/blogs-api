@@ -9,7 +9,7 @@ export class BlogsRepository {
 	updateBlogById(id: string, newBlog: BlogUpdateDto): Promise<BlogViewDto | null> {
 		return BlogsModel.findOneAndUpdate({ id }, newBlog, {
 			returnDocument: 'before',
-		}).exec();
+		});
 	}
 
 	async createBlog(createdBlog: BlogCreate): Promise<ObjectId> {
@@ -25,6 +25,6 @@ export class BlogsRepository {
 	}
 
 	deleteAllBlogs(): Promise<DeleteResult> {
-		return BlogsModel.deleteMany().exec();
+		return BlogsModel.deleteMany();
 	}
 }

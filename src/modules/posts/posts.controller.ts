@@ -18,6 +18,8 @@ import { CommentCreateDto } from '../comments/comments.dto';
 import { UsersQueryRepository } from '../users/users.query-repository';
 import { CommentsService } from '../comments/comments.service';
 import { inject, injectable } from 'inversify';
+import { LikesPostUpdateDto } from '../likesPost/likesPost.dto';
+import { LikesPostService } from '../likesPost/likesPost.service';
 
 @injectable()
 export class PostsController {
@@ -29,11 +31,12 @@ export class PostsController {
 		@inject(UsersQueryRepository) private readonly usersQueryRepository: UsersQueryRepository,
 		@inject(PostsService) private readonly postsService: PostsService,
 		@inject(CommentsService) private readonly commentsService: CommentsService,
+		@inject(LikesPostService) private readonly likesPostService: LikesPostService,
 	) {}
 
 	async getAllPosts(req: ReqQuery<FilteredBlogQueries>, res: Response) {
 		try {
-			const posts = await this.postsQueryRepository.getAllPosts(req.query);
+			const posts = await this.postsQueryRepository.getAllPosts(req.query, req.user?.id);
 			res.send(posts);
 		} catch (e) {
 			res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
@@ -42,7 +45,7 @@ export class PostsController {
 
 	async getPostById(req: ReqParams<{ id: string }>, res: Response) {
 		try {
-			const post = await this.postsQueryRepository.getPostById(req.params.id);
+			const post = await this.postsQueryRepository.getPostById(req.params.id, req.user?.id);
 
 			if (!post) {
 				res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
@@ -171,6 +174,45 @@ export class PostsController {
 			res.status(HTTP_STATUSES.CREATED_201).send(comment!);
 		} catch (e) {
 			console.log(e, 'e');
+			res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
+		}
+	}
+
+	async likePostById(
+		req: ReqBodyWithParams<{ postId: string }, LikesPostUpdateDto>,
+		res: Response,
+	) {
+		try {
+			const post = await this.postsQueryRepository.getPostById(req.params.postId);
+
+			if (!post) {
+				res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
+				return;
+			}
+
+			const user = await this.usersQueryRepository.getUserById(req.user?.id);
+
+			if (!user) {
+				res.sendStatus(HTTP_STATUSES.UNAUTHORIZED_401);
+				return;
+			}
+
+			const result = await this.likesPostService.updateLikeStatus(
+				req.params.postId,
+				{
+					id: user.id,
+					login: user.login,
+				},
+				req.body,
+			);
+
+			if ('errorsMessages' in result) {
+				res.status(HTTP_STATUSES.BAD_REQUEST_400).send(result);
+				return;
+			}
+
+			res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
+		} catch (e) {
 			res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
 		}
 	}

@@ -1,8 +1,9 @@
 import { injectable } from 'inversify';
 import { DeleteResult, ObjectId } from 'mongodb';
 import { CommentUpdateDto } from './comments.dto';
-import { CommentCreate, StatusLike } from './comments.types';
+import { CommentCreate } from './comments.types';
 import { CommentsModel } from './comments.model';
+import { StatusLike } from '../../types';
 
 @injectable()
 export class CommentsRepository {

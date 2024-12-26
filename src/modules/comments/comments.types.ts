@@ -1,4 +1,4 @@
-import { STATUSES_LIKE } from './comments.constants';
+import { StatusLike } from '../../types';
 
 export interface CommentatorInfo {
 	userId: string;
@@ -15,8 +15,6 @@ export interface LikesInfoDocument {
 	likes: string[];
 	dislikes: string[];
 }
-
-export type StatusLike = (typeof STATUSES_LIKE)[number];
 
 export interface CommentCreate {
 	id: string;

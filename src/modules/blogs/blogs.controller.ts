@@ -61,12 +61,13 @@ export class BlogsController {
 				return;
 			}
 
-			const posts = await this.postsQueryRepository.getAllPosts(req.query, {
+			const posts = await this.postsQueryRepository.getAllPosts(req.query, req.user?.id, {
 				blogId: req.params.id,
 			});
 
 			res.send(posts);
 		} catch (e) {
+			console.log(e);
 			res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_500);
 		}
 	}

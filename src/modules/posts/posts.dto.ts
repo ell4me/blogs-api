@@ -1,3 +1,5 @@
+import { ExtendedLikesInfo } from '../likesPost/likesPost.types';
+
 export interface PostViewDto {
 	id: string;
 	title: string;
@@ -6,6 +8,7 @@ export interface PostViewDto {
 	blogId: string;
 	blogName: string;
 	createdAt: Date;
+	extendedLikesInfo: ExtendedLikesInfo;
 }
 
 export interface PostCreateByBlogIdDto {

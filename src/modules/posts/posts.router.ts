@@ -28,9 +28,20 @@ const commentsMiddlewares = [
 	fieldsCheckErrorsMiddleware,
 ];
 
-postsRouter.get('/', queryBlogParserMiddleware, postsController.getAllPosts.bind(postsController));
+const likeStatusMiddlewares = [
+	authBearerMiddleware,
+	stringMiddleware({ field: 'likeStatus' }),
+	fieldsCheckErrorsMiddleware,
+];
 
-postsRouter.get('/:id', postsController.getPostById.bind(postsController));
+postsRouter.get(
+	'/',
+	accessTokenMiddleware,
+	queryBlogParserMiddleware,
+	postsController.getAllPosts.bind(postsController),
+);
+
+postsRouter.get('/:id', accessTokenMiddleware, postsController.getPostById.bind(postsController));
 
 postsRouter.post('/', ...validationMiddlewares, postsController.createPost.bind(postsController));
 
@@ -53,4 +64,10 @@ postsRouter.post(
 	'/:postId/comments',
 	...commentsMiddlewares,
 	postsController.createComment.bind(postsController),
+);
+
+postsRouter.put(
+	'/:postId/like-status',
+	...likeStatusMiddlewares,
+	postsController.likePostById.bind(postsController),
 );

@@ -1,4 +1,5 @@
-import { CommentatorInfo, LikesInfo, StatusLike } from './comments.types';
+import { CommentatorInfo, LikesInfo } from './comments.types';
+import { StatusLike } from '../../types';
 
 export interface CommentViewDto {
 	id: string;

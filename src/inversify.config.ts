@@ -22,6 +22,9 @@ import { SecurityDevicesController } from './modules/securityDevices/securityDev
 import { SecurityDevicesQueryRepository } from './modules/securityDevices/securityDevices.query-repository';
 import { SecurityDevicesRepository } from './modules/securityDevices/securityDevices.repository';
 import { SecurityDevicesService } from './modules/securityDevices/securityDevices.service';
+import { LikesPostRepository } from './modules/likesPost/likesPost.repository';
+import { LikesPostService } from './modules/likesPost/likesPost.service';
+import { LikesPostQueryRepository } from './modules/likesPost/likesPost.query-repository';
 
 export const compositionRoot = new Container();
 
@@ -87,6 +90,17 @@ compositionRoot
 compositionRoot
 	.bind<SecurityDevicesService>(SecurityDevicesService)
 	.to(SecurityDevicesService)
+	.inSingletonScope();
+
+// LikesPost
+compositionRoot.bind<LikesPostService>(LikesPostService).to(LikesPostService).inSingletonScope();
+compositionRoot
+	.bind<LikesPostRepository>(LikesPostRepository)
+	.to(LikesPostRepository)
+	.inSingletonScope();
+compositionRoot
+	.bind<LikesPostQueryRepository>(LikesPostQueryRepository)
+	.to(LikesPostQueryRepository)
 	.inSingletonScope();
 
 // Adapters

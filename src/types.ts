@@ -1,5 +1,6 @@
 import { Request } from 'express';
 import { SortDirection } from 'mongodb';
+import { STATUSES_LIKE } from './constants';
 
 export type ReqQuery<T> = Request<{}, {}, {}, T>;
 export type ReqParams<T> = Request<T>;
@@ -57,3 +58,5 @@ export interface ItemsPaginationViewDto<T = {}> {
 	totalCount: number;
 	items: T[];
 }
+
+export type StatusLike = (typeof STATUSES_LIKE)[number];

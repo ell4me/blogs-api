@@ -30,6 +30,7 @@ export const MODELS_NAMES = {
 	COMMENTS: 'Comments',
 	RATE_LIMIT: 'RateLimit',
 	SECURITY_DEVICES: 'SecurityDevices',
+	LIKES_POSTS: 'LikesPosts',
 };
 
 export const ROUTERS_PATH = {
@@ -80,3 +81,5 @@ export const VALIDATION_MESSAGES = {
 	USER_ALREADY_CONFIRMED: 'User has already confirmed',
 	LIKE_STATUS: 'Like status is not correct',
 };
+
+export const STATUSES_LIKE = ['None', 'Like', 'Dislike'] as const;

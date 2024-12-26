@@ -35,9 +35,10 @@ export class UsersQueryRepository {
 		};
 	}
 
-	getUserById(id: string): Promise<UserViewDto | null> {
-		return UsersModel.findOne({ id })
-			.select('-_id -__v -updatedAt -password -emailConfirmation -passwordRecovery');
+	getUserById(id?: string): Promise<UserViewDto | null> {
+		return UsersModel.findOne({ id }).select(
+			'-_id -__v -updatedAt -password -emailConfirmation -passwordRecovery',
+		);
 	}
 
 	getCountUsersByFilter(

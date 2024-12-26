@@ -3,9 +3,8 @@ import { CommentsRepository } from './comments.repository';
 import { CommentCreateDto, CommentLikeDto, CommentUpdateDto, CommentViewDto } from './comments.dto';
 import { UserViewDto } from '../users/users.dto';
 import { CommentCreate } from './comments.types';
-import { STATUSES_LIKE } from './comments.constants';
 import { ValidationErrorViewDto } from '../../types';
-import { VALIDATION_MESSAGES } from '../../constants';
+import { STATUSES_LIKE, VALIDATION_MESSAGES } from '../../constants';
 
 @injectable()
 export class CommentsService {

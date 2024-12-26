@@ -1,4 +1,4 @@
-import { NextFunction, Response, Request } from 'express';
+import { NextFunction, Response } from 'express';
 import { verify } from 'jsonwebtoken';
 import { SETTINGS } from '../constants';
 import { ReqQuery } from '../types';

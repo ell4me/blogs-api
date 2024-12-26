@@ -1,4 +1,5 @@
-import { LikesInfo, LikesInfoDocument, StatusLike } from '../modules/comments/comments.types';
+import { LikesInfo, LikesInfoDocument } from '../modules/comments/comments.types';
+import { StatusLike } from '../types';
 
 export const getLikesInfoByUser = (likesInfo: LikesInfoDocument, userId?: string): LikesInfo => {
 	let myStatus: StatusLike = 'None';

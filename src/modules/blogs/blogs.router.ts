@@ -8,6 +8,7 @@ import { authMiddleware } from '../../middlewares/auth.middleware';
 import { queryBlogParserMiddleware } from '../../middlewares/queryParser.middleware';
 import { BlogsController } from './blogs.controller';
 import { compositionRoot } from '../../inversify.config';
+import { accessTokenMiddleware } from '../../middlewares/accessToken.middleware';
 
 const blogsController = compositionRoot.resolve(BlogsController);
 export const blogsRouter = Router();
@@ -24,6 +25,7 @@ blogsRouter.get('/:id', blogsController.getBlogById.bind(blogsController));
 
 blogsRouter.get(
 	'/:id/posts',
+	accessTokenMiddleware,
 	queryBlogParserMiddleware,
 	blogsController.getPostsByBlogId.bind(blogsController),
 );

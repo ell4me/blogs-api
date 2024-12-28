@@ -2,7 +2,7 @@ import { Schema, model } from 'mongoose';
 import { MODELS_NAMES } from '../../constants';
 import { EmailConfirmation, PasswordRecovery } from './users.types';
 
-export interface UserDocument {
+export interface User {
 	id: string;
 	login: string;
 	email: string;
@@ -13,7 +13,7 @@ export interface UserDocument {
 	passwordRecovery?: PasswordRecovery;
 }
 
-const usersSchema = new Schema<UserDocument>(
+const usersSchema = new Schema<User>(
 	{
 		id: { type: String, required: true },
 		login: { type: String, required: true },

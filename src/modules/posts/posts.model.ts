@@ -1,8 +1,8 @@
 import { Schema, model, HydratedDocument, Model } from 'mongoose';
 import { MODELS_NAMES } from '../../constants';
-import { PostCreateByBlogId, PostUpdateDto } from './posts.dto';
+import { PostCreateByBlogIdDto, PostUpdateDto } from './posts.dto';
 
-export interface PostDocument {
+export interface Post {
 	id: string;
 	title: string;
 	shortDescription: string;
@@ -17,13 +17,17 @@ interface PostDocumentMethods {
 	updatePost: (post: PostUpdateDto) => void;
 }
 
-type PostModel = Model<PostDocument, {}, PostDocumentMethods> & {
-	getInstance: (post: PostCreateByBlogId) => HydratedPostDocument;
+type PostModel = Model<Post, {}, PostDocumentMethods> & {
+	getInstance: (
+		post: PostCreateByBlogIdDto,
+		blogName: string,
+		PostModel: PostModel,
+	) => PostDocument;
 };
 
-export interface HydratedPostDocument extends HydratedDocument<PostDocument, PostDocumentMethods> {}
+export interface PostDocument extends HydratedDocument<Post, PostDocumentMethods> {}
 
-const postsSchema = new Schema<PostDocument, PostModel, PostDocumentMethods>(
+const postsSchema = new Schema<Post, PostModel, PostDocumentMethods>(
 	{
 		id: { type: String, required: true },
 		title: { type: String, required: true },
@@ -44,14 +48,12 @@ postsSchema.method('updatePost', function updatePost(post: PostUpdateDto) {
 
 postsSchema.static(
 	'getInstance',
-	function getInstance({
-		title,
-		content,
-		shortDescription,
-		blogId,
-		blogName,
-	}: PostCreateByBlogId) {
-		return new this({
+	function getInstance(
+		{ title, content, shortDescription, blogId }: PostCreateByBlogIdDto,
+		blogName: string,
+		PostModel: PostModel,
+	) {
+		return new PostModel({
 			id: new Date().getTime().toString(),
 			title,
 			content,
@@ -62,4 +64,4 @@ postsSchema.static(
 	},
 );
 
-export const PostsModel = model<PostDocument, PostModel>(MODELS_NAMES.POSTS, postsSchema);
+export const PostsModel = model<Post, PostModel>(MODELS_NAMES.POSTS, postsSchema);

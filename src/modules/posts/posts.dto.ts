@@ -18,14 +18,6 @@ export interface PostCreateByBlogIdDto {
 	blogId: string;
 }
 
-export interface PostCreateByBlogId {
-	title: string;
-	shortDescription: string;
-	content: string;
-	blogId: string;
-	blogName: string;
-}
-
 export interface PostCreateDto {
 	title: string;
 	shortDescription: string;

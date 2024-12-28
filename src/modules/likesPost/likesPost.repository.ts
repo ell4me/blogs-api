@@ -1,27 +1,18 @@
 import { DeleteResult } from 'mongodb';
 import { injectable } from 'inversify';
-import { HydratedLikesPostDocument, LikesPostModel } from './likesPost.model';
+import { LikesPostDocument, LikesPostModel } from './likesPost.model';
 
 @injectable()
 export class LikesPostRepository {
-	async getLikePost(userId: string, postId: string): Promise<HydratedLikesPostDocument | null> {
+	async getLikePost(userId: string, postId: string): Promise<LikesPostDocument | null> {
 		return LikesPostModel.findOne({
 			'user.id': userId,
 			postId,
 		});
 	}
 
-	save(like: HydratedLikesPostDocument): Promise<HydratedLikesPostDocument> {
+	save(like: LikesPostDocument): Promise<LikesPostDocument> {
 		return like.save();
-	}
-
-	async deleteLikePost(userId: string, postId: string): Promise<boolean> {
-		const { deletedCount } = await LikesPostModel.deleteOne({
-			'user.id': userId,
-			postId,
-		}).exec();
-
-		return deletedCount === 1;
 	}
 
 	async deleteLikesPostByUserId(userId: string): Promise<boolean> {

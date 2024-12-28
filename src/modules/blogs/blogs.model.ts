@@ -1,7 +1,7 @@
 import { Schema, model } from 'mongoose';
 import { MODELS_NAMES } from '../../constants';
 
-export interface BlogDocument {
+export interface Blog {
 	id: string;
 	name: string;
 	description: string;
@@ -11,7 +11,7 @@ export interface BlogDocument {
 	isMembership: boolean;
 }
 
-const blogsSchema = new Schema<BlogDocument>(
+const blogsSchema = new Schema<Blog>(
 	{
 		id: { type: String, required: true },
 		name: { type: String, required: true },

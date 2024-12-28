@@ -75,7 +75,7 @@ export class PostsController {
 				return;
 			}
 
-			const { id } = await this.postsService.createPost({ ...newPost, blogName: blog.name });
+			const { id } = await this.postsService.createPost(newPost, blog.name);
 			const post = await this.postsQueryRepository.getPostById(id);
 
 			res.status(HTTP_STATUSES.CREATED_201).send(post!);

@@ -6,7 +6,7 @@ import { validateUserIsExist } from '../../helpers/validateUserIsExist';
 import { ObjectId } from 'mongodb';
 import { EmailConfirmation, PasswordRecovery, UserCreate } from './users.types';
 import { UserCreateDto } from './users.dto';
-import { UserDocument } from './users.model';
+import { User } from './users.model';
 
 @injectable()
 export class UsersService {
@@ -71,15 +71,15 @@ export class UsersService {
 			email: string;
 			login: string;
 		}>,
-	): Promise<UserDocument | null> {
+	): Promise<User | null> {
 		return this.usersRepository.getUserByEmailOrLogin(emailOrLogin);
 	}
 
-	getUserByConfirmationCode(code: string): Promise<UserDocument | null> {
+	getUserByConfirmationCode(code: string): Promise<User | null> {
 		return this.usersRepository.getUserByConfirmationCode(code);
 	}
 
-	getUserByPasswordRecoveryCode(code: string): Promise<UserDocument | null> {
+	getUserByPasswordRecoveryCode(code: string): Promise<User | null> {
 		return this.usersRepository.getUserByPasswordRecoveryCode(code);
 	}
 }

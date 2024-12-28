@@ -95,11 +95,13 @@ export class BlogsController {
 				return;
 			}
 
-			const { id } = await this.postsService.createPost({
-				...newPost,
-				blogId: params.id,
-				blogName: blog.name,
-			});
+			const { id } = await this.postsService.createPost(
+				{
+					...newPost,
+					blogId: params.id,
+				},
+				blog.name,
+			);
 			const post = await this.postsQueryRepository.getPostById(id);
 
 			res.status(HTTP_STATUSES.CREATED_201).send(post!);

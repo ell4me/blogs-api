@@ -30,11 +30,6 @@ export class LikesPostService {
 		let like = await this.likesPostRepository.getLikePost(user.id, postId);
 
 		if (like) {
-			// if (likeStatus === 'None') {
-			// 	const result = await this.likesPostRepository.deleteLikePost(user.id, postId);
-			// 	return { result };
-			// }
-
 			like.updateStatus(likeStatus);
 			await this.likesPostRepository.save(like);
 

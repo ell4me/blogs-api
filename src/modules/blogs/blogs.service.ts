@@ -19,7 +19,7 @@ export class BlogsService {
 		}
 
 		if (blog.name !== updatedBlog.name) {
-			await this.postsRepository.updatePostsByBlogId(id, { name: updatedBlog.name });
+			await this.postsRepository.updateByBlogId(id, { name: updatedBlog.name });
 		}
 
 		return !!blog;
@@ -45,7 +45,7 @@ export class BlogsService {
 		const isDeleted = await this.blogsRepository.deleteBlogById(id);
 
 		if (isDeleted) {
-			await this.postsRepository.deleteAllPostsByBlogId(id);
+			await this.postsRepository.deleteAllByBlogId(id);
 		}
 
 		return isDeleted;

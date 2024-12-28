@@ -1,13 +1,13 @@
 import { model, Schema } from 'mongoose';
 import { MODELS_NAMES } from '../../constants';
 
-export interface RateLimitDocument {
+export interface RateLimit {
 	ip: string;
 	url: string;
 	date: number;
 }
 
-const rateLimitSchema = new Schema<RateLimitDocument>({
+const rateLimitSchema = new Schema<RateLimit>({
 	ip: String,
 	url: String,
 	date: Number,

@@ -9,7 +9,7 @@ import {
 	SecurityDevicesUpdate,
 	UpdateDeviceSession,
 } from './securityDevices.types';
-import { SecurityDevicesDocument } from './securityDevices.model';
+import { SecurityDevices } from './securityDevices.model';
 import { Tokens } from '../users/users.types';
 import { inject, injectable } from 'inversify';
 
@@ -25,7 +25,7 @@ export class SecurityDevicesService {
 		const currentDate = new Date();
 		const expiration = addSeconds(currentDate, EXPIRATION_TOKEN.REFRESH).getTime();
 
-		const deviceSession: SecurityDevicesDocument = {
+		const deviceSession: SecurityDevices = {
 			iat: currentDate.getTime(),
 			expiration,
 			deviceId,

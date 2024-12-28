@@ -1,6 +1,6 @@
 import { PostViewDto } from './posts.dto';
 import { FilteredBlogQueries, ItemsPaginationViewDto } from '../../types';
-import { PostDocument, PostsModel } from './posts.model';
+import { Post, PostsModel } from './posts.model';
 import { inject, injectable } from 'inversify';
 import { LikesPostQueryRepository } from '../likesPost/likesPost.query-repository';
 
@@ -26,7 +26,7 @@ export class PostsQueryRepository {
 			postsQuery.where('blogId', additionalFilter.blogId);
 		}
 
-		const posts: PostDocument[] = await postsQuery
+		const posts: Post[] = await postsQuery
 			.skip((pageNumber - 1) * pageSize)
 			.sort({ [sortBy]: sortDirection })
 			.limit(pageSize)
@@ -54,7 +54,7 @@ export class PostsQueryRepository {
 	}
 
 	async getPostById(postId: string, userId?: string): Promise<PostViewDto | null> {
-		const post: PostDocument | null = await PostsModel.findOne({ id: postId })
+		const post: Post | null = await PostsModel.findOne({ id: postId })
 			.select('-__v -_id -updatedAt')
 			.lean();
 

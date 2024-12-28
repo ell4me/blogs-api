@@ -1,6 +1,6 @@
 import { DeleteResult, ObjectId } from 'mongodb';
 import { EmailConfirmation, PasswordRecovery, UserCreate } from './users.types';
-import { UserDocument, UsersModel } from './users.model';
+import { User, UsersModel } from './users.model';
 import { injectable } from 'inversify';
 
 @injectable()
@@ -27,15 +27,15 @@ export class UsersRepository {
 	}: Partial<{
 		email: string;
 		login: string;
-	}>): Promise<UserDocument | null> {
+	}>): Promise<User | null> {
 		return UsersModel.findOne().or([{ email }, { login }]);
 	}
 
-	getUserByConfirmationCode(code: string): Promise<UserDocument | null> {
+	getUserByConfirmationCode(code: string): Promise<User | null> {
 		return UsersModel.findOne({ 'emailConfirmation.code': code });
 	}
 
-	getUserByPasswordRecoveryCode(code: string): Promise<UserDocument | null> {
+	getUserByPasswordRecoveryCode(code: string): Promise<User | null> {
 		return UsersModel.findOne({ 'passwordRecovery.code': code });
 	}
 

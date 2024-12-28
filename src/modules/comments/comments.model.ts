@@ -2,7 +2,7 @@ import { Schema, model } from 'mongoose';
 import { CommentatorInfo, LikesInfoDocument } from './comments.types';
 import { MODELS_NAMES } from '../../constants';
 
-export interface CommentDocument {
+export interface Comment {
 	id: string;
 	postId: string;
 	content: string;
@@ -12,7 +12,7 @@ export interface CommentDocument {
 	likesInfo: LikesInfoDocument;
 }
 
-const commentsSchema = new Schema<CommentDocument>(
+const commentsSchema = new Schema<Comment>(
 	{
 		id: { type: String, required: true },
 		postId: { type: String, required: true },

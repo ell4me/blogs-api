@@ -7,6 +7,8 @@ import { PostCreateByBlogIdDto, PostUpdateDto, PostViewDto } from '../src/module
 import { BlogCreateDto, BlogUpdateDto, BlogViewDto } from '../src/modules/blogs/blogs.dto';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
+import { AuthLoginDto } from '../src/modules/auth/auth.dto';
+import { UserViewDto } from '../src/modules/users/users.dto';
 
 const emptyResponse: ItemsPaginationViewDto = {
 	page: 1,
@@ -16,15 +18,38 @@ const emptyResponse: ItemsPaginationViewDto = {
 	items: [],
 };
 
+const createUserDto = {
+	login: 'ell4me',
+	email: 'ell4me@gmail.com',
+	password: 'qwerty',
+};
+
 describe(ROUTERS_PATH.POSTS, () => {
 	let newPost: PostViewDto | null = null;
 	let newBlog: BlogViewDto | null = null;
+	let accessToken: string;
+	let currentUser: UserViewDto;
 	let server: MongoMemoryServer;
 
 	beforeAll(async () => {
 		server = await MongoMemoryServer.create();
 		const uri = server.getUri();
 		await mongoose.connect(uri);
+
+		const responseUser = await request(app)
+			.post(ROUTERS_PATH.USERS)
+			.auth(SETTINGS.LOGIN, SETTINGS.PASSWORD)
+			.send(createUserDto);
+
+		const responseLogin = await request(app)
+			.post(`${ROUTERS_PATH.AUTH}/login`)
+			.send({
+				loginOrEmail: createUserDto.login,
+				password: createUserDto.password,
+			} as AuthLoginDto);
+
+		accessToken = responseLogin.body.accessToken;
+		currentUser = responseUser.body;
 	});
 
 	afterAll(async () => {
@@ -222,6 +247,162 @@ describe(ROUTERS_PATH.POSTS, () => {
 				...newPost!,
 				blogName: updatedDataBlog.name,
 			});
+
+		newPost!.blogName = updatedDataBlog.name;
+	});
+
+	it('POST like status wrong access token', async () => {
+		await request(app)
+			.put(`${ROUTERS_PATH.POSTS}/${newPost!.id}/like-status`)
+			.auth('test', { type: 'bearer' })
+			.send({ likeStatus: '' })
+			.expect(HTTP_STATUSES.UNAUTHORIZED_401);
+	});
+
+	it('POST like status should return error if payload is incorrect', async () => {
+		await request(app)
+			.put(`${ROUTERS_PATH.POSTS}/${newPost!.id}/like-status`)
+			.auth(accessToken, { type: 'bearer' })
+			.send({ likeStatus: '' })
+			.expect(HTTP_STATUSES.BAD_REQUEST_400, {
+				errorsMessages: [
+					{
+						field: 'likeStatus',
+						message: VALIDATION_MESSAGES.FIELD_EMPTY,
+					},
+				],
+			} as ValidationErrorViewDto);
+	});
+
+	it('POST like status when post is not found', async () => {
+		await request(app)
+			.put(`${ROUTERS_PATH.POSTS}/randomPost/like-status`)
+			.auth(accessToken, { type: 'bearer' })
+			.send({ likeStatus: 'test' })
+			.expect(HTTP_STATUSES.NOT_FOUND_404);
+	});
+
+	it('POST like status when likeStatus is wrong status', async () => {
+		await request(app)
+			.put(`${ROUTERS_PATH.POSTS}/${newPost!.id}/like-status`)
+			.auth(accessToken, { type: 'bearer' })
+			.send({ likeStatus: 'test' })
+			.expect(HTTP_STATUSES.BAD_REQUEST_400, {
+				errorsMessages: [
+					{
+						field: 'likeStatus',
+						message: VALIDATION_MESSAGES.LIKE_STATUS,
+					},
+				],
+			} as ValidationErrorViewDto);
+	});
+
+	it('POST like status should update status', async () => {
+		const likeStatus = 'Like';
+		await request(app)
+			.put(`${ROUTERS_PATH.POSTS}/${newPost!.id}/like-status`)
+			.auth(accessToken, { type: 'bearer' })
+			.send({ likeStatus })
+			.expect(HTTP_STATUSES.NO_CONTENT_204);
+
+		const responsePost = await request(app)
+			.get(`${ROUTERS_PATH.POSTS}/${newPost!.id}`)
+			.auth(accessToken, { type: 'bearer' });
+
+		expect(responsePost.body).toEqual({
+			...newPost,
+			extendedLikesInfo: {
+				likesCount: 1,
+				dislikesCount: 0,
+				newestLikes: [
+					{
+						login: currentUser.login,
+						userId: currentUser.id,
+						addedAt: expect.any(String),
+					},
+				],
+				myStatus: likeStatus,
+			},
+		} as PostViewDto);
+	});
+
+	it('GET post and all posts with auth and without to look how like status should change', async () => {
+		const extendedLikesInfo = {
+			likesCount: 1,
+			dislikesCount: 0,
+			newestLikes: [
+				{
+					login: currentUser.login,
+					userId: currentUser.id,
+					addedAt: expect.any(String),
+				},
+			],
+			myStatus: 'Like',
+		};
+
+		const allPostsResponse: ItemsPaginationViewDto<PostViewDto> = {
+			pageSize: 10,
+			page: 1,
+			totalCount: 1,
+			pagesCount: 1,
+			items: [
+				{
+					...newPost!,
+					extendedLikesInfo: { ...extendedLikesInfo, myStatus: 'None' },
+				},
+			],
+		};
+
+		const responsePost = await request(app).get(`${ROUTERS_PATH.POSTS}/${newPost!.id}`);
+
+		expect(responsePost.body).toEqual({
+			...newPost,
+			extendedLikesInfo: { ...extendedLikesInfo, myStatus: 'None' },
+		} as PostViewDto);
+
+		const responseAllPostsNoAuth = await request(app).get(`${ROUTERS_PATH.POSTS}/`);
+
+		expect(responseAllPostsNoAuth.body).toEqual(allPostsResponse);
+
+		const responseAllPostsWithAuth = await request(app)
+			.get(`${ROUTERS_PATH.POSTS}/`)
+			.auth(accessToken, { type: 'bearer' });
+
+		expect(responseAllPostsWithAuth.body).toEqual({
+			...allPostsResponse,
+			items: [
+				{
+					...allPostsResponse.items[0],
+					extendedLikesInfo: {
+						...allPostsResponse.items[0].extendedLikesInfo,
+						myStatus: 'Like',
+					},
+				},
+			],
+		});
+	});
+
+	it('POST like status should update status to Dislike', async () => {
+		const likeStatus = 'Dislike';
+		await request(app)
+			.put(`${ROUTERS_PATH.POSTS}/${newPost!.id}/like-status`)
+			.auth(accessToken, { type: 'bearer' })
+			.send({ likeStatus })
+			.expect(HTTP_STATUSES.NO_CONTENT_204);
+
+		const responsePost = await request(app)
+			.get(`${ROUTERS_PATH.POSTS}/${newPost!.id}`)
+			.auth(accessToken, { type: 'bearer' });
+
+		expect(responsePost.body).toEqual({
+			...newPost,
+			extendedLikesInfo: {
+				likesCount: 0,
+				dislikesCount: 1,
+				newestLikes: [],
+				myStatus: likeStatus,
+			},
+		} as PostViewDto);
 	});
 
 	it('DELETE won`t be to delete with incorrect credentials', async () => {

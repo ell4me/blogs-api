@@ -1,21 +1,21 @@
-import { RateLimitDocument, RateLimitModel } from './rateLimit.model';
+import { RateLimit, RateLimitModel } from './rateLimit.model';
 import { DeleteResult, ObjectId } from 'mongodb';
 import { Model } from 'mongoose';
 
 export class RateLimitRepository {
-	constructor(private readonly RateLimitModel: Model<RateLimitDocument>) {}
+	constructor(private readonly RateLimitModel: Model<RateLimit>) {}
 
-	getRateLimitsCount({ ip, date, url }: RateLimitDocument): Promise<number> {
+	getRateLimitsCount({ ip, date, url }: RateLimit): Promise<number> {
 		return this.RateLimitModel.countDocuments({ ip, url }).where('date').gte(date);
 	}
 
-	async updateRateLimit(rateLimit: RateLimitDocument): Promise<ObjectId> {
+	async updateRateLimit(rateLimit: RateLimit): Promise<ObjectId> {
 		const { _id } = await this.RateLimitModel.create(rateLimit);
 
 		return _id;
 	}
 
-	async deleteOldRecordsByRateLimit({ ip, url, date }: RateLimitDocument): Promise<DeleteResult> {
+	async deleteOldRecordsByRateLimit({ ip, url, date }: RateLimit): Promise<DeleteResult> {
 		return this.RateLimitModel.deleteMany({ ip, url }).where('date').lt(date);
 	}
 

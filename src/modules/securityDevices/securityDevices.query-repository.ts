@@ -1,5 +1,5 @@
 import { SecurityDevicesViewDto } from './securityDevices.dto';
-import { SecurityDevicesDocument, SecurityDevicesModel } from './securityDevices.model';
+import { SecurityDevices, SecurityDevicesModel } from './securityDevices.model';
 import { injectable } from 'inversify';
 
 @injectable()
@@ -17,7 +17,7 @@ export class SecurityDevicesQueryRepository {
 		}));
 	}
 
-	async getDeviceSession(deviceId: string): Promise<SecurityDevicesDocument | null> {
+	async getDeviceSession(deviceId: string): Promise<SecurityDevices | null> {
 		return SecurityDevicesModel.findOne({ deviceId });
 	}
 }

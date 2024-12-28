@@ -15,7 +15,7 @@ import {
 import { UserCreateDto, UserViewDto } from '../src/modules/users/users.dto';
 import { add } from 'date-fns/add';
 import mongoose from 'mongoose';
-import { UserDocument } from '../src/modules/users/users.model';
+import { User } from '../src/modules/users/users.model';
 import { PasswordRecovery } from '../src/modules/users/users.types';
 import { compositionRoot } from '../src/inversify.config';
 import { UsersRepository } from '../src/modules/users/users.repository';
@@ -29,7 +29,7 @@ const createUserDto = {
 describe(ROUTERS_PATH.AUTH, () => {
 	let server: MongoMemoryServer;
 	let newUser: UserViewDto;
-	let registeredUser: UserDocument | null;
+	let registeredUser: User | null;
 	let accessToken: string;
 	let cookiesWithRefreshToken: string;
 	let updatedCookiesWithRefreshToken: string;

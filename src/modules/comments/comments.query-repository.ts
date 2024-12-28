@@ -1,7 +1,7 @@
 import { injectable } from 'inversify';
 import { CommentViewDto } from './comments.dto';
 import { ItemsPaginationViewDto, PaginationQueries } from '../../types';
-import { CommentDocument, CommentsModel } from './comments.model';
+import { Comment, CommentsModel } from './comments.model';
 import { getLikesInfoByUser } from '../../helpers/getLikesInfoByUser';
 
 @injectable()
@@ -11,7 +11,7 @@ export class CommentsQueryRepository {
 		{ sortBy, sortDirection, pageSize, pageNumber }: PaginationQueries,
 		userId?: string,
 	): Promise<ItemsPaginationViewDto<CommentViewDto>> {
-		const comments: CommentDocument[] = await CommentsModel.find({ postId })
+		const comments: Comment[] = await CommentsModel.find({ postId })
 			.skip((pageNumber - 1) * pageSize)
 			.sort({ [sortBy]: sortDirection })
 			.limit(pageSize)
@@ -35,7 +35,7 @@ export class CommentsQueryRepository {
 	}
 
 	async getCommentById(commentId: string, userId?: string): Promise<CommentViewDto | null> {
-		const comment: CommentDocument | null = await CommentsModel.findOne({ id: commentId })
+		const comment: Comment | null = await CommentsModel.findOne({ id: commentId })
 			.select('-__v -_id -updatedAt -postId')
 			.lean();
 

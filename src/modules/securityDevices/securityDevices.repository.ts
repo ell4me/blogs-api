@@ -1,12 +1,12 @@
 import { DeleteResult, ObjectId } from 'mongodb';
 
-import { SecurityDevicesDocument, SecurityDevicesModel } from './securityDevices.model';
+import { SecurityDevices, SecurityDevicesModel } from './securityDevices.model';
 import { UpdateDeviceSession } from './securityDevices.types';
 import { injectable } from 'inversify';
 
 @injectable()
 export class SecurityDevicesRepository {
-	async createDeviceSession(session: SecurityDevicesDocument): Promise<ObjectId> {
+	async createDeviceSession(session: SecurityDevices): Promise<ObjectId> {
 		const { _id } = await SecurityDevicesModel.create(session);
 
 		return _id;

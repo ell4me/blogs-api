@@ -1,7 +1,7 @@
 import { Schema, model } from 'mongoose';
 import { MODELS_NAMES } from '../../constants';
 
-export interface SecurityDevicesDocument {
+export interface SecurityDevices {
 	iat: number;
 	expiration: number;
 	deviceId: string;
@@ -10,7 +10,7 @@ export interface SecurityDevicesDocument {
 	userId: string;
 }
 
-const securityDevicesSchema = new Schema<SecurityDevicesDocument>({
+const securityDevicesSchema = new Schema<SecurityDevices>({
 	iat: { type: Number, required: true },
 	deviceName: { type: String, required: true },
 	ip: { type: String, required: true },

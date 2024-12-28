@@ -1,5 +1,5 @@
 import { rateLimitRepository, RateLimitRepository } from './rateLimit.repository';
-import { RateLimitDocument } from './rateLimit.model';
+import { RateLimit } from './rateLimit.model';
 import { subSeconds } from 'date-fns/subSeconds';
 import { LimitData } from './rateLimit.types';
 
@@ -7,7 +7,7 @@ class RateLimitService {
 	constructor(private readonly rateLimitRepository: RateLimitRepository) {}
 
 	async checkRateLimit(
-		rateLimit: RateLimitDocument,
+		rateLimit: RateLimit,
 		{ limit, ttlInSeconds }: LimitData,
 	): Promise<boolean> {
 		const limitDate = subSeconds(rateLimit.date, ttlInSeconds).getTime();

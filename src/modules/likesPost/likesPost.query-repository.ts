@@ -1,5 +1,5 @@
 import { injectable } from 'inversify';
-import { HydratedLikesPostDocument, LikesPostDocument, LikesPostModel } from './likesPost.model';
+import { LikesPostDocument, LikesPost, LikesPostModel } from './likesPost.model';
 import { ExtendedLikesInfo } from './likesPost.types';
 import { StatusLike } from '../../types';
 
@@ -9,7 +9,7 @@ export class LikesPostQueryRepository {
 		const LIKE: StatusLike = 'Like';
 		const DISLIKE: StatusLike = 'Dislike';
 
-		const likes: LikesPostDocument[] = await LikesPostModel.find({ postId })
+		const likes: LikesPost[] = await LikesPostModel.find({ postId })
 			.where('status', LIKE)
 			.limit(3)
 			.sort({ createdAt: -1 })
@@ -25,7 +25,7 @@ export class LikesPostQueryRepository {
 			.countDocuments()
 			.exec();
 
-		let likeByUserId: HydratedLikesPostDocument | null = null;
+		let likeByUserId: LikesPostDocument | null = null;
 
 		if (userId) {
 			likeByUserId = await LikesPostModel.findOne({
@@ -52,7 +52,7 @@ export class LikesPostQueryRepository {
 		postIds: string[],
 		userId?: string,
 	): Promise<Record<string, ExtendedLikesInfo>> {
-		const likes: LikesPostDocument[] = await LikesPostModel.find()
+		const likes: LikesPost[] = await LikesPostModel.find()
 			.where('postId')
 			.in(postIds)
 			.sort({ createdAt: -1 })

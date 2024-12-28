@@ -20,7 +20,7 @@ const likesPostRepository = compositionRoot.resolve(LikesPostRepository);
 testingRouter.delete('/all-data', async (req, res) => {
 	try {
 		await blogsRepository.deleteAllBlogs();
-		await postsRepository.deleteAllPosts();
+		await postsRepository.deleteAll();
 		await usersRepository.deleteAllUsers();
 		await commentsRepository.deleteAllComments();
 		await rateLimitRepository.deleteAllRateLimits();
